@@ -3,9 +3,14 @@ package in.srain.cube.views.ptr;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
-import android.view.*;
+import android.view.Gravity;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewConfiguration;
+import android.view.ViewGroup;
 import android.widget.Scroller;
 import android.widget.TextView;
+
 import in.srain.cube.views.ptr.indicator.PtrIndicator;
 import in.srain.cube.views.ptr.util.PtrCLog;
 
@@ -53,6 +58,8 @@ public class PtrFrameLayout extends ViewGroup {
 
     // disable when detect moving horizontally
     private boolean mPreventForHorizontal = false;
+    // enable margin property on layout or not
+    private boolean mHeaderLayoutMarginEnable = false;
 
     private MotionEvent mLastMoveEvent;
 
@@ -194,7 +201,7 @@ public class PtrFrameLayout extends ViewGroup {
         if (mHeaderView != null) {
             measureChildWithMargins(mHeaderView, widthMeasureSpec, 0, heightMeasureSpec, 0);
             MarginLayoutParams lp = (MarginLayoutParams) mHeaderView.getLayoutParams();
-            mHeaderHeight = mHeaderView.getMeasuredHeight() + lp.topMargin + lp.bottomMargin;
+            mHeaderHeight = mHeaderView.getMeasuredHeight() + (isHeaderLayoutMarginEnable() ? 0 : (lp.topMargin + lp.bottomMargin));
             mPtrIndicator.setHeaderHeight(mHeaderHeight);
         }
 
@@ -874,6 +881,14 @@ public class PtrFrameLayout extends ViewGroup {
 
     public void setPullToRefresh(boolean pullToRefresh) {
         mPullToRefresh = pullToRefresh;
+    }
+
+    public boolean isHeaderLayoutMarginEnable() {
+        return mHeaderLayoutMarginEnable;
+    }
+
+    public void setHeaderLayoutMarginEnable(boolean enable) {
+        mHeaderLayoutMarginEnable = enable;
     }
 
     @SuppressWarnings({"unused"})
