@@ -365,7 +365,7 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
                     }
                     onRelease(false);
                     if (mPtrIndicator.hasMovedAfterPressedDown()) {
-                        sendCancelEvent();
+                        //sendCancelEvent();
                         return false;
 
                     }
@@ -408,6 +408,11 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
                 if (DEBUG) {
                     boolean canMoveDown = mPtrHandler != null && mPtrHandler.checkCanDoRefresh(this, mContent, mHeaderView);
                     PtrCLog.v(LOG_TAG, "ACTION_MOVE: offsetY:%s, currentPos: %s, moveUp: %s, canMoveUp: %s, moveDown: %s: canMoveDown: %s", offsetY, mPtrIndicator.getCurrentPosY(), moveUp, canMoveUp, moveDown, canMoveDown);
+                }
+
+                if (mPtrIndicator.getCurrentPosY() != 0) {
+                    movePos(offsetY);
+                    return true;
                 }
 
                 // disable move when header not reach top
