@@ -6,6 +6,8 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,33 +23,31 @@ import in.srain.cube.views.ptr.PtrHandler;
 import in.srain.cube.views.ptr.demo.R;
 import in.srain.cube.views.ptr.header.MaterialHeader;
 
-public class MaterialStyleFragment extends TitleBaseFragment {
+public class MaterialStyleFragment extends Fragment {
 
     private String mUrl = "http://img5.duitang.com/uploads/blog/201407/17/20140717113117_mUssJ.thumb.jpeg";
     private long mStartLoadingTime = -1;
     private boolean mImageHasLoaded = false;
     protected PtrFrameLayout mPtrFrameLayout;
 
+    public MaterialStyleFragment(){}
+
+    @Nullable
     @Override
-    public void onEnter(Object data) {
-        if (data != null && data instanceof String) {
-            mUrl = (String) data;
-        }
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_materail_style, null);
     }
 
     @Override
-    protected View createView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
-        View view = inflater.inflate(R.layout.fragment_materail_style, null);
-        setHeaderTitle(R.string.ptr_demo_material_style);
-
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
         final CubeImageView imageView = (CubeImageView) view.findViewById(R.id.material_style_image_view);
-        final ImageLoader imageLoader = ImageLoaderFactory.create(getContext());
+        final ImageLoader imageLoader = ImageLoaderFactory.create(getActivity());
 
         mPtrFrameLayout = (PtrFrameLayout) view.findViewById(R.id.material_style_ptr_frame);
 
         // header
-        final MaterialHeader header = new MaterialHeader(getContext());
+        final MaterialHeader header = new MaterialHeader(getActivity());
         int[] colors = getResources().getIntArray(R.array.google_colors);
         header.setColorSchemeColors(colors);
         header.setLayoutParams(new PtrFrameLayout.LayoutParams(-1, -2));
@@ -119,6 +119,5 @@ public class MaterialStyleFragment extends TitleBaseFragment {
             }
         };
         imageLoader.setImageLoadHandler(imageLoadHandler);
-        return view;
     }
 }

@@ -91,8 +91,8 @@ task copyLibs << {
 }
 
 dependencies {
-    compile(project(':ptr-lib'))
-    compile 'in.srain.cube:clog:1.0.2'
-    compile 'in.srain.cube:cube-sdk:1.0.44.39-SNAPSHOT@aar'
-    compile 'com.google.android:support-v4:r7'
+    implementation(project(':ptr-lib'))
+    implementation 'in.srain.cube:clog:1.0.2'
+    implementation 'in.srain.cube:cube-sdk:1.0.44.39-SNAPSHOT@aar'
+    implementation 'com.android.support:appcompat-v7:27.1.0'
 }
