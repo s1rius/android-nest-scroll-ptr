@@ -2,12 +2,22 @@ package in.srain.cube.views.ptr;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.view.NestedScrollingChild;
+import android.support.v4.view.NestedScrollingChildHelper;
+import android.support.v4.view.NestedScrollingParent;
+import android.support.v4.view.NestedScrollingParentHelper;
+import android.support.v4.view.ViewCompat;
+import android.support.v4.widget.ListViewCompat;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
+import android.widget.ListView;
 import android.widget.Scroller;
 import android.widget.TextView;
 
@@ -19,10 +29,12 @@ import in.srain.cube.views.ptr.util.PtrCLog;
  * support: pull to refresh / release to refresh / auto refresh / keep header view while refreshing / hide header view while refreshing
  * It defines {@link in.srain.cube.views.ptr.PtrUIHandler}, which allows you customize the UI easily.
  */
-public class PtrFrameLayout extends ViewGroup {
+public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
+        NestedScrollingChild {
 
     // status enum
     public final static byte PTR_STATUS_INIT = 1;
+    private static final int INVALID_POINTER = -1;
     private byte mStatus = PTR_STATUS_INIT;
     public final static byte PTR_STATUS_PREPARE = 2;
     public final static byte PTR_STATUS_LOADING = 3;
@@ -51,10 +63,13 @@ public class PtrFrameLayout extends ViewGroup {
     private PtrHandler mPtrHandler;
     // working parameters
     private ScrollChecker mScrollChecker;
+    private int mTouchSlop;
     private int mPagingTouchSlop;
     private int mHeaderHeight;
     private boolean mDisableWhenHorizontalMove = false;
     private int mFlag = 0x00;
+    private final NestedScrollingParentHelper mNestedScrollingParentHelper;
+    private final NestedScrollingChildHelper mNestedScrollingChildHelper;
 
     // disable when detect moving horizontally
     private boolean mPreventForHorizontal = false;
@@ -75,6 +90,14 @@ public class PtrFrameLayout extends ViewGroup {
             performRefreshComplete();
         }
     };
+    private boolean mNestedScrollInProgress;
+    private int mTotalUnconsumed;
+    private int[] mParentOffsetInWindow = new int[2];;
+    private int[] mParentScrollConsumed = new int[2];;
+    private float mInitialDownY;
+    private int mActivePointerId = INVALID_POINTER;
+    private boolean mIsBeingDragged = false;
+    private float mInitialMotionY;
 
     public PtrFrameLayout(Context context) {
         this(context, null);
@@ -114,7 +137,10 @@ public class PtrFrameLayout extends ViewGroup {
         mScrollChecker = new ScrollChecker();
 
         final ViewConfiguration conf = ViewConfiguration.get(getContext());
-        mPagingTouchSlop = conf.getScaledTouchSlop() * 2;
+        mTouchSlop = conf.getScaledTouchSlop();
+        mPagingTouchSlop = mTouchSlop * 2;
+        mNestedScrollingParentHelper = new NestedScrollingParentHelper(this);
+        mNestedScrollingChildHelper = new NestedScrollingChildHelper(this);
     }
 
     @Override
@@ -274,20 +300,65 @@ public class PtrFrameLayout extends ViewGroup {
         return DEBUG && DEBUG_LAYOUT;
     }
 
-    public boolean dispatchTouchEventSupper(MotionEvent e) {
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent e) {
+        mLastMoveEvent = e;
         return super.dispatchTouchEvent(e);
     }
 
     @Override
-    public boolean dispatchTouchEvent(MotionEvent e) {
+    public boolean onInterceptTouchEvent(MotionEvent ev) {
         if (!isEnabled() || mContent == null || mHeaderView == null) {
-            return dispatchTouchEventSupper(e);
+            return false;
         }
-        int action = e.getAction();
+        int pointerIndex;
+
+        final int action = ev.getActionMasked();
+        switch (action) {
+            case MotionEvent.ACTION_DOWN:
+                mActivePointerId = ev.getPointerId(0);
+                pointerIndex = ev.findPointerIndex(mActivePointerId);
+                mIsBeingDragged = false;
+                if (pointerIndex < 0) {
+                    return false;
+                }
+                mInitialDownY = ev.getY(pointerIndex);
+                break;
+            case MotionEvent.ACTION_MOVE:
+                if (mActivePointerId == INVALID_POINTER) {
+                    if (DEBUG) PtrCLog.e(LOG_TAG, "Got ACTION_MOVE event but don't have an active pointer id.");
+                    return false;
+                }
+
+                pointerIndex = ev.findPointerIndex(mActivePointerId);
+                if (pointerIndex < 0) {
+                    return false;
+                }
+                final float y = ev.getY(pointerIndex);
+                startDragging(y);
+                break;
+            case MotionEvent.ACTION_CANCEL:
+            case MotionEvent.ACTION_UP:
+                mIsBeingDragged = false;
+                break;
+        }
+        PtrCLog.d(LOG_TAG, "is being dragged " + mIsBeingDragged);
+        return mIsBeingDragged;
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+
+        if (isRefreshing() || !isEnabled() || canChildScrollUp()) {
+            return false;
+        }
+
+        int action = event.getActionMasked();
         switch (action) {
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
                 mPtrIndicator.onRelease();
+                mIsBeingDragged = false;
                 if (mPtrIndicator.hasLeftStartPosition()) {
                     if (DEBUG) {
                         PtrCLog.d(LOG_TAG, "call onRelease when user release");
@@ -295,29 +366,29 @@ public class PtrFrameLayout extends ViewGroup {
                     onRelease(false);
                     if (mPtrIndicator.hasMovedAfterPressedDown()) {
                         sendCancelEvent();
-                        return true;
-                    }
-                    return dispatchTouchEventSupper(e);
-                } else {
-                    return dispatchTouchEventSupper(e);
-                }
+                        return false;
 
+                    }
+
+                }
+                return true;
             case MotionEvent.ACTION_DOWN:
                 mHasSendCancelEvent = false;
-                mPtrIndicator.onPressDown(e.getX(), e.getY());
-
+                mPtrIndicator.onPressDown(event.getX(), event.getY());
                 mScrollChecker.abortIfWorking();
-
                 mPreventForHorizontal = false;
-                // The cancel event will be sent once the position is moved.
-                // So let the event pass to children.
-                // fix #93, #102
-                dispatchTouchEventSupper(e);
-                return true;
 
+                if (!canChildScrollUp()) {
+                    if (DEBUG) {
+                        PtrCLog.d(LOG_TAG, "handle action down touch event");
+                    }
+                    mPtrIndicator.onPressDown(event.getX(), event.getY());
+                    return true;
+                }
+                return false;
             case MotionEvent.ACTION_MOVE:
-                mLastMoveEvent = e;
-                mPtrIndicator.onMove(e.getX(), e.getY());
+
+                mPtrIndicator.onMove(event.getX(), event.getY());
                 float offsetX = mPtrIndicator.getOffsetX();
                 float offsetY = mPtrIndicator.getOffsetY();
 
@@ -327,7 +398,7 @@ public class PtrFrameLayout extends ViewGroup {
                     }
                 }
                 if (mPreventForHorizontal) {
-                    return dispatchTouchEventSupper(e);
+                    return false;
                 }
 
                 boolean moveDown = offsetY > 0;
@@ -341,7 +412,7 @@ public class PtrFrameLayout extends ViewGroup {
 
                 // disable move when header not reach top
                 if (moveDown && mPtrHandler != null && !mPtrHandler.checkCanDoRefresh(this, mContent, mHeaderView)) {
-                    return dispatchTouchEventSupper(e);
+                    return false;
                 }
 
                 if ((moveUp && canMoveUp) || moveDown) {
@@ -349,7 +420,7 @@ public class PtrFrameLayout extends ViewGroup {
                     return true;
                 }
         }
-        return dispatchTouchEventSupper(e);
+        return super.onTouchEvent(event);
     }
 
     /**
@@ -940,7 +1011,7 @@ public class PtrFrameLayout extends ViewGroup {
         }
         MotionEvent last = mLastMoveEvent;
         MotionEvent e = MotionEvent.obtain(last.getDownTime(), last.getEventTime() + ViewConfiguration.getLongPressTimeout(), MotionEvent.ACTION_CANCEL, last.getX(), last.getY(), last.getMetaState());
-        dispatchTouchEventSupper(e);
+        dispatchTouchEvent(e);
     }
 
     private void sendDownEvent() {
@@ -949,7 +1020,166 @@ public class PtrFrameLayout extends ViewGroup {
         }
         final MotionEvent last = mLastMoveEvent;
         MotionEvent e = MotionEvent.obtain(last.getDownTime(), last.getEventTime(), MotionEvent.ACTION_DOWN, last.getX(), last.getY(), last.getMetaState());
-        dispatchTouchEventSupper(e);
+        dispatchTouchEvent(e);
+    }
+
+    // nested scroll child
+    @Override
+    public boolean startNestedScroll(int axes) {
+        return mNestedScrollingChildHelper.startNestedScroll(axes);
+    }
+
+    @Override
+    public void stopNestedScroll() {
+        mNestedScrollingChildHelper.stopNestedScroll();
+    }
+
+    @Override
+    public boolean hasNestedScrollingParent() {
+        return mNestedScrollingChildHelper.hasNestedScrollingParent();
+    }
+
+    @Override
+    public boolean dispatchNestedScroll(int dxConsumed, int dyConsumed, int dxUnconsumed,
+                                        int dyUnconsumed, @Nullable int[] offsetInWindow) {
+        return mNestedScrollingChildHelper.dispatchNestedScroll(dxConsumed, dyConsumed,
+                dxUnconsumed, dyUnconsumed, offsetInWindow);
+    }
+
+    @Override
+    public boolean dispatchNestedPreScroll(int dx, int dy, @Nullable int[] consumed,
+                                           @Nullable int[] offsetInWindow) {
+        return mNestedScrollingChildHelper.dispatchNestedPreScroll(
+                dx, dy, consumed, offsetInWindow);
+    }
+
+    @Override
+    public boolean dispatchNestedFling(float velocityX, float velocityY, boolean consumed) {
+        return super.dispatchNestedFling(velocityX, velocityY, consumed);
+    }
+
+    @Override
+    public boolean dispatchNestedPreFling(float velocityX, float velocityY) {
+        return super.dispatchNestedPreFling(velocityX, velocityY);
+    }
+
+    // nested scroll parent
+    @Override
+    public boolean onStartNestedScroll(@NonNull View child, @NonNull View target, int axes) {
+        return isEnabled() && !isAutoRefresh() && !isRefreshing()
+                && (axes & ViewCompat.SCROLL_AXIS_VERTICAL) != 0;
+    }
+
+    @Override
+    public void onNestedScrollAccepted(@NonNull View child, @NonNull View target, int axes) {
+        // Reset the counter of how much leftover scroll needs to be consumed.
+        mNestedScrollingParentHelper.onNestedScrollAccepted(child, target, axes);
+        // Dispatch up to the nested parent
+        startNestedScroll(axes & ViewCompat.SCROLL_AXIS_VERTICAL);
+        mTotalUnconsumed = 0;
+        mNestedScrollInProgress = true;
+    }
+
+    @Override
+    public void onNestedScroll(@NonNull View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed) {
+            // Dispatch up to the nested parent first
+            dispatchNestedScroll(dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed,
+                    mParentOffsetInWindow);
+
+            /** this is for when scroll the content view from the bottom up and easy to pull to refresh
+            /* otherwise {@link #mContent} will handle the touch event */
+            if (dyConsumed == 0 && dyUnconsumed < 0 && !canChildScrollUp()) {
+                sendDownEvent();
+            }
+
+            // This is a bit of a hack. Nested scrolling works from the bottom up, and as we are
+            // sometimes between two nested scrolling views, we need a way to be able to know when any
+            // nested scrolling parent has stopped handling events. We do that by using the
+            // 'offset in window 'functionality to see if we have been moved from the event.
+            // This is a decent indication of whether we should take over the event stream or not.
+            final int dy = dyUnconsumed + mParentOffsetInWindow[1];
+            if (dy < 0 && !canChildScrollUp()) {
+                mTotalUnconsumed += Math.abs(dy);
+                // todo moveSpinner(mTotalUnconsumed);
+            }
+    }
+
+    @Override
+    public void requestDisallowInterceptTouchEvent(boolean b) {
+        // if this is a List < L or another view that doesn't support nested
+        // scrolling, ignore this request so that the vertical scroll event
+        // isn't stolen
+        if ((android.os.Build.VERSION.SDK_INT < 21 && mContent instanceof AbsListView)
+                || (mContent != null && !ViewCompat.isNestedScrollingEnabled(mContent))) {
+            // Nope.
+        } else {
+            super.requestDisallowInterceptTouchEvent(b);
+        }
+    }
+
+    @Override
+    public void onNestedPreScroll(@NonNull View target, int dx, int dy, @NonNull int[] consumed) {
+        // If we are in the middle of consuming, a scroll, then we want to move the spinner back up
+        // before allowing the list to scroll
+        if (dy > 0 && mTotalUnconsumed > 0) {
+            if (dy > mTotalUnconsumed) {
+                consumed[1] = dy - (int) mTotalUnconsumed;
+                mTotalUnconsumed = 0;
+            } else {
+                mTotalUnconsumed -= dy;
+                consumed[1] = dy;
+            }
+            //moveSpinner(mTotalUnconsumed);
+        }
+
+        // Now let our nested parent consume the leftovers
+        final int[] parentConsumed = mParentScrollConsumed;
+        if (dispatchNestedPreScroll(dx - consumed[0], dy - consumed[1], parentConsumed, null)) {
+            consumed[0] += parentConsumed[0];
+            consumed[1] += parentConsumed[1];
+        }
+    }
+
+    @Override
+    public int getNestedScrollAxes() {
+        return mNestedScrollingParentHelper.getNestedScrollAxes();
+    }
+
+    @Override
+    public void onStopNestedScroll(View child) {
+        mNestedScrollingParentHelper.onStopNestedScroll(child);
+        mNestedScrollInProgress = false;
+        // Finish the spinner for nested scrolling if we ever consumed any
+        // unconsumed nested scroll
+        if (mTotalUnconsumed > 0) {
+            //finishSpinner(mTotalUnconsumed);
+            mTotalUnconsumed = 0;
+        }
+        // Dispatch up our nested parent
+        stopNestedScroll();
+    }
+
+    public boolean canChildScrollUp() {
+        boolean canChildScrollUp = true;
+        if (mContent instanceof ListView) {
+            canChildScrollUp = ListViewCompat.canScrollList((ListView) mContent, -1);
+        } else {
+            canChildScrollUp = mContent.canScrollVertically(-1);
+        }
+        PtrCLog.d(LOG_TAG, "canChildScrollUp = " + canChildScrollUp);
+        return canChildScrollUp;
+    }
+
+    private void startDragging(float y) {
+        final float yDiff = y - mInitialDownY;
+        if (yDiff > mTouchSlop && !mIsBeingDragged) {
+            mInitialMotionY = mInitialDownY + mTouchSlop;
+            if (!canChildScrollUp()) {
+                mIsBeingDragged = true;
+                PtrCLog.d(LOG_TAG, "ptr is beingDragged");
+            }
+
+        }
     }
 
     public static class LayoutParams extends MarginLayoutParams {
