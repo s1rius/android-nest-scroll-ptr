@@ -311,6 +311,11 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
         if (!isEnabled() || mContent == null || mHeaderView == null) {
             return false;
         }
+
+        if (isRefreshing() && !mPtrIndicator.isInStartPosition()) {
+            return true;
+        }
+
         int pointerIndex;
 
         final int action = ev.getActionMasked();
@@ -349,7 +354,7 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
-        if (isRefreshing() || !isEnabled() || canChildScrollUp()) {
+        if (!isEnabled() || canChildScrollUp()) {
             return false;
         }
 
@@ -453,6 +458,9 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
         }
 
         mPtrIndicator.setCurrentPos(to);
+        if (mPtrIndicator.isInStartPosition() && isRefreshing()) {
+            performRefreshComplete();
+        }
         int change = to - mPtrIndicator.getLastPosY();
         updatePos(change);
     }
@@ -1091,6 +1099,7 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
             dispatchNestedScroll(dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed,
                     mParentOffsetInWindow);
 
+            if (isDebug()) PtrCLog.d(LOG_TAG, "onNestedScroll dy consumed = " + dyConsumed + " " + dyUnconsumed);
             /** this is for when scroll the content view from the bottom up and easy to pull to refresh
             /* otherwise {@link #mContent} will handle the touch event */
             if (dyConsumed == 0 && dyUnconsumed < 0 && !canChildScrollUp()) {
