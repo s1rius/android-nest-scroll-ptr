@@ -1068,12 +1068,12 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
 
     @Override
     public boolean dispatchNestedFling(float velocityX, float velocityY, boolean consumed) {
-        return super.dispatchNestedFling(velocityX, velocityY, consumed);
+        return mNestedScrollingChildHelper.dispatchNestedFling(velocityX, velocityY, consumed);
     }
 
     @Override
     public boolean dispatchNestedPreFling(float velocityX, float velocityY) {
-        return super.dispatchNestedPreFling(velocityX, velocityY);
+        return mNestedScrollingChildHelper.dispatchNestedPreFling(velocityX, velocityY);
     }
 
     // nested scroll parent
@@ -1119,19 +1119,6 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
     }
 
     @Override
-    public void requestDisallowInterceptTouchEvent(boolean b) {
-        // if this is a List < L or another view that doesn't support nested
-        // scrolling, ignore this request so that the vertical scroll event
-        // isn't stolen
-        if ((android.os.Build.VERSION.SDK_INT < 21 && mContent instanceof AbsListView)
-                || (mContent != null && !ViewCompat.isNestedScrollingEnabled(mContent))) {
-            // Nope.
-        } else {
-            super.requestDisallowInterceptTouchEvent(b);
-        }
-    }
-
-    @Override
     public void onNestedPreScroll(@NonNull View target, int dx, int dy, @NonNull int[] consumed) {
         // If we are in the middle of consuming, a scroll, then we want to move the spinner back up
         // before allowing the list to scroll
@@ -1155,11 +1142,6 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
     }
 
     @Override
-    public int getNestedScrollAxes() {
-        return mNestedScrollingParentHelper.getNestedScrollAxes();
-    }
-
-    @Override
     public void onStopNestedScroll(View child) {
         mNestedScrollingParentHelper.onStopNestedScroll(child);
         mNestedScrollInProgress = false;
@@ -1171,6 +1153,36 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
         }
         // Dispatch up our nested parent
         stopNestedScroll();
+    }
+
+    @Override
+    public int getNestedScrollAxes() {
+        return mNestedScrollingParentHelper.getNestedScrollAxes();
+    }
+
+    @Override
+    public boolean onNestedFling(View target, float velocityX, float velocityY, boolean consumed) {
+        // Re-dispatch up the tree by default
+        return dispatchNestedFling(velocityX, velocityY, consumed);
+    }
+
+    @Override
+    public boolean onNestedPreFling(View target, float velocityX, float velocityY) {
+        // Re-dispatch up the tree by default
+        return dispatchNestedPreFling(velocityX, velocityY);
+    }
+
+    @Override
+    public void requestDisallowInterceptTouchEvent(boolean b) {
+        // if this is a List < L or another view that doesn't support nested
+        // scrolling, ignore this request so that the vertical scroll event
+        // isn't stolen
+        if ((android.os.Build.VERSION.SDK_INT < 21 && mContent instanceof AbsListView)
+                || (mContent != null && !ViewCompat.isNestedScrollingEnabled(mContent))) {
+            // Nope.
+        } else {
+            super.requestDisallowInterceptTouchEvent(b);
+        }
     }
 
     public boolean canChildScrollUp() {
