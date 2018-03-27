@@ -92,8 +92,8 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
     };
     private boolean mNestedScrollInProgress;
     private int mTotalUnconsumed;
-    private int[] mParentOffsetInWindow = new int[2];;
-    private int[] mParentScrollConsumed = new int[2];;
+    private int[] mParentOffsetInWindow = new int[2];
+    private int[] mParentScrollConsumed = new int[2];
     private float mInitialDownY;
     private int mActivePointerId = INVALID_POINTER;
     private boolean mIsBeingDragged = false;
@@ -141,6 +141,7 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
         mPagingTouchSlop = mTouchSlop * 2;
         mNestedScrollingParentHelper = new NestedScrollingParentHelper(this);
         mNestedScrollingChildHelper = new NestedScrollingChildHelper(this);
+        setNestedScrollingEnabled(true);
     }
 
     @Override
@@ -353,7 +354,6 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-
         if (!isEnabled() || canChildScrollUp()) {
             return false;
         }
@@ -392,8 +392,13 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
                 }
                 return false;
             case MotionEvent.ACTION_MOVE:
+                // make sure ptrindicator lastMove init
+                if (mPtrIndicator.isUnderTouch()) {
+                    mPtrIndicator.onMove(event.getX(), event.getY());
+                } else {
+                    mPtrIndicator.onPressDown(event.getX(), event.getY());
+                }
 
-                mPtrIndicator.onMove(event.getX(), event.getY());
                 float offsetX = mPtrIndicator.getOffsetX();
                 float offsetY = mPtrIndicator.getOffsetY();
 
@@ -1038,6 +1043,16 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
 
     // nested scroll child
     @Override
+    public void setNestedScrollingEnabled(boolean enabled) {
+        mNestedScrollingChildHelper.setNestedScrollingEnabled(enabled);
+    }
+
+    @Override
+    public boolean isNestedScrollingEnabled() {
+        return mNestedScrollingChildHelper.isNestedScrollingEnabled();
+    }
+
+    @Override
     public boolean startNestedScroll(int axes) {
         return mNestedScrollingChildHelper.startNestedScroll(axes);
     }
@@ -1076,6 +1091,18 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
         return mNestedScrollingChildHelper.dispatchNestedPreFling(velocityX, velocityY);
     }
 
+    @Override
+    public boolean onNestedFling(View target, float velocityX, float velocityY, boolean consumed) {
+        // Re-dispatch up the tree by default
+        return dispatchNestedFling(velocityX, velocityY, consumed);
+    }
+
+    @Override
+    public boolean onNestedPreFling(View target, float velocityX, float velocityY) {
+        // Re-dispatch up the tree by default
+        return dispatchNestedPreFling(velocityX, velocityY);
+    }
+
     // nested scroll parent
     @Override
     public boolean onStartNestedScroll(@NonNull View child, @NonNull View target, int axes) {
@@ -1099,13 +1126,6 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
             dispatchNestedScroll(dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed,
                     mParentOffsetInWindow);
 
-            if (isDebug()) PtrCLog.d(LOG_TAG, "onNestedScroll dy consumed = " + dyConsumed + " " + dyUnconsumed);
-            /** this is for when scroll the content view from the bottom up and easy to pull to refresh
-            /* otherwise {@link #mContent} will handle the touch event */
-            if (dyConsumed == 0 && dyUnconsumed < 0 && !canChildScrollUp()) {
-                sendDownEvent();
-            }
-
             // This is a bit of a hack. Nested scrolling works from the bottom up, and as we are
             // sometimes between two nested scrolling views, we need a way to be able to know when any
             // nested scrolling parent has stopped handling events. We do that by using the
@@ -1114,7 +1134,7 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
             final int dy = dyUnconsumed + mParentOffsetInWindow[1];
             if (dy < 0 && !canChildScrollUp()) {
                 mTotalUnconsumed += Math.abs(dy);
-                // todo moveSpinner(mTotalUnconsumed);
+                sendDownEvent();
             }
     }
 
@@ -1130,7 +1150,6 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
                 mTotalUnconsumed -= dy;
                 consumed[1] = dy;
             }
-            //moveSpinner(mTotalUnconsumed);
         }
 
         // Now let our nested parent consume the leftovers
@@ -1158,18 +1177,6 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
     @Override
     public int getNestedScrollAxes() {
         return mNestedScrollingParentHelper.getNestedScrollAxes();
-    }
-
-    @Override
-    public boolean onNestedFling(View target, float velocityX, float velocityY, boolean consumed) {
-        // Re-dispatch up the tree by default
-        return dispatchNestedFling(velocityX, velocityY, consumed);
-    }
-
-    @Override
-    public boolean onNestedPreFling(View target, float velocityX, float velocityY) {
-        // Re-dispatch up the tree by default
-        return dispatchNestedPreFling(velocityX, velocityY);
     }
 
     @Override
