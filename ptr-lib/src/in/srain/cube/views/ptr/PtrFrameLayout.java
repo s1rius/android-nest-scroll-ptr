@@ -379,7 +379,6 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
                 return true;
             case MotionEvent.ACTION_DOWN:
                 mHasSendCancelEvent = false;
-                mPtrIndicator.onPressDown(event.getX(), event.getY());
                 mScrollChecker.abortIfWorking();
                 mPreventForHorizontal = false;
 
