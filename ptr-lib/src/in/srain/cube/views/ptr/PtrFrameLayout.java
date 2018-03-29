@@ -2,6 +2,7 @@ package in.srain.cube.views.ptr;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.PointF;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.NestedScrollingChild;
@@ -64,15 +65,11 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
     // working parameters
     private ScrollChecker mScrollChecker;
     private int mTouchSlop;
-    private int mPagingTouchSlop;
     private int mHeaderHeight;
-    private boolean mDisableWhenHorizontalMove = false;
     private int mFlag = 0x00;
     private final NestedScrollingParentHelper mNestedScrollingParentHelper;
     private final NestedScrollingChildHelper mNestedScrollingChildHelper;
 
-    // disable when detect moving horizontally
-    private boolean mPreventForHorizontal = false;
     // enable margin property on layout or not
     private boolean mHeaderLayoutMarginEnable = false;
 
@@ -94,10 +91,9 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
     private int mTotalUnconsumed;
     private int[] mParentOffsetInWindow = new int[2];
     private int[] mParentScrollConsumed = new int[2];
-    private float mInitialDownY;
+    private PointF mInitialDown;
     private int mActivePointerId = INVALID_POINTER;
     private boolean mIsBeingDragged = false;
-    private float mInitialMotionY;
 
     public PtrFrameLayout(Context context) {
         this(context, null);
@@ -138,7 +134,6 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
 
         final ViewConfiguration conf = ViewConfiguration.get(getContext());
         mTouchSlop = conf.getScaledTouchSlop();
-        mPagingTouchSlop = mTouchSlop * 2;
         mNestedScrollingParentHelper = new NestedScrollingParentHelper(this);
         mNestedScrollingChildHelper = new NestedScrollingChildHelper(this);
         setNestedScrollingEnabled(true);
@@ -328,7 +323,7 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
                 if (pointerIndex < 0) {
                     return false;
                 }
-                mInitialDownY = ev.getY(pointerIndex);
+                mInitialDown = new PointF(ev.getX(pointerIndex), ev.getY(pointerIndex));
                 break;
             case MotionEvent.ACTION_MOVE:
                 if (mActivePointerId == INVALID_POINTER) {
@@ -340,8 +335,7 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
                 if (pointerIndex < 0) {
                     return false;
                 }
-                final float y = ev.getY(pointerIndex);
-                startDragging(y);
+                startDragging(new PointF(ev.getX(), ev.getY()));
                 break;
             case MotionEvent.ACTION_CANCEL:
             case MotionEvent.ACTION_UP:
@@ -380,7 +374,6 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
             case MotionEvent.ACTION_DOWN:
                 mHasSendCancelEvent = false;
                 mScrollChecker.abortIfWorking();
-                mPreventForHorizontal = false;
 
                 if (!canChildScrollUp()) {
                     if (DEBUG) {
@@ -398,17 +391,7 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
                     mPtrIndicator.onPressDown(event.getX(), event.getY());
                 }
 
-                float offsetX = mPtrIndicator.getOffsetX();
                 float offsetY = mPtrIndicator.getOffsetY();
-
-                if (mDisableWhenHorizontalMove && !mPreventForHorizontal && (Math.abs(offsetX) > mPagingTouchSlop && Math.abs(offsetX) > Math.abs(offsetY))) {
-                    if (mPtrIndicator.isInStartPosition()) {
-                        mPreventForHorizontal = true;
-                    }
-                }
-                if (mPreventForHorizontal) {
-                    return false;
-                }
 
                 boolean moveDown = offsetY > 0;
                 boolean moveUp = !moveDown;
@@ -838,15 +821,6 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
     }
 
     /**
-     * It's useful when working with viewpager.
-     *
-     * @param disable
-     */
-    public void disableWhenHorizontalMove(boolean disable) {
-        mDisableWhenHorizontalMove = disable;
-    }
-
-    /**
      * loading will last at least for so long
      *
      * @param time
@@ -1202,10 +1176,10 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
         return canChildScrollUp;
     }
 
-    private void startDragging(float y) {
-        final float yDiff = y - mInitialDownY;
-        if (yDiff > mTouchSlop && !mIsBeingDragged) {
-            mInitialMotionY = mInitialDownY + mTouchSlop;
+    private void startDragging(PointF move) {
+        final float yDiff = move.y - mInitialDown.y;
+        final float xDiff = Math.abs(move.x - mInitialDown.x);
+        if (yDiff > mTouchSlop && yDiff > xDiff && !mIsBeingDragged) {
             if (!canChildScrollUp()) {
                 mIsBeingDragged = true;
                 PtrCLog.d(LOG_TAG, "ptr is beingDragged");
