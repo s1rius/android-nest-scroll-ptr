@@ -311,10 +311,6 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
             return false;
         }
 
-        if (isRefreshing() && !mPtrIndicator.isInStartPosition()) {
-            return true;
-        }
-
         int pointerIndex;
 
         final int action = ev.getActionMasked();
@@ -345,7 +341,7 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
                 mIsBeingDragged = false;
                 break;
         }
-        PtrCLog.d(LOG_TAG, "is being dragged " + mIsBeingDragged);
+        if (DEBUG) PtrCLog.d(LOG_TAG, "is being dragged " + mIsBeingDragged);
         return mIsBeingDragged;
     }
 
@@ -1193,7 +1189,7 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
         } else {
             canChildScrollUp = mContent.canScrollVertically(-1);
         }
-        PtrCLog.d(LOG_TAG, "canChildScrollUp = " + canChildScrollUp);
+        if (DEBUG) PtrCLog.d(LOG_TAG, "canChildScrollUp = " + canChildScrollUp);
         return canChildScrollUp;
     }
 
@@ -1203,9 +1199,12 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
         if (yDiff > mTouchSlop && yDiff > xDiff && !mIsBeingDragged) {
             if (!canChildScrollUp()) {
                 mIsBeingDragged = true;
-                PtrCLog.d(LOG_TAG, "ptr is beingDragged");
+                if (DEBUG) PtrCLog.d(LOG_TAG, "ptr is beingDragged");
             }
-
+        // if in refreshing, scroll to up will make PtrFrameLayout handle the touch event
+        // and offset content view.
+        } else if (yDiff < 0 && Math.abs(yDiff) > mTouchSlop && isRefreshing()) {
+            mIsBeingDragged = true;
         }
     }
 
