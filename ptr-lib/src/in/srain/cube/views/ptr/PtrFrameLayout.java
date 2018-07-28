@@ -69,11 +69,14 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
     private int mFlag = 0x00;
     private final NestedScrollingParentHelper mNestedScrollingParentHelper;
     private final NestedScrollingChildHelper mNestedScrollingChildHelper;
+    private final int[] mScrollOffset = new int[2];
+    private final int[] mScrollConsumed = new int[2];
 
     // enable margin property on layout or not
     private boolean mHeaderLayoutMarginEnable = false;
 
     private MotionEvent mLastMoveEvent;
+    private int mLastTouchY = -1;
 
     private PtrUIHandlerHook mRefreshCompleteHook;
 
@@ -353,28 +356,28 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
         }
 
         int action = event.getActionMasked();
+        int pointerIndex = event.findPointerIndex(mActivePointerId);
         switch (action) {
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
                 mPtrIndicator.onRelease();
                 mIsBeingDragged = false;
+                stopNestedScroll();
                 if (mPtrIndicator.hasLeftStartPosition()) {
                     if (DEBUG) {
                         PtrCLog.d(LOG_TAG, "call onRelease when user release");
                     }
                     onRelease(false);
                     if (mPtrIndicator.hasMovedAfterPressedDown()) {
-                        //sendCancelEvent();
                         return false;
-
                     }
-
                 }
                 return true;
             case MotionEvent.ACTION_DOWN:
                 mHasSendCancelEvent = false;
                 mScrollChecker.abortIfWorking();
 
+                mLastTouchY = (int) (event.getY(pointerIndex) + 0.5f);
                 if (!canChildScrollUp()) {
                     if (DEBUG) {
                         PtrCLog.d(LOG_TAG, "handle action down touch event");
@@ -384,6 +387,24 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
                 }
                 return false;
             case MotionEvent.ACTION_MOVE:
+                final int y = (int) (event.getY(pointerIndex) + 0.5f);
+
+                if (mLastTouchY == -1) {
+                    mLastTouchY = y;
+                }
+
+                //hack for make nested scroll enable on pull down touch event
+                int dy = mLastTouchY - y;
+                if (startNestedScroll(ViewCompat.SCROLL_AXIS_VERTICAL) && dy < 0) {
+                    if (dispatchNestedPreScroll(0, dy, mScrollConsumed, mScrollOffset)) {
+                        dy -= mScrollConsumed[1];
+                        if (dy <= 0) {
+                            return true;
+                        }
+                    }
+                }
+
+
                 // make sure ptrindicator lastMove init
                 if (mPtrIndicator.isUnderTouch()) {
                     mPtrIndicator.onMove(event.getX(), event.getY());
