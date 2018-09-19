@@ -302,6 +302,9 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
     @Override
     public boolean dispatchTouchEvent(MotionEvent e) {
         mLastMoveEvent = e;
+        if (mScrollChecker.isRunning()) {
+            mScrollChecker.abortIfWorking();
+        }
         return super.dispatchTouchEvent(e);
     }
 
@@ -371,7 +374,6 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
                 return true;
             case MotionEvent.ACTION_DOWN:
                 mHasSendCancelEvent = false;
-                mScrollChecker.abortIfWorking();
 
                 mLastTouchY = (int) (event.getY(pointerIndex) + 0.5f);
                 if (!canChildScrollUp()) {
@@ -1292,7 +1294,7 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
         }
 
         public void tryToScrollTo(int to, int duration) {
-            if (mPtrIndicator.isAlreadyHere(to)) {
+            if (mPtrIndicator.isAlreadyHere(to) || (to == mTo && mIsRunning)) {
                 return;
             }
             mStart = mPtrIndicator.getCurrentPosY();
@@ -1312,6 +1314,10 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
             mScroller.startScroll(0, 0, 0, distance, duration);
             post(this);
             mIsRunning = true;
+        }
+
+        public boolean isRunning() {
+            return mIsRunning;
         }
     }
 }
