@@ -85,7 +85,6 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
     private int mLoadingMinTime = 500;
     private long mLoadingStartTime = 0;
     private PtrIndicator mPtrIndicator;
-    private boolean mHasSendCancelEvent = false;
     private Runnable mPerformRefreshCompleteDelay = new Runnable() {
         @Override
         public void run() {
@@ -372,8 +371,6 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
                 }
                 return true;
             case MotionEvent.ACTION_DOWN:
-                mHasSendCancelEvent = false;
-
                 mLastTouchY = (int) (event.getY(pointerIndex) + 0.5f);
                 if (!canChildScrollUp()) {
                     if (DEBUG) {
@@ -476,12 +473,6 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
         }
 
         boolean isUnderTouch = mPtrIndicator.isUnderTouch();
-
-        // once moved, cancel event will be sent to child
-        if (isUnderTouch && !mHasSendCancelEvent && mPtrIndicator.hasMovedAfterPressedDown()) {
-            mHasSendCancelEvent = true;
-            sendCancelEvent();
-        }
 
         // leave initiated position or just refresh complete
         if ((mPtrIndicator.hasJustLeftStartPosition() && mStatus == PTR_STATUS_INIT) ||
@@ -1009,20 +1000,6 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
     @Override
     public ViewGroup.LayoutParams generateLayoutParams(AttributeSet attrs) {
         return new LayoutParams(getContext(), attrs);
-    }
-
-    private void sendCancelEvent() {
-        if (DEBUG) {
-            PtrCLog.d(LOG_TAG, "send cancel event");
-        }
-        // The ScrollChecker will update position and lead to send cancel event when mLastMoveEvent is null.
-        // fix #104, #80, #92
-        if (mLastMoveEvent == null) {
-            return;
-        }
-        MotionEvent last = mLastMoveEvent;
-        MotionEvent e = MotionEvent.obtain(last.getDownTime(), last.getEventTime() + ViewConfiguration.getLongPressTimeout(), MotionEvent.ACTION_CANCEL, last.getX(), last.getY(), last.getMetaState());
-        dispatchTouchEvent(e);
     }
 
     private void sendDownEvent() {
