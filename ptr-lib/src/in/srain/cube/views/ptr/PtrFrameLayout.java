@@ -1,8 +1,20 @@
 package in.srain.cube.views.ptr;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.PointF;
+import android.util.AttributeSet;
+import android.view.Gravity;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewConfiguration;
+import android.view.ViewGroup;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.widget.AbsListView;
+import android.widget.ListView;
+import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.view.NestedScrollingChild;
@@ -11,16 +23,6 @@ import androidx.core.view.NestedScrollingParent;
 import androidx.core.view.NestedScrollingParentHelper;
 import androidx.core.view.ViewCompat;
 import androidx.core.widget.ListViewCompat;
-import android.util.AttributeSet;
-import android.view.Gravity;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewConfiguration;
-import android.view.ViewGroup;
-import android.widget.AbsListView;
-import android.widget.ListView;
-import android.widget.Scroller;
-import android.widget.TextView;
 
 import in.srain.cube.views.ptr.indicator.PtrIndicator;
 import in.srain.cube.views.ptr.util.PtrCLog;
@@ -55,8 +57,8 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
     private int mHeaderId = 0;
     private int mContainerId = 0;
     // config
-    private int mDurationToClose = 200;
-    private int mDurationToCloseHeader = 1000;
+    private int mDurationToLoadingPosition = 200;
+    private int mDurationToCloseHeader = 200;
     private boolean mKeepHeaderWhenRefresh = true;
     private boolean mPullToRefresh = false;
     private View mHeaderView;
@@ -90,7 +92,6 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
             performRefreshComplete();
         }
     };
-    private boolean mNestedScrollInProgress;
     private int mTotalUnconsumed;
     private int[] mParentOffsetInWindow = new int[2];
     private int[] mParentScrollConsumed = new int[2];
@@ -120,7 +121,7 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
             mPtrIndicator.setResistance(
                     arr.getFloat(R.styleable.PtrFrameLayout_ptr_resistance, mPtrIndicator.getResistance()));
 
-            mDurationToClose = arr.getInt(R.styleable.PtrFrameLayout_ptr_duration_to_close, mDurationToClose);
+            mDurationToLoadingPosition = arr.getInt(R.styleable.PtrFrameLayout_ptr_duration_to_loading_position, mDurationToLoadingPosition);
             mDurationToCloseHeader = arr.getInt(R.styleable.PtrFrameLayout_ptr_duration_to_close_header, mDurationToCloseHeader);
 
             float ratio = mPtrIndicator.getRatioOfHeaderToHeightRefresh();
@@ -203,9 +204,6 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        if (mScrollChecker != null) {
-            mScrollChecker.destroy();
-        }
 
         if (mPerformRefreshCompleteDelay != null) {
             removeCallbacks(mPerformRefreshCompleteDelay);
@@ -294,7 +292,7 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
         }
     }
 
-    @SuppressWarnings({"PointlessBooleanExpression", "ConstantConditions"})
+    @SuppressWarnings({"ConstantConditions"})
     private boolean isDebug() {
         return DEBUG && DEBUG_LAYOUT;
     }
@@ -329,7 +327,8 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
                 break;
             case MotionEvent.ACTION_MOVE:
                 if (mActivePointerId == INVALID_POINTER) {
-                    if (DEBUG) PtrCLog.e(LOG_TAG, "Got ACTION_MOVE event but don't have an active pointer id.");
+                    if (DEBUG)
+                        PtrCLog.e(LOG_TAG, "Got ACTION_MOVE event but don't have an active pointer id.");
                     return false;
                 }
 
@@ -552,7 +551,9 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
             if (mKeepHeaderWhenRefresh) {
                 // scroll header back
                 if (mPtrIndicator.isOverOffsetToKeepHeaderWhileLoading() && !stayForLoading) {
-                    mScrollChecker.tryToScrollTo(mPtrIndicator.getOffsetToKeepHeaderWhileLoading(), mDurationToClose);
+                    mScrollChecker.tryToScrollTo(
+                            mPtrIndicator.getOffsetToKeepHeaderWhileLoading(),
+                            mDurationToLoadingPosition);
                 } else {
                     // do nothing
                 }
@@ -862,6 +863,7 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
         return mContent;
     }
 
+    @SuppressWarnings({"unused"})
     public void setPtrHandler(PtrHandler ptrHandler) {
         mPtrHandler = ptrHandler;
     }
@@ -875,6 +877,7 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
         mPtrUIHandlerHolder = PtrUIHandlerHolder.removeHandler(mPtrUIHandlerHolder, ptrUIHandler);
     }
 
+    @SuppressWarnings({"unused"})
     public void setPtrIndicator(PtrIndicator slider) {
         if (mPtrIndicator != null && mPtrIndicator != slider) {
             slider.convertFrom(mPtrIndicator);
@@ -887,22 +890,19 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
         return mPtrIndicator.getResistance();
     }
 
+    @SuppressWarnings({"unused"})
     public void setResistance(float resistance) {
         mPtrIndicator.setResistance(resistance);
     }
 
-    @SuppressWarnings({"unused"})
-    public float getDurationToClose() {
-        return mDurationToClose;
-    }
-
     /**
-     * The duration to return back to the refresh position
+     * The duration to return back to the loading position
      *
      * @param duration
      */
-    public void setDurationToClose(int duration) {
-        mDurationToClose = duration;
+    @SuppressWarnings({"unused"})
+    public void setDurationToLoadingPosition(int duration) {
+        mDurationToLoadingPosition = duration;
     }
 
     @SuppressWarnings({"unused"})
@@ -915,6 +915,7 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
      *
      * @param duration
      */
+    @SuppressWarnings({"unused"})
     public void setDurationToCloseHeader(int duration) {
         mDurationToCloseHeader = duration;
     }
@@ -1109,25 +1110,24 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
         // Dispatch up to the nested parent
         startNestedScroll(axes & ViewCompat.SCROLL_AXIS_VERTICAL);
         mTotalUnconsumed = 0;
-        mNestedScrollInProgress = true;
     }
 
     @Override
     public void onNestedScroll(@NonNull View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed) {
-            // Dispatch up to the nested parent first
-            dispatchNestedScroll(dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed,
-                    mParentOffsetInWindow);
+        // Dispatch up to the nested parent first
+        dispatchNestedScroll(dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed,
+                mParentOffsetInWindow);
 
-            // This is a bit of a hack. Nested scrolling works from the bottom up, and as we are
-            // sometimes between two nested scrolling views, we need a way to be able to know when any
-            // nested scrolling parent has stopped handling events. We do that by using the
-            // 'offset in window 'functionality to see if we have been moved from the event.
-            // This is a decent indication of whether we should take over the event stream or not.
-            final int dy = dyUnconsumed + mParentOffsetInWindow[1];
-            if (dy < 0 && !canChildScrollUp()) {
-                mTotalUnconsumed += Math.abs(dy);
-                sendDownEvent();
-            }
+        // This is a bit of a hack. Nested scrolling works from the bottom up, and as we are
+        // sometimes between two nested scrolling views, we need a way to be able to know when any
+        // nested scrolling parent has stopped handling events. We do that by using the
+        // 'offset in window 'functionality to see if we have been moved from the event.
+        // This is a decent indication of whether we should take over the event stream or not.
+        final int dy = dyUnconsumed + mParentOffsetInWindow[1];
+        if (dy < 0 && !canChildScrollUp()) {
+            mTotalUnconsumed += Math.abs(dy);
+            sendDownEvent();
+        }
     }
 
     @Override
@@ -1155,7 +1155,6 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
     @Override
     public void onStopNestedScroll(View child) {
         mNestedScrollingParentHelper.onStopNestedScroll(child);
-        mNestedScrollInProgress = false;
         // Finish the spinner for nested scrolling if we ever consumed any
         // unconsumed nested scroll
         if (mTotalUnconsumed > 0) {
@@ -1203,8 +1202,8 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
                 mIsBeingDragged = true;
                 if (DEBUG) PtrCLog.d(LOG_TAG, "ptr is beingDragged");
             }
-        // if in refreshing, scroll to up will make PtrFrameLayout handle the touch event
-        // and offset content view.
+            // if in refreshing, scroll to up will make PtrFrameLayout handle the touch event
+            // and offset content view.
         } else if (yDiff < 0 && Math.abs(yDiff) > mTouchSlop && isRefreshing()) {
             mIsBeingDragged = true;
         }
@@ -1230,64 +1229,26 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
         }
     }
 
-    class ScrollChecker implements Runnable {
+    class ScrollChecker implements ValueAnimator.AnimatorUpdateListener {
 
-        private int mLastFlingY;
-        private Scroller mScroller;
+        private ValueAnimator mAnimator = ValueAnimator.ofFloat(0, 1f);
         private boolean mIsRunning = false;
         private int mStart;
         private int mTo;
+        private int mDuration;
 
         public ScrollChecker() {
-            mScroller = new Scroller(getContext());
-        }
-
-        public void run() {
-            boolean finish = !mScroller.computeScrollOffset() || mScroller.isFinished();
-            int curY = mScroller.getCurrY();
-            int deltaY = curY - mLastFlingY;
-            if (DEBUG) {
-                if (deltaY != 0) {
-                    PtrCLog.v(LOG_TAG,
-                            "scroll: %s, start: %s, to: %s, currentPos: %s, current :%s, last: %s, delta: %s",
-                            finish, mStart, mTo, mPtrIndicator.getCurrentPosY(), curY, mLastFlingY, deltaY);
-                }
-            }
-            if (!finish) {
-                mLastFlingY = curY;
-                movePos(deltaY);
-                post(this);
-            } else {
-                finish();
-            }
-        }
-
-        private void finish() {
-            if (DEBUG) {
-                PtrCLog.v(LOG_TAG, "finish, currentPos:%s", mPtrIndicator.getCurrentPosY());
-            }
-            reset();
-            onPtrScrollFinish();
+            mAnimator.addUpdateListener(this);
+            mAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
         }
 
         private void reset() {
             mIsRunning = false;
-            mLastFlingY = 0;
-            removeCallbacks(this);
-        }
-
-        private void destroy() {
-            reset();
-            if (!mScroller.isFinished()) {
-                mScroller.forceFinished(true);
-            }
+            mAnimator.cancel();
         }
 
         public void abortIfWorking() {
             if (mIsRunning) {
-                if (!mScroller.isFinished()) {
-                    mScroller.forceFinished(true);
-                }
                 onPtrScrollAbort();
                 reset();
             }
@@ -1299,25 +1260,32 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
             }
             mStart = mPtrIndicator.getCurrentPosY();
             mTo = to;
-            int distance = to - mStart;
+            mDuration = duration;
+
+            if (mAnimator.isRunning()) {
+                mAnimator.cancel();
+            }
+
+            mAnimator.setDuration(mDuration);
+
             if (DEBUG) {
-                PtrCLog.d(LOG_TAG, "tryToScrollTo: start: %s, distance:%s, to:%s", mStart, distance, to);
+                PtrCLog.d(LOG_TAG,
+                        "tryToScrollTo: start: %s, distance:%s, to:%s", mStart, to - mStart, to);
             }
-            removeCallbacks(this);
 
-            mLastFlingY = 0;
-
-            // fix #47: Scroller should be reused, https://github.com/liaohuqiu/android-Ultra-Pull-To-Refresh/issues/47
-            if (!mScroller.isFinished()) {
-                mScroller.forceFinished(true);
-            }
-            mScroller.startScroll(0, 0, 0, distance, duration);
-            post(this);
+            mAnimator.start();
             mIsRunning = true;
         }
 
         public boolean isRunning() {
             return mIsRunning;
+        }
+
+        @Override
+        public void onAnimationUpdate(ValueAnimator animation) {
+            float fraction = animation.getAnimatedFraction();
+            int target = mStart + (int) ((mTo - mStart) * fraction);
+            movePos(target - mPtrIndicator.getCurrentPosY());
         }
     }
 }
