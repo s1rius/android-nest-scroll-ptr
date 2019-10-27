@@ -31,5 +31,5 @@ public interface PtrUIHandler {
      */
     public void onUIRefreshComplete(PtrFrameLayout frame);
 
-    public void onUIPositionChange(PtrFrameLayout frame, boolean isUnderTouch, byte status, PtrIndicator ptrIndicator);
+    public void onUIPositionChange(PtrFrameLayout frame, int status, PtrIndicator ptrIndicator);
 }

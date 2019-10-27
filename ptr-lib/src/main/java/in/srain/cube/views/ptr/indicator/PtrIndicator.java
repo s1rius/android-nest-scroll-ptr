@@ -1,14 +1,10 @@
 package in.srain.cube.views.ptr.indicator;
 
-import android.graphics.PointF;
 
 public class PtrIndicator {
 
     public final static int POS_START = 0;
     protected int mOffsetToRefresh = 0;
-    private PointF mPtLastMove = new PointF();
-    private float mOffsetX;
-    private float mOffsetY;
     private int mCurrentPos = 0;
     private int mLastPos = 0;
     private int mHeaderHeight;
@@ -16,14 +12,9 @@ public class PtrIndicator {
 
     private float mRatioOfHeaderHeightToRefresh = 1.2f;
     private float mResistance = 1.7f;
-    private boolean mIsUnderTouch = false;
     private int mOffsetToKeepHeaderWhileLoading = -1;
     // record the refresh complete position
     private int mRefreshCompleteY = 0;
-
-    public boolean isUnderTouch() {
-        return mIsUnderTouch;
-    }
 
     public float getResistance() {
         return mResistance;
@@ -33,20 +24,12 @@ public class PtrIndicator {
         mResistance = resistance;
     }
 
-    public void onRelease() {
-        mIsUnderTouch = false;
-    }
-
     public void onUIRefreshComplete() {
         mRefreshCompleteY = mCurrentPos;
     }
 
     public boolean goDownCrossFinishPosition() {
         return mCurrentPos >= mRefreshCompleteY;
-    }
-
-    protected void processOnMove(float currentX, float currentY, float offsetX, float offsetY) {
-        setOffset(offsetX, offsetY / mResistance);
     }
 
     public void setRatioOfHeaderHeightToRefresh(float ratio) {
@@ -67,32 +50,6 @@ public class PtrIndicator {
         mOffsetToRefresh = offset;
     }
 
-    public void onPressDown(float x, float y) {
-        mIsUnderTouch = true;
-        mPressedPos = mCurrentPos;
-        mPtLastMove.set(x, y);
-    }
-
-    public final void onMove(float x, float y) {
-        float offsetX = x - mPtLastMove.x;
-        float offsetY = (y - mPtLastMove.y);
-        processOnMove(x, y, offsetX, offsetY);
-        mPtLastMove.set(x, y);
-    }
-
-    protected void setOffset(float x, float y) {
-        mOffsetX = x;
-        mOffsetY = y;
-    }
-
-    public float getOffsetX() {
-        return mOffsetX;
-    }
-
-    public float getOffsetY() {
-        return mOffsetY;
-    }
-
     public int getLastPosY() {
         return mLastPos;
     }
@@ -107,11 +64,6 @@ public class PtrIndicator {
     public final void setCurrentPos(int current) {
         mLastPos = mCurrentPos;
         mCurrentPos = current;
-        onUpdatePos(current, mLastPos);
-    }
-
-    protected void onUpdatePos(int current, int last) {
-
     }
 
     public int getHeaderHeight() {

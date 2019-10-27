@@ -63,7 +63,7 @@ class CheeseListFragment : Fragment() {
 
             }
 
-            override fun onUIPositionChange(frame: PtrFrameLayout, isUnderTouch: Boolean, status: Byte, ptrIndicator: PtrIndicator) {
+            override fun onUIPositionChange(frame: PtrFrameLayout, status: Int, ptrIndicator: PtrIndicator) {
 
             }
         })

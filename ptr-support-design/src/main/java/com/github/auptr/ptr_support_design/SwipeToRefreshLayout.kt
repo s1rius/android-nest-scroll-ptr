@@ -15,11 +15,10 @@
  */
 package com.github.auptr.ptr_support_design
 
+import `in`.srain.cube.views.ptr.PtrClassicFrameLayout
 import android.content.Context
 import android.util.AttributeSet
 import android.view.View
-
-import `in`.srain.cube.views.ptr.PtrClassicFrameLayout
 
 /**
  * Created by s1rius on 15/03/2018.
@@ -30,7 +29,6 @@ class SwipeToRefreshLayout : PtrClassicFrameLayout {
     constructor(context: Context) : super(context)
 
     constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
-
 
     override fun onNestedScroll(target: View, dxConsumed: Int, dyConsumed: Int, dxUnconsumed: Int, dyUnconsumed: Int) {
         super.onNestedScroll(target, dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed)

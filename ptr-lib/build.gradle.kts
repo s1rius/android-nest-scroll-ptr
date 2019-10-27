@@ -1,5 +1,5 @@
 plugins {
-    id("com.android.library")
+    id(Plugins.androidLib)
     kotlin("android")
     kotlin("android.extensions")
 }

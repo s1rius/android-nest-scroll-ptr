@@ -10,6 +10,10 @@ object Versions{
     const val versionName = "1.0.0"
 }
 
+object Plugins{
+    const val androidLib = "com.android.library"
+}
+
 object Libs{
     object Kotlin {
         const val stdLib = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${Versions.kotlin}"

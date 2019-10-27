@@ -271,7 +271,7 @@ public class StoreHouseHeader extends View implements PtrUIHandler {
     }
 
     @Override
-    public void onUIPositionChange(PtrFrameLayout frame, boolean isUnderTouch, byte status, PtrIndicator ptrIndicator) {
+    public void onUIPositionChange(PtrFrameLayout frame, int status, PtrIndicator ptrIndicator) {
 
         float currentPercent = Math.min(1f, ptrIndicator.getCurrentPercent());
         setProgress(currentPercent);

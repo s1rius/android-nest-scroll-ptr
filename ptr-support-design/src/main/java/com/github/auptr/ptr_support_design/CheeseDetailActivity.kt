@@ -16,14 +16,13 @@
 
 package com.github.auptr.ptr_support_design
 
+import `in`.srain.cube.views.ptr.PtrFrameLayout
+import `in`.srain.cube.views.ptr.PtrUIHandler
+import `in`.srain.cube.views.ptr.indicator.PtrIndicator
 import android.os.Bundle
-import android.view.Menu
-import android.view.View
-import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import com.bumptech.glide.Glide
-import com.google.android.material.appbar.CollapsingToolbarLayout
+import kotlinx.android.synthetic.main.activity_detail.*
 
 class CheeseDetailActivity : AppCompatActivity() {
 
@@ -34,24 +33,37 @@ class CheeseDetailActivity : AppCompatActivity() {
         val intent = intent
         val cheeseName = intent.getStringExtra(EXTRA_NAME)
 
-        val toolbar = findViewById<View>(R.id.toolbar) as Toolbar
         setSupportActionBar(toolbar)
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
 
-        val collapsingToolbar = findViewById<View>(R.id.collapsing_toolbar) as CollapsingToolbarLayout
-        collapsingToolbar.title = cheeseName
+        collapsing_toolbar.title = cheeseName
+        ptr_layout.addPtrUIHandler(object : PtrUIHandler {
+            override fun onUIReset(frame: PtrFrameLayout) {
+
+            }
+
+            override fun onUIRefreshPrepare(frame: PtrFrameLayout) {
+
+            }
+
+            override fun onUIRefreshBegin(frame: PtrFrameLayout) {
+                ptr_layout.postDelayed({ ptr_layout.refreshComplete() }, 3000)
+            }
+
+            override fun onUIRefreshComplete(frame: PtrFrameLayout) {
+
+            }
+
+            override fun onUIPositionChange(frame: PtrFrameLayout, status: Int, ptrIndicator: PtrIndicator) {
+
+            }
+        })
 
         loadBackdrop()
     }
 
     private fun loadBackdrop() {
-        val imageView = findViewById<View>(R.id.backdrop) as ImageView
-        Glide.with(this).load(Cheeses.randomCheeseDrawable).centerCrop().into(imageView)
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.sample_actions, menu)
-        return true
+        Glide.with(this).load(Cheeses.randomCheeseDrawable).centerCrop().into(backdrop)
     }
 
     companion object {

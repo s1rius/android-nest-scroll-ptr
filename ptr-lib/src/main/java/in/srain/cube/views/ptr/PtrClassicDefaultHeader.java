@@ -232,14 +232,14 @@ public class PtrClassicDefaultHeader extends FrameLayout implements PtrUIHandler
     }
 
     @Override
-    public void onUIPositionChange(PtrFrameLayout frame, boolean isUnderTouch, byte status, PtrIndicator ptrIndicator) {
+    public void onUIPositionChange(PtrFrameLayout frame, int status, PtrIndicator ptrIndicator) {
 
         final int mOffsetToRefresh = frame.getOffsetToRefresh();
         final int currentPos = ptrIndicator.getCurrentPosY();
         final int lastPos = ptrIndicator.getLastPosY();
 
         if (currentPos < mOffsetToRefresh && lastPos >= mOffsetToRefresh) {
-            if (isUnderTouch && status == PtrFrameLayout.PTR_STATUS_PREPARE) {
+            if (status == PtrFrameLayout.PTR_STATUS_PREPARE) {
                 crossRotateLineFromBottomUnderTouch(frame);
                 if (mRotateView != null) {
                     mRotateView.clearAnimation();
@@ -247,7 +247,7 @@ public class PtrClassicDefaultHeader extends FrameLayout implements PtrUIHandler
                 }
             }
         } else if (currentPos > mOffsetToRefresh && lastPos <= mOffsetToRefresh) {
-            if (isUnderTouch && status == PtrFrameLayout.PTR_STATUS_PREPARE) {
+            if (status == PtrFrameLayout.PTR_STATUS_PREPARE) {
                 crossRotateLineFromTopUnderTouch(frame);
                 if (mRotateView != null) {
                     mRotateView.clearAnimation();

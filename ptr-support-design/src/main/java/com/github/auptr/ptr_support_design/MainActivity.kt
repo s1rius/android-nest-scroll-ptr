@@ -60,7 +60,7 @@ class MainActivity : AppCompatActivity() {
         val adapter = Adapter(supportFragmentManager)
         adapter.addFragment(CheeseListFragment(), "Category 1")
         adapter.addFragment(CheeseListFragment(), "Category 2")
-        adapter.addFragment(CheeseListFragment(), "Category 3")
+        adapter.addFragment(TextFragment(), "Category 3")
         viewPager.adapter = adapter
     }
 

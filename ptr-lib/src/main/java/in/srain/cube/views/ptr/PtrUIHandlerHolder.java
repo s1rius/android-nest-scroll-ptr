@@ -147,12 +147,12 @@ class PtrUIHandlerHolder implements PtrUIHandler {
     }
 
     @Override
-    public void onUIPositionChange(PtrFrameLayout frame, boolean isUnderTouch, byte status, PtrIndicator ptrIndicator) {
+    public void onUIPositionChange(PtrFrameLayout frame, int status, PtrIndicator ptrIndicator) {
         PtrUIHandlerHolder current = this;
         do {
             final PtrUIHandler handler = current.getHandler();
             if (null != handler) {
-                handler.onUIPositionChange(frame, isUnderTouch, status, ptrIndicator);
+                handler.onUIPositionChange(frame, status, ptrIndicator);
             }
         } while ((current = current.mNext) != null);
     }
