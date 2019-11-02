@@ -10,11 +10,11 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.Transformation;
 import in.srain.cube.views.ptr.PtrFrameLayout;
-import in.srain.cube.views.ptr.PtrUIHandler;
+import in.srain.cube.views.ptr.PtrListener;
 import in.srain.cube.views.ptr.PtrUIHandlerHook;
 import in.srain.cube.views.ptr.indicator.PtrIndicator;
 
-public class MaterialHeader extends View implements PtrUIHandler {
+public class MaterialHeader extends View implements PtrListener {
 
     private MaterialProgressDrawable mDrawable;
     private float mScale = 1f;
@@ -125,7 +125,7 @@ public class MaterialHeader extends View implements PtrUIHandler {
      * @param frame
      */
     @Override
-    public void onUIReset(PtrFrameLayout frame) {
+    public void onReset(PtrFrameLayout frame) {
         mScale = 1f;
         mDrawable.stop();
     }
@@ -136,7 +136,7 @@ public class MaterialHeader extends View implements PtrUIHandler {
      * @param frame
      */
     @Override
-    public void onUIRefreshPrepare(PtrFrameLayout frame) {
+    public void onPrepare(PtrFrameLayout frame) {
     }
 
     /**
@@ -145,7 +145,7 @@ public class MaterialHeader extends View implements PtrUIHandler {
      * @param frame
      */
     @Override
-    public void onUIRefreshBegin(PtrFrameLayout frame) {
+    public void onBegin(PtrFrameLayout frame) {
         mDrawable.setAlpha(255);
         mDrawable.start();
     }
@@ -156,12 +156,12 @@ public class MaterialHeader extends View implements PtrUIHandler {
      * @param frame
      */
     @Override
-    public void onUIRefreshComplete(PtrFrameLayout frame) {
+    public void onComplete(PtrFrameLayout frame) {
         mDrawable.stop();
     }
 
     @Override
-    public void onUIPositionChange(PtrFrameLayout frame, int status, PtrIndicator ptrIndicator) {
+    public void onPositionChange(PtrFrameLayout frame, int status, PtrIndicator ptrIndicator) {
 
         float percent = Math.min(1f, ptrIndicator.getCurrentPercent());
 

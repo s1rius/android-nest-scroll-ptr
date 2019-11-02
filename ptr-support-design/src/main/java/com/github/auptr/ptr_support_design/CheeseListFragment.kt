@@ -35,7 +35,8 @@ import java.util.ArrayList
 import java.util.Random
 
 import `in`.srain.cube.views.ptr.PtrFrameLayout
-import `in`.srain.cube.views.ptr.PtrUIHandler
+import `in`.srain.cube.views.ptr.PtrListener
+import `in`.srain.cube.views.ptr.PtrSimpleListener
 import `in`.srain.cube.views.ptr.indicator.PtrIndicator
 
 class CheeseListFragment : Fragment() {
@@ -46,25 +47,10 @@ class CheeseListFragment : Fragment() {
         val view = inflater.inflate(
                 R.layout.fragment_cheese_list, container, false)
         mRefreshLayout = view.findViewById(R.id.ptr_layout)
-        mRefreshLayout.addPtrUIHandler(object : PtrUIHandler {
-            override fun onUIReset(frame: PtrFrameLayout) {
+        mRefreshLayout.addPtrListener(object : PtrSimpleListener() {
 
-            }
-
-            override fun onUIRefreshPrepare(frame: PtrFrameLayout) {
-
-            }
-
-            override fun onUIRefreshBegin(frame: PtrFrameLayout) {
+            override fun onBegin(frame: PtrFrameLayout) {
                 mRefreshLayout.postDelayed({ mRefreshLayout.refreshComplete() }, 3000)
-            }
-
-            override fun onUIRefreshComplete(frame: PtrFrameLayout) {
-
-            }
-
-            override fun onUIPositionChange(frame: PtrFrameLayout, status: Int, ptrIndicator: PtrIndicator) {
-
             }
         })
         val rv = view.findViewById<RecyclerView>(R.id.recyclerview)

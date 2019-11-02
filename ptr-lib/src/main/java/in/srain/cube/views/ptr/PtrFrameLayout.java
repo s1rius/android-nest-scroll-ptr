@@ -34,7 +34,7 @@ import in.srain.cube.views.ptr.util.PtrCLog;
 /**
  * This layout view for "Pull to Refresh(Ptr)" support all of the view, you can contain everything you want.
  * support: pull to refresh / release to refresh / auto refresh / keep header view while refreshing / hide header view while refreshing
- * It defines {@link in.srain.cube.views.ptr.PtrUIHandler}, which allows you customize the UI easily.
+ * It defines {@link PtrListener}, which allows you customize the UI easily.
  */
 public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
         NestedScrollingChild {
@@ -73,7 +73,7 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
     private boolean mKeepHeaderWhenRefresh = true;
     private boolean mPullToRefresh = false;
     private View mHeaderView;
-    private PtrUIHandlerHolder mPtrUIHandlerHolder = PtrUIHandlerHolder.create();
+    private PtrListenerHolder mPtrListenerHolder = PtrListenerHolder.create();
     private PtrHandler mPtrHandler;
     // working parameters
     private ScrollChecker mScrollChecker;
@@ -172,10 +172,10 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
 
                 View child1 = getChildAt(0);
                 View child2 = getChildAt(1);
-                if (child1 instanceof PtrUIHandler) {
+                if (child1 instanceof PtrListener) {
                     mHeaderView = child1;
                     mContent = child2;
-                } else if (child2 instanceof PtrUIHandler) {
+                } else if (child2 instanceof PtrListener) {
                     mHeaderView = child2;
                     mContent = child1;
                 } else {
@@ -490,9 +490,9 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
                 (mPtrIndicator.goDownCrossFinishPosition() && mStatus == PTR_STATUS_COMPLETE && isEnabledNextPtrAtOnce())) {
 
             mStatus = PTR_STATUS_PREPARE;
-            mPtrUIHandlerHolder.onUIRefreshPrepare(this);
+            mPtrListenerHolder.onPrepare(this);
             if (DEBUG) {
-                PtrCLog.i(LOG_TAG, "PtrUIHandler: onUIRefreshPrepare, mFlag %s", mFlag);
+                PtrCLog.i(LOG_TAG, "PtrUIHandler: onPrepare, mFlag %s", mFlag);
             }
         }
 
@@ -525,8 +525,8 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
         }
         invalidate();
 
-        if (mPtrUIHandlerHolder.hasHandler()) {
-            mPtrUIHandlerHolder.onUIPositionChange(this, mStatus, mPtrIndicator);
+        if (mPtrListenerHolder.hasHandler()) {
+            mPtrListenerHolder.onPositionChange(this, mStatus, mPtrIndicator);
         }
     }
 
@@ -626,10 +626,10 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
 
     private void performRefresh() {
         mLoadingStartTime = System.currentTimeMillis();
-        if (mPtrUIHandlerHolder.hasHandler()) {
-            mPtrUIHandlerHolder.onUIRefreshBegin(this);
+        if (mPtrListenerHolder.hasHandler()) {
+            mPtrListenerHolder.onBegin(this);
             if (DEBUG) {
-                PtrCLog.i(LOG_TAG, "PtrUIHandler: onUIRefreshBegin");
+                PtrCLog.i(LOG_TAG, "PtrUIHandler: onBegin");
             }
         }
         if (mPtrHandler != null) {
@@ -642,10 +642,10 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
      */
     private boolean tryToNotifyReset() {
         if ((mStatus == PTR_STATUS_COMPLETE || mStatus == PTR_STATUS_PREPARE) && mPtrIndicator.isInStartPosition()) {
-            if (mPtrUIHandlerHolder.hasHandler()) {
-                mPtrUIHandlerHolder.onUIReset(this);
+            if (mPtrListenerHolder.hasHandler()) {
+                mPtrListenerHolder.onReset(this);
                 if (DEBUG) {
-                    PtrCLog.i(LOG_TAG, "PtrUIHandler: onUIReset");
+                    PtrCLog.i(LOG_TAG, "PtrUIHandler: onReset");
                 }
             }
             mStatus = PTR_STATUS_INIT;
@@ -745,11 +745,11 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
             mRefreshCompleteHook.takeOver();
             return;
         }
-        if (mPtrUIHandlerHolder.hasHandler()) {
+        if (mPtrListenerHolder.hasHandler()) {
             if (DEBUG) {
-                PtrCLog.i(LOG_TAG, "PtrUIHandler: onUIRefreshComplete");
+                PtrCLog.i(LOG_TAG, "PtrUIHandler: onComplete");
             }
-            mPtrUIHandlerHolder.onUIRefreshComplete(this);
+            mPtrListenerHolder.onComplete(this);
         }
         mPtrIndicator.onUIRefreshComplete();
         tryScrollBackToTopAfterComplete();
@@ -778,10 +778,10 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
         mFlag |= atOnce ? FLAG_AUTO_REFRESH_AT_ONCE : FLAG_AUTO_REFRESH_BUT_LATER;
 
         mStatus = PTR_STATUS_PREPARE;
-        if (mPtrUIHandlerHolder.hasHandler()) {
-            mPtrUIHandlerHolder.onUIRefreshPrepare(this);
+        if (mPtrListenerHolder.hasHandler()) {
+            mPtrListenerHolder.onPrepare(this);
             if (DEBUG) {
-                PtrCLog.i(LOG_TAG, "PtrUIHandler: onUIRefreshPrepare, mFlag %s", mFlag);
+                PtrCLog.i(LOG_TAG, "PtrUIHandler: onPrepare, mFlag %s", mFlag);
             }
         }
         mScrollChecker.tryToScrollTo(mPtrIndicator.getOffsetToRefresh(), duration);
@@ -861,21 +861,21 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
         mPtrHandler = ptrHandler;
     }
 
-    public void addPtrUIHandler(PtrUIHandler ptrUIHandler) {
-        PtrUIHandlerHolder.addHandler(mPtrUIHandlerHolder, ptrUIHandler);
+    public void addPtrListener(PtrListener ptrListener) {
+        mPtrListenerHolder.addListener(ptrListener);
     }
 
     @SuppressWarnings({"unused"})
-    public void removePtrUIHandler(PtrUIHandler ptrUIHandler) {
-        mPtrUIHandlerHolder = PtrUIHandlerHolder.removeHandler(mPtrUIHandlerHolder, ptrUIHandler);
+    public void removePtrListener(PtrListener ptrListener) {
+        mPtrListenerHolder.removeListener(ptrListener);
     }
 
     @SuppressWarnings({"unused"})
-    public void setPtrIndicator(PtrIndicator slider) {
-        if (mPtrIndicator != null && mPtrIndicator != slider) {
-            slider.convertFrom(mPtrIndicator);
+    public void setPtrIndicator(PtrIndicator indicator) {
+        if (mPtrIndicator != null && mPtrIndicator != indicator) {
+            indicator.convertFrom(mPtrIndicator);
         }
-        mPtrIndicator = slider;
+        mPtrIndicator = indicator;
     }
 
     @SuppressWarnings({"unused"})

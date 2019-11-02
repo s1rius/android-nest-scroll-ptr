@@ -9,13 +9,13 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.animation.Transformation;
 import in.srain.cube.views.ptr.PtrFrameLayout;
-import in.srain.cube.views.ptr.PtrUIHandler;
+import in.srain.cube.views.ptr.PtrListener;
 import in.srain.cube.views.ptr.indicator.PtrIndicator;
 import in.srain.cube.views.ptr.util.PtrLocalDisplay;
 
 import java.util.ArrayList;
 
-public class StoreHouseHeader extends View implements PtrUIHandler {
+public class StoreHouseHeader extends View implements PtrListener {
 
     public ArrayList<StoreHouseBarItem> mItemList = new ArrayList<StoreHouseBarItem>();
 
@@ -247,7 +247,7 @@ public class StoreHouseHeader extends View implements PtrUIHandler {
     }
 
     @Override
-    public void onUIReset(PtrFrameLayout frame) {
+    public void onReset(PtrFrameLayout frame) {
         loadFinish();
         for (int i = 0; i < mItemList.size(); i++) {
             mItemList.get(i).resetPosition(mHorizontalRandomness);
@@ -256,22 +256,22 @@ public class StoreHouseHeader extends View implements PtrUIHandler {
     }
 
     @Override
-    public void onUIRefreshPrepare(PtrFrameLayout frame) {
+    public void onPrepare(PtrFrameLayout frame) {
 
     }
 
     @Override
-    public void onUIRefreshBegin(PtrFrameLayout frame) {
+    public void onBegin(PtrFrameLayout frame) {
         beginLoading();
     }
 
     @Override
-    public void onUIRefreshComplete(PtrFrameLayout frame) {
+    public void onComplete(PtrFrameLayout frame) {
         loadFinish();
     }
 
     @Override
-    public void onUIPositionChange(PtrFrameLayout frame, int status, PtrIndicator ptrIndicator) {
+    public void onPositionChange(PtrFrameLayout frame, int status, PtrIndicator ptrIndicator) {
 
         float currentPercent = Math.min(1f, ptrIndicator.getCurrentPercent());
         setProgress(currentPercent);

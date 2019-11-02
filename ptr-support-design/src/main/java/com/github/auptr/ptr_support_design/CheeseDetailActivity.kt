@@ -17,7 +17,8 @@
 package com.github.auptr.ptr_support_design
 
 import `in`.srain.cube.views.ptr.PtrFrameLayout
-import `in`.srain.cube.views.ptr.PtrUIHandler
+import `in`.srain.cube.views.ptr.PtrListener
+import `in`.srain.cube.views.ptr.PtrSimpleListener
 import `in`.srain.cube.views.ptr.indicator.PtrIndicator
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -37,25 +38,9 @@ class CheeseDetailActivity : AppCompatActivity() {
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
 
         collapsing_toolbar.title = cheeseName
-        ptr_layout.addPtrUIHandler(object : PtrUIHandler {
-            override fun onUIReset(frame: PtrFrameLayout) {
-
-            }
-
-            override fun onUIRefreshPrepare(frame: PtrFrameLayout) {
-
-            }
-
-            override fun onUIRefreshBegin(frame: PtrFrameLayout) {
+        ptr_layout.addPtrListener(object : PtrSimpleListener() {
+            override fun onBegin(frame: PtrFrameLayout) {
                 ptr_layout.postDelayed({ ptr_layout.refreshComplete() }, 3000)
-            }
-
-            override fun onUIRefreshComplete(frame: PtrFrameLayout) {
-
-            }
-
-            override fun onUIPositionChange(frame: PtrFrameLayout, status: Int, ptrIndicator: PtrIndicator) {
-
             }
         })
 

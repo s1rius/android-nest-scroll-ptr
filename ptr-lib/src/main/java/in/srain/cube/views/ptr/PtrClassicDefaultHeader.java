@@ -16,7 +16,7 @@ import in.srain.cube.views.ptr.indicator.PtrIndicator;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class PtrClassicDefaultHeader extends FrameLayout implements PtrUIHandler {
+public class PtrClassicDefaultHeader extends FrameLayout implements PtrListener {
 
     private final static String KEY_SharedPreferences = "cube_ptr_classic_last_update";
     private static SimpleDateFormat sDataFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -125,14 +125,14 @@ public class PtrClassicDefaultHeader extends FrameLayout implements PtrUIHandler
     }
 
     @Override
-    public void onUIReset(PtrFrameLayout frame) {
+    public void onReset(PtrFrameLayout frame) {
         resetView();
         mShouldShowLastUpdate = true;
         tryUpdateLastUpdateTime();
     }
 
     @Override
-    public void onUIRefreshPrepare(PtrFrameLayout frame) {
+    public void onPrepare(PtrFrameLayout frame) {
 
         mShouldShowLastUpdate = true;
         tryUpdateLastUpdateTime();
@@ -150,7 +150,7 @@ public class PtrClassicDefaultHeader extends FrameLayout implements PtrUIHandler
     }
 
     @Override
-    public void onUIRefreshBegin(PtrFrameLayout frame) {
+    public void onBegin(PtrFrameLayout frame) {
         mShouldShowLastUpdate = false;
         hideRotateView();
         mProgressBar.setVisibility(VISIBLE);
@@ -162,7 +162,7 @@ public class PtrClassicDefaultHeader extends FrameLayout implements PtrUIHandler
     }
 
     @Override
-    public void onUIRefreshComplete(PtrFrameLayout frame) {
+    public void onComplete(PtrFrameLayout frame) {
 
         hideRotateView();
         mProgressBar.setVisibility(INVISIBLE);
@@ -232,7 +232,7 @@ public class PtrClassicDefaultHeader extends FrameLayout implements PtrUIHandler
     }
 
     @Override
-    public void onUIPositionChange(PtrFrameLayout frame, int status, PtrIndicator ptrIndicator) {
+    public void onPositionChange(PtrFrameLayout frame, int status, PtrIndicator ptrIndicator) {
 
         final int mOffsetToRefresh = frame.getOffsetToRefresh();
         final int currentPos = ptrIndicator.getCurrentPosY();
