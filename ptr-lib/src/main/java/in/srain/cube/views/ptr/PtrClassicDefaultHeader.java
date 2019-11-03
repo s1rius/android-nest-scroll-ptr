@@ -52,6 +52,7 @@ public class PtrClassicDefaultHeader extends FrameLayout implements PtrListener 
         TypedArray arr = getContext().obtainStyledAttributes(attrs, R.styleable.PtrClassicHeader, 0, 0);
         if (arr != null) {
             mRotateAniTime = arr.getInt(R.styleable.PtrClassicHeader_ptr_rotate_ani_time, mRotateAniTime);
+            arr.recycle();
         }
         buildAnimation();
         View header = LayoutInflater.from(getContext()).inflate(R.layout.cube_ptr_classic_default_header, this);
@@ -61,7 +62,6 @@ public class PtrClassicDefaultHeader extends FrameLayout implements PtrListener 
         mTitleTextView = (TextView) header.findViewById(R.id.ptr_classic_header_rotate_view_header_title);
         mLastUpdateTextView = (TextView) header.findViewById(R.id.ptr_classic_header_rotate_view_header_last_update);
         mProgressBar = header.findViewById(R.id.ptr_classic_header_rotate_view_progressbar);
-
         resetView();
     }
 
