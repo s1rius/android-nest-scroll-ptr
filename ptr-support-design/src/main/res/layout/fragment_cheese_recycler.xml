@@ -15,25 +15,22 @@
   ~ limitations under the License.
   -->
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:gravity="center_vertical"
-    android:paddingLeft="16dp"
-    android:paddingTop="8dp"
-    android:paddingRight="16dp"
-    android:paddingBottom="8dp">
+    android:layout_height="match_parent"
+    >
 
-    <de.hdodenhof.circleimageview.CircleImageView
-        android:id="@+id/avatar"
-        android:layout_width="@dimen/list_item_avatar_size"
-        android:layout_height="@dimen/list_item_avatar_size"
-        android:layout_marginRight="16dp" />
-
-    <TextView
-        android:id="@android:id/text1"
+    <com.github.auptr.ptr_support_design.SwipeToRefreshLayout
+        android:id="@+id/ptr_layout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textAppearance="?attr/textAppearanceListItem" />
+        android:layout_height="match_parent">
 
-</LinearLayout>
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </com.github.auptr.ptr_support_design.SwipeToRefreshLayout>
+
+
+</FrameLayout>

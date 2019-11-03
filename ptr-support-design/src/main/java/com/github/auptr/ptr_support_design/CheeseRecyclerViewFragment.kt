@@ -39,13 +39,13 @@ import `in`.srain.cube.views.ptr.PtrListener
 import `in`.srain.cube.views.ptr.PtrSimpleListener
 import `in`.srain.cube.views.ptr.indicator.PtrIndicator
 
-class CheeseListFragment : Fragment() {
+class CheeseRecyclerViewFragment : Fragment() {
 
     lateinit var mRefreshLayout: SwipeToRefreshLayout
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(
-                R.layout.fragment_cheese_list, container, false)
+                R.layout.fragment_cheese_recycler, container, false)
         mRefreshLayout = view.findViewById(R.id.ptr_layout)
         mRefreshLayout.addPtrListener(object : PtrSimpleListener() {
 
