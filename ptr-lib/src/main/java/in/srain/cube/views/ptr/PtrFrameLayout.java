@@ -4,7 +4,6 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.PointF;
-import android.os.Debug;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -43,12 +42,16 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
     // status enum
     public final static int PTR_STATUS_INIT = 1;
     private static final int INVALID_POINTER = -1;
+    private float mPullFriction = 0.56f;
 
     @IntDef({PTR_STATUS_INIT, PTR_STATUS_PREPARE, PTR_STATUS_LOADING, PTR_STATUS_COMPLETE})
     @Retention(RetentionPolicy.SOURCE)
-    @interface PlayState{}
+    @interface PlayState {
 
-    private @PlayState int mStatus = PTR_STATUS_INIT;
+    }
+
+    private @PlayState
+    int mStatus = PTR_STATUS_INIT;
     public final static int PTR_STATUS_PREPARE = 2;
     public final static int PTR_STATUS_LOADING = 3;
     public final static int PTR_STATUS_COMPLETE = 4;
@@ -322,9 +325,6 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
                         PtrCLog.d(LOG_TAG, "call onRelease when user release");
                     }
                     onRelease(false);
-                    if (mPtrIndicator.hasMovedAfterPressedDown()) {
-                        return false;
-                    }
                 }
                 break;
             case MotionEvent.ACTION_DOWN:
@@ -366,6 +366,23 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
                 if (pointerIndex < 0) {
                     return false;
                 }
+
+                // if content is a scrollable view and not implement NestedScrollingChild
+                // like ListView, we need enable nest scroll in intercept process
+                final int y = (int) (ev.getY(pointerIndex) + 0.5f);
+
+                int dy = (int) (mLastTouch.y - y);
+
+                if (dy != 0 || mPtrIndicator.isInStartPosition()) {
+                    if (startNestedScroll(ViewCompat.SCROLL_AXIS_VERTICAL)) {
+                        if (dispatchNestedPreScroll(0, dy, mScrollConsumed, mScrollOffset)) {
+                            mLastTouch.y = dy - mScrollOffset[1];
+                            // handle touch when parent not accept nest scroll
+                            return true;
+                        }
+                    }
+                }
+
                 startDragging(new PointF(ev.getX(), ev.getY()));
                 break;
             case MotionEvent.ACTION_CANCEL:
@@ -421,6 +438,10 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
                     return true;
                 }
 
+                if (offsetY > 0) {
+                    offsetY = withFriction(offsetY);
+                }
+
                 boolean moveDown = offsetY > 0;
                 boolean moveUp = !moveDown;
                 boolean canMoveUp = mPtrIndicator.hasLeftStartPosition();
@@ -449,15 +470,14 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
     }
 
     /**
-     * if deltaY > 0, move the content down
-     *
-     * @param deltaY
+     * //if deltaY > 0, move the content down
+     * @param deltaY the y offset
      */
     private void movePos(float deltaY) {
         // has reached the top
         if ((deltaY < 0 && mPtrIndicator.isInStartPosition())) {
             if (DEBUG) {
-                PtrCLog.e(LOG_TAG, String.format("has reached the top"));
+                PtrCLog.e(LOG_TAG, "has reached the top");
             }
             return;
         }
@@ -467,7 +487,7 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
         // over top
         if (mPtrIndicator.willOverTop(to)) {
             if (DEBUG) {
-                PtrCLog.e(LOG_TAG, String.format("over top"));
+                PtrCLog.e(LOG_TAG, "over top");
             }
             to = PtrIndicator.POS_START;
         }
@@ -526,6 +546,10 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
         }
     }
 
+    private int withFriction(float force) {
+        return (int) (force * mPullFriction);
+    }
+
     public void changeStatusTo(int status) {
         if (DEBUG) {
             PtrCLog.d(LOG_TAG, "status change from " + mStatus + " to " + status);
@@ -578,8 +602,6 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
                     mScrollChecker.tryToScrollTo(
                             mPtrIndicator.getOffsetToKeepHeaderWhileLoading(),
                             mDurationToLoadingPosition);
-                } else {
-                    // do nothing
                 }
             } else {
                 tryScrollBackToTopWhileLoading();
@@ -596,7 +618,7 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
     /**
      * please DO REMEMBER resume the hook
      *
-     * @param hook
+     * @param hook prt refresh complete condition hook
      */
 
     public void setRefreshCompleteHook(PtrUIHandlerHook hook) {
@@ -1102,10 +1124,9 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
                 mTotalUnconsumed -= dy;
                 consumed[1] = dy;
             }
-
             movePos(-dy);
-
         }
+
         // Now let our nested parent consume the leftovers
         final int[] parentConsumed = mParentScrollConsumed;
         if (dispatchNestedPreScroll(dx - consumed[0], dy - consumed[1], parentConsumed, null)) {
@@ -1117,6 +1138,10 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
     @Override
     public void onNestedScroll(@NonNull View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed) {
         // Dispatch up to the nested parent first
+        if (mStatus != PTR_STATUS_INIT) {
+            dyUnconsumed = withFriction(dyUnconsumed);
+        }
+
         dispatchNestedScroll(dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed,
                 mParentOffsetInWindow);
 
