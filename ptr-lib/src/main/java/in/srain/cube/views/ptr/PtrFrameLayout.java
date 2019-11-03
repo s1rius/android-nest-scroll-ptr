@@ -4,6 +4,7 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.PointF;
+import android.os.Debug;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -488,12 +489,7 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
         // leave initiated position or just refresh complete
         if ((mPtrIndicator.hasJustLeftStartPosition() && mStatus == PTR_STATUS_INIT) ||
                 (mPtrIndicator.goDownCrossFinishPosition() && mStatus == PTR_STATUS_COMPLETE && isEnabledNextPtrAtOnce())) {
-
-            mStatus = PTR_STATUS_PREPARE;
-            mPtrListenerHolder.onPrepare(this);
-            if (DEBUG) {
-                PtrCLog.i(LOG_TAG, "PtrUIHandler: onPrepare, mFlag %s", mFlag);
-            }
+            changeStatusTo(PTR_STATUS_PREPARE);
         }
 
         // back to initiated position
@@ -527,6 +523,41 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
 
         if (mPtrListenerHolder.hasHandler()) {
             mPtrListenerHolder.onPositionChange(this, mStatus, mPtrIndicator);
+        }
+    }
+
+    public void changeStatusTo(int status) {
+        if (DEBUG) {
+            PtrCLog.d(LOG_TAG, "status change from " + mStatus + " to " + status);
+        }
+        mStatus = status;
+        onStateChange(mStatus);
+    }
+
+    public void onStateChange(int status) {
+        switch (status) {
+            case PTR_STATUS_INIT:
+                clearFlag();
+                mPtrListenerHolder.onReset(this);
+                break;
+            case PTR_STATUS_COMPLETE:
+                // if is auto refresh do nothing, wait scroller stop
+                if (mScrollChecker.mIsRunning && isAutoRefresh()) {
+                    // do nothing
+                    if (DEBUG) {
+                        PtrCLog.d(LOG_TAG, "performRefreshComplete do nothing, scrolling: %s, auto refresh: %s",
+                                mScrollChecker.mIsRunning, mFlag);
+                    }
+                    return;
+                }
+                notifyUIRefreshComplete(false);
+                break;
+            case PTR_STATUS_PREPARE:
+                mPtrListenerHolder.onPrepare(this);
+                break;
+            case PTR_STATUS_LOADING:
+                performRefresh();
+                break;
         }
     }
 
@@ -617,9 +648,9 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
         }
 
         //
-        if ((mPtrIndicator.isOverOffsetToKeepHeaderWhileLoading() && isAutoRefresh()) || mPtrIndicator.isOverOffsetToRefresh()) {
-            mStatus = PTR_STATUS_LOADING;
-            performRefresh();
+        if ((mPtrIndicator.isOverOffsetToKeepHeaderWhileLoading() && isAutoRefresh())
+                || mPtrIndicator.isOverOffsetToRefresh()) {
+            changeStatusTo(PTR_STATUS_LOADING);
         }
         return false;
     }
@@ -641,15 +672,9 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
      * If at the top and not in loading, reset
      */
     private boolean tryToNotifyReset() {
-        if ((mStatus == PTR_STATUS_COMPLETE || mStatus == PTR_STATUS_PREPARE) && mPtrIndicator.isInStartPosition()) {
-            if (mPtrListenerHolder.hasHandler()) {
-                mPtrListenerHolder.onReset(this);
-                if (DEBUG) {
-                    PtrCLog.i(LOG_TAG, "PtrUIHandler: onReset");
-                }
-            }
-            mStatus = PTR_STATUS_INIT;
-            clearFlag();
+        if ((mStatus == PTR_STATUS_COMPLETE || mStatus == PTR_STATUS_PREPARE)
+                && mPtrIndicator.isInStartPosition()) {
+            changeStatusTo(PTR_STATUS_INIT);
             return true;
         }
         return false;
@@ -713,19 +738,7 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
      * Do refresh complete work when time elapsed is greater than {@link #mLoadingMinTime}
      */
     private void performRefreshComplete() {
-        mStatus = PTR_STATUS_COMPLETE;
-
-        // if is auto refresh do nothing, wait scroller stop
-        if (mScrollChecker.mIsRunning && isAutoRefresh()) {
-            // do nothing
-            if (DEBUG) {
-                PtrCLog.d(LOG_TAG, "performRefreshComplete do nothing, scrolling: %s, auto refresh: %s",
-                        mScrollChecker.mIsRunning, mFlag);
-            }
-            return;
-        }
-
-        notifyUIRefreshComplete(false);
+        changeStatusTo(PTR_STATUS_COMPLETE);
     }
 
     /**
@@ -777,17 +790,10 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
 
         mFlag |= atOnce ? FLAG_AUTO_REFRESH_AT_ONCE : FLAG_AUTO_REFRESH_BUT_LATER;
 
-        mStatus = PTR_STATUS_PREPARE;
-        if (mPtrListenerHolder.hasHandler()) {
-            mPtrListenerHolder.onPrepare(this);
-            if (DEBUG) {
-                PtrCLog.i(LOG_TAG, "PtrUIHandler: onPrepare, mFlag %s", mFlag);
-            }
-        }
+        changeStatusTo(PTR_STATUS_PREPARE);
         mScrollChecker.tryToScrollTo(mPtrIndicator.getOffsetToRefresh(), duration);
         if (atOnce) {
-            mStatus = PTR_STATUS_LOADING;
-            performRefresh();
+            changeStatusTo(PTR_STATUS_LOADING);
         }
     }
 
