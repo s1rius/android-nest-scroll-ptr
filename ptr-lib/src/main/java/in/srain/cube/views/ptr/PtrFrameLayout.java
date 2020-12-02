@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.PointF;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -32,8 +33,10 @@ import in.srain.cube.views.ptr.indicator.PtrIndicator;
 import in.srain.cube.views.ptr.util.PtrCLog;
 
 /**
- * This layout view for "Pull to Refresh(Ptr)" support all of the view, you can contain everything you want.
- * support: pull to refresh / release to refresh / auto refresh / keep header view while refreshing / hide header view while refreshing
+ * This layout view for "Pull to Refresh(Ptr)" support all of the view,
+ * you can contain everything you want.
+ * support: pull to refresh / release to refresh / auto refresh / keep header view
+ * while refreshing / hide header view while refreshing
  * It defines {@link PtrListener}, which allows you customize the UI easily.
  */
 public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
@@ -367,18 +370,20 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
                     return false;
                 }
 
-                // if content is a scrollable view and not implement NestedScrollingChild
-                // like ListView, we need enable nest scroll in intercept process
-                final int y = (int) (ev.getY(pointerIndex) + 0.5f);
+                if (!(mContent instanceof NestedScrollingChild)) {
+                    // if content is a scrollable view and not implement NestedScrollingChild
+                    // like ListView, we need enable nest scroll in intercept process
+                    final int y = (int) (ev.getY(pointerIndex) + 0.5f);
 
-                int dy = (int) (mLastTouch.y - y);
+                    int dy = (int) (mLastTouch.y - y);
 
-                if (dy != 0 || mPtrIndicator.isInStartPosition()) {
-                    if (startNestedScroll(ViewCompat.SCROLL_AXIS_VERTICAL)) {
-                        if (dispatchNestedPreScroll(0, dy, mScrollConsumed, mScrollOffset)) {
-                            mLastTouch.y = dy - mScrollOffset[1];
-                            // handle touch when parent not accept nest scroll
-                            return true;
+                    if (dy != 0 || mPtrIndicator.isInStartPosition()) {
+                        if (startNestedScroll(ViewCompat.SCROLL_AXIS_VERTICAL)) {
+                            if (dispatchNestedPreScroll(0, dy, mScrollConsumed, mScrollOffset)) {
+                                mLastTouch.y = dy - mScrollOffset[1];
+                                // handle touch when parent not accept nest scroll
+                                return true;
+                            }
                         }
                     }
                 }
@@ -473,13 +478,13 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
      * //if deltaY > 0, move the content down
      * @param deltaY the y offset
      */
-    private void movePos(float deltaY) {
+    private int movePos(float deltaY) {
         // has reached the top
         if ((deltaY < 0 && mPtrIndicator.isInStartPosition())) {
             if (DEBUG) {
                 PtrCLog.e(LOG_TAG, "has reached the top");
             }
-            return;
+            return 0;
         }
 
         int to = mPtrIndicator.getCurrentPosY() + (int) deltaY;
@@ -498,6 +503,7 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
         }
         int change = to - mPtrIndicator.getLastPosY();
         updatePos(change);
+        return change;
     }
 
     private void updatePos(int change) {
@@ -1093,7 +1099,9 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
     // nested scroll parent
     @Override
     public boolean onStartNestedScroll(@NonNull View child, @NonNull View target, int axes) {
-        return isEnabled() && !isAutoRefresh() && !isRefreshing()
+        return isEnabled()
+                && !isAutoRefresh()
+                // && !isRefreshing()
                 && (axes & ViewCompat.SCROLL_AXIS_VERTICAL) != 0;
     }
 
@@ -1112,7 +1120,11 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
     public void onNestedPreScroll(@NonNull View target, int dx, int dy, @NonNull int[] consumed) {
         // If we are in the middle of consuming, a scroll, then we want to move the ptr back up
         // before allowing the list to scroll
-        if (dy > 0 && mTotalUnconsumed > 0) {
+        if (dy > 0 && !mPtrIndicator.isInStartPosition()) {
+            consumed[1] = - movePos(-dy);
+        }
+
+        if (dy > 0 && mTotalUnconsumed > 0 && isRefreshing()) {
             if (dy > mTotalUnconsumed) {
                 consumed[1] = dy - mTotalUnconsumed;
                 mTotalUnconsumed = 0;
