@@ -34,10 +34,8 @@ import com.bumptech.glide.Glide
 import java.util.ArrayList
 import java.util.Random
 
-import `in`.srain.cube.views.ptr.PtrFrameLayout
-import `in`.srain.cube.views.ptr.PtrListener
-import `in`.srain.cube.views.ptr.PtrSimpleListener
-import `in`.srain.cube.views.ptr.indicator.PtrIndicator
+import wtf.s1.android.ptr.PtrFrameLayout
+import wtf.s1.android.ptr.PtrSimpleListener
 
 class CheeseRecyclerViewFragment : Fragment() {
 

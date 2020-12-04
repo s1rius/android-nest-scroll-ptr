@@ -153,7 +153,7 @@ compile 'in.srain.cube:ultra-ptr:{ptr_lib_stable_version}'
 ##### xml中配置示例
 
 ```xml
-<in.srain.cube.views.ptr.PtrFrameLayout
+<wtf.s1.android.ptr.PtrFrameLayout
     android:id="@+id/store_house_ptr_frame"
     xmlns:cube_ptr="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -180,7 +180,7 @@ compile 'in.srain.cube:ultra-ptr:{ptr_lib_stable_version}'
             android:layout_height="match_parent" />
     </LinearLayout>
 
-</in.srain.cube.views.ptr.PtrFrameLayout>
+</wtf.s1.android.ptr.PtrFrameLayout>
 ```
 
 ### 也可以在java代码中配置
@@ -214,7 +214,7 @@ header.setPadding(0, LocalDisplay.dp2px(15), 0, 0);
 
 /**
  * using a string, support: A-Z 0-9 - .
- * you can add more letters by {@link in.srain.cube.views.ptr.header.StoreHousePath#addChar}
+ * you can add more letters by {@link wtf.s1.android.ptr.header.StoreHousePath#addChar}
  */
 header.initWithString('Alibaba');
 ```
@@ -260,7 +260,7 @@ public interface PtrHandler {
     /**
      * 检查是否可以执行下来刷新，比如列表为空或者列表第一项在最上面时。
      * <p/>
-     * {@link in.srain.cube.views.ptr.PtrDefaultHandler#checkContentCanBePulledDown}
+     * {@link wtf.s1.android.ptr.PtrDefaultHandler#checkContentCanBePulledDown}
      */
     public boolean checkCanDoRefresh(final PtrFrameLayout frame, final View content, final View header);
 

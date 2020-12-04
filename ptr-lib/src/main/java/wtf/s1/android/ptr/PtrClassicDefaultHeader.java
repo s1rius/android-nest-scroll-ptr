@@ -1,4 +1,4 @@
-package in.srain.cube.views.ptr;
+package wtf.s1.android.ptr;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -11,7 +11,7 @@ import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
 import android.widget.FrameLayout;
 import android.widget.TextView;
-import in.srain.cube.views.ptr.indicator.PtrIndicator;
+import wtf.s1.android.ptr.indicator.PtrIndicator;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

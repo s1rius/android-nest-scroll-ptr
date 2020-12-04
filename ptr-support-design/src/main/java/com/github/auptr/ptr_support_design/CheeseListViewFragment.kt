@@ -20,7 +20,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import android.util.TypedValue
 import android.view.LayoutInflater
@@ -34,8 +33,8 @@ import com.bumptech.glide.Glide
 import java.util.ArrayList
 import java.util.Random
 
-import `in`.srain.cube.views.ptr.PtrFrameLayout
-import `in`.srain.cube.views.ptr.PtrSimpleListener
+import wtf.s1.android.ptr.PtrFrameLayout
+import wtf.s1.android.ptr.PtrSimpleListener
 import android.widget.BaseAdapter
 import android.widget.ListView
 

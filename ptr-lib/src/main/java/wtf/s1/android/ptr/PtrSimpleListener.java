@@ -1,6 +1,6 @@
-package in.srain.cube.views.ptr;
+package wtf.s1.android.ptr;
 
-import in.srain.cube.views.ptr.indicator.PtrIndicator;
+import wtf.s1.android.ptr.indicator.PtrIndicator;
 
 public abstract class PtrSimpleListener implements PtrListener{
     @Override

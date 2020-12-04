@@ -1,11 +1,10 @@
-package in.srain.cube.views.ptr;
+package wtf.s1.android.ptr;
 
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.PointF;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -29,8 +28,8 @@ import androidx.core.widget.ListViewCompat;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-import in.srain.cube.views.ptr.indicator.PtrIndicator;
-import in.srain.cube.views.ptr.util.PtrCLog;
+import wtf.s1.android.ptr.indicator.PtrIndicator;
+import wtf.s1.android.ptr.util.PtrCLog;
 
 /**
  * This layout view for "Pull to Refresh(Ptr)" support all of the view,

@@ -15,7 +15,7 @@
  */
 package com.github.auptr.ptr_support_design
 
-import `in`.srain.cube.views.ptr.PtrClassicFrameLayout
+import wtf.s1.android.ptr.PtrClassicFrameLayout
 import android.content.Context
 import android.util.AttributeSet
 import android.view.View

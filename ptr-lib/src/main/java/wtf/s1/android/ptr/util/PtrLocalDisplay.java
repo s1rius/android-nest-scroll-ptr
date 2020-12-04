@@ -1,4 +1,4 @@
-package in.srain.cube.views.ptr.util;
+package wtf.s1.android.ptr.util;
 
 import android.content.Context;
 import android.util.DisplayMetrics;
@@ -30,16 +30,5 @@ public class PtrLocalDisplay {
     public static int dp2px(float dp) {
         final float scale = SCREEN_DENSITY;
         return (int) (dp * scale + 0.5f);
-    }
-
-    public static int designedDP2px(float designedDp) {
-        if (SCREEN_WIDTH_DP != 320) {
-            designedDp = designedDp * SCREEN_WIDTH_DP / 320f;
-        }
-        return dp2px(designedDp);
-    }
-
-    public static void setPadding(final View view, float left, float top, float right, float bottom) {
-        view.setPadding(designedDP2px(left), dp2px(top), designedDP2px(right), dp2px(bottom));
     }
 }

@@ -1,4 +1,4 @@
-package in.srain.cube.views.ptr;
+package wtf.s1.android.ptr;
 
 import android.view.View;
 import android.widget.AbsListView;

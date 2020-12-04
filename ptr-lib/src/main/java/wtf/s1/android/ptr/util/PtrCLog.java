@@ -1,4 +1,4 @@
-package in.srain.cube.views.ptr.util;
+package wtf.s1.android.ptr.util;
 
 import android.util.Log;
 

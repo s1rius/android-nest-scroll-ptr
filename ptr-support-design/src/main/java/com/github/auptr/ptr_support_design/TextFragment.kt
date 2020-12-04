@@ -1,9 +1,7 @@
 package com.github.auptr.ptr_support_design
 
-import `in`.srain.cube.views.ptr.PtrFrameLayout
-import `in`.srain.cube.views.ptr.PtrListener
-import `in`.srain.cube.views.ptr.PtrSimpleListener
-import `in`.srain.cube.views.ptr.indicator.PtrIndicator
+import wtf.s1.android.ptr.PtrFrameLayout
+import wtf.s1.android.ptr.PtrSimpleListener
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View

@@ -1,4 +1,4 @@
-package in.srain.cube.views.ptr.indicator;
+package wtf.s1.android.ptr.indicator;
 
 
 public class PtrIndicator {

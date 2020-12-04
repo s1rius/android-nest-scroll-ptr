@@ -1,8 +1,8 @@
-package in.srain.cube.views.ptr;
+package wtf.s1.android.ptr;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import in.srain.cube.views.ptr.indicator.PtrIndicator;
+import wtf.s1.android.ptr.indicator.PtrIndicator;
 
 /**
  * A single linked list to wrap PtrUIHandler

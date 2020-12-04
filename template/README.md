@@ -147,7 +147,7 @@ There are 6 properties:
 ##### Config in xml
 
 ```xml
-<in.srain.cube.views.ptr.PtrFrameLayout
+<wtf.s1.android.ptr.PtrFrameLayout
     android:id="@+id/store_house_ptr_frame"
     xmlns:cube_ptr="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -174,7 +174,7 @@ There are 6 properties:
             android:layout_height="match_parent" />
     </LinearLayout>
 
-</in.srain.cube.views.ptr.PtrFrameLayout>
+</wtf.s1.android.ptr.PtrFrameLayout>
 ```
 
 ### Or config in java code
@@ -208,7 +208,7 @@ header.setPadding(0, LocalDisplay.dp2px(15), 0, 0);
 
 /**
  * using a string, support: A-Z 0-9 - .
- * you can add more letters by {@link in.srain.cube.views.ptr.header.StoreHousePath#addChar}
+ * you can add more letters by {@link wtf.s1.android.ptr.header.StoreHousePath#addChar}
  */
 header.initWithString('Alibaba');
 ```
@@ -252,7 +252,7 @@ public interface PtrHandler {
     /**
      * Check can do refresh or not. For example the content is empty or the first child is in view.
      * <p/>
-     * {@link in.srain.cube.views.ptr.PtrDefaultHandler#checkContentCanBePulledDown}
+     * {@link wtf.s1.android.ptr.PtrDefaultHandler#checkContentCanBePulledDown}
      */
     public boolean checkCanDoRefresh(final PtrFrameLayout frame, final View content, final View header);
 
