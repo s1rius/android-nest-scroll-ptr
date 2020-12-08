@@ -34,35 +34,35 @@ class PtrListenerHolder implements PtrListener {
     }
 
     @Override
-    public void onReset(PtrFrameLayout frame) {
+    public void onReset(PtrLayout frame) {
         for (PtrListener listener : listeners) {
             listener.onReset(frame);
         }
     }
 
     @Override
-    public void onPrepare(PtrFrameLayout frame) {
+    public void onPrepare(PtrLayout frame) {
         for (PtrListener listener : listeners) {
             listener.onPrepare(frame);
         }
     }
 
     @Override
-    public void onBegin(PtrFrameLayout frame) {
+    public void onBegin(PtrLayout frame) {
         for (PtrListener listener : listeners) {
             listener.onBegin(frame);
         }
     }
 
     @Override
-    public void onComplete(PtrFrameLayout frame) {
+    public void onComplete(PtrLayout frame) {
         for (PtrListener listener : listeners) {
             listener.onComplete(frame);
         }
     }
 
     @Override
-    public void onPositionChange(PtrFrameLayout frame, int status, PtrIndicator ptrIndicator) {
+    public void onPositionChange(PtrLayout frame, int status, PtrIndicator ptrIndicator) {
         for (PtrListener listener : listeners) {
             listener.onPositionChange(frame, status, ptrIndicator);
         }

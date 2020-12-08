@@ -8,11 +8,11 @@ public class PtrIndicator {
     private int mCurrentPos = 0;
     private int mLastPos = 0;
     private int mHeaderHeight;
-    private int mPressedPos = 0;
 
     private float mRatioOfHeaderHeightToRefresh = 1.2f;
     private float mResistance = 1.7f;
     private int mOffsetToKeepHeaderWhileLoading = -1;
+
     // record the refresh complete position
     private int mRefreshCompleteY = 0;
 
@@ -99,10 +99,6 @@ public class PtrIndicator {
 
     public boolean isOverOffsetToRefresh() {
         return mCurrentPos >= getOffsetToRefresh();
-    }
-
-    public boolean hasMovedAfterPressedDown() {
-        return mCurrentPos != mPressedPos;
     }
 
     public boolean isInStartPosition() {

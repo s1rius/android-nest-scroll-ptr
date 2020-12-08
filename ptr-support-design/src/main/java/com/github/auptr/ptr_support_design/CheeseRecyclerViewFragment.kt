@@ -34,7 +34,7 @@ import com.bumptech.glide.Glide
 import java.util.ArrayList
 import java.util.Random
 
-import wtf.s1.android.ptr.PtrFrameLayout
+import wtf.s1.android.ptr.PtrLayout
 import wtf.s1.android.ptr.PtrSimpleListener
 
 class CheeseRecyclerViewFragment : Fragment() {
@@ -47,7 +47,7 @@ class CheeseRecyclerViewFragment : Fragment() {
         mRefreshLayout = view.findViewById(R.id.ptr_layout)
         mRefreshLayout.addPtrListener(object : PtrSimpleListener() {
 
-            override fun onBegin(frame: PtrFrameLayout) {
+            override fun onBegin(frame: PtrLayout) {
                 mRefreshLayout.postDelayed({ mRefreshLayout.refreshComplete() }, 3000)
             }
         })

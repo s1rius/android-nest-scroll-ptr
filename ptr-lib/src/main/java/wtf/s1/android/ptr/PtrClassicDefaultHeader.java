@@ -125,14 +125,14 @@ public class PtrClassicDefaultHeader extends FrameLayout implements PtrListener 
     }
 
     @Override
-    public void onReset(PtrFrameLayout frame) {
+    public void onReset(PtrLayout frame) {
         resetView();
         mShouldShowLastUpdate = true;
         tryUpdateLastUpdateTime();
     }
 
     @Override
-    public void onPrepare(PtrFrameLayout frame) {
+    public void onPrepare(PtrLayout frame) {
 
         mShouldShowLastUpdate = true;
         tryUpdateLastUpdateTime();
@@ -150,7 +150,7 @@ public class PtrClassicDefaultHeader extends FrameLayout implements PtrListener 
     }
 
     @Override
-    public void onBegin(PtrFrameLayout frame) {
+    public void onBegin(PtrLayout frame) {
         mShouldShowLastUpdate = false;
         hideRotateView();
         mProgressBar.setVisibility(VISIBLE);
@@ -162,7 +162,7 @@ public class PtrClassicDefaultHeader extends FrameLayout implements PtrListener 
     }
 
     @Override
-    public void onComplete(PtrFrameLayout frame) {
+    public void onComplete(PtrLayout frame) {
 
         hideRotateView();
         mProgressBar.setVisibility(INVISIBLE);
@@ -232,14 +232,14 @@ public class PtrClassicDefaultHeader extends FrameLayout implements PtrListener 
     }
 
     @Override
-    public void onPositionChange(PtrFrameLayout frame, int status, PtrIndicator ptrIndicator) {
+    public void onPositionChange(PtrLayout frame, int status, PtrIndicator ptrIndicator) {
 
         final int mOffsetToRefresh = frame.getOffsetToRefresh();
         final int currentPos = ptrIndicator.getCurrentPosY();
         final int lastPos = ptrIndicator.getLastPosY();
 
         if (currentPos < mOffsetToRefresh && lastPos >= mOffsetToRefresh) {
-            if (status == PtrFrameLayout.PTR_STATUS_PREPARE) {
+            if (status == PtrLayout.PTR_STATUS_PREPARE) {
                 crossRotateLineFromBottomUnderTouch(frame);
                 if (mRotateView != null) {
                     mRotateView.clearAnimation();
@@ -247,7 +247,7 @@ public class PtrClassicDefaultHeader extends FrameLayout implements PtrListener 
                 }
             }
         } else if (currentPos > mOffsetToRefresh && lastPos <= mOffsetToRefresh) {
-            if (status == PtrFrameLayout.PTR_STATUS_PREPARE) {
+            if (status == PtrLayout.PTR_STATUS_PREPARE) {
                 crossRotateLineFromTopUnderTouch(frame);
                 if (mRotateView != null) {
                     mRotateView.clearAnimation();
@@ -257,14 +257,14 @@ public class PtrClassicDefaultHeader extends FrameLayout implements PtrListener 
         }
     }
 
-    private void crossRotateLineFromTopUnderTouch(PtrFrameLayout frame) {
+    private void crossRotateLineFromTopUnderTouch(PtrLayout frame) {
         if (!frame.isPullToRefresh()) {
             mTitleTextView.setVisibility(VISIBLE);
             mTitleTextView.setText(R.string.cube_ptr_release_to_refresh);
         }
     }
 
-    private void crossRotateLineFromBottomUnderTouch(PtrFrameLayout frame) {
+    private void crossRotateLineFromBottomUnderTouch(PtrLayout frame) {
         mTitleTextView.setVisibility(VISIBLE);
         if (frame.isPullToRefresh()) {
             mTitleTextView.setText(getResources().getString(R.string.cube_ptr_pull_down_to_refresh));

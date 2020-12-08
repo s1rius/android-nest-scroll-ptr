@@ -12,25 +12,25 @@ public interface PtrListener {
      *
      * @param frame
      */
-    public void onReset(PtrFrameLayout frame);
+    public void onReset(PtrLayout frame);
 
     /**
      * prepare for loading
      *
      * @param frame
      */
-    public void onPrepare(PtrFrameLayout frame);
+    public void onPrepare(PtrLayout frame);
 
     /**
      * perform refreshing UI
      */
-    public void onBegin(PtrFrameLayout frame);
+    public void onBegin(PtrLayout frame);
 
     /**
      * perform UI after refresh
      */
-    public void onComplete(PtrFrameLayout frame);
+    public void onComplete(PtrLayout frame);
 
 
-    public void onPositionChange(PtrFrameLayout frame, int status, PtrIndicator ptrIndicator);
+    public void onPositionChange(PtrLayout frame, int status, PtrIndicator ptrIndicator);
 }

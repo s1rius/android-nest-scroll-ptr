@@ -1,6 +1,6 @@
 package com.github.auptr.ptr_support_design
 
-import wtf.s1.android.ptr.PtrFrameLayout
+import wtf.s1.android.ptr.PtrLayout
 import wtf.s1.android.ptr.PtrSimpleListener
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -20,7 +20,7 @@ class TextFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         ptr_layout.addPtrListener(object : PtrSimpleListener() {
 
-            override fun onBegin(frame: PtrFrameLayout) {
+            override fun onBegin(frame: PtrLayout) {
 
                 ptr_layout.postDelayed({
                     if (isDetached) {

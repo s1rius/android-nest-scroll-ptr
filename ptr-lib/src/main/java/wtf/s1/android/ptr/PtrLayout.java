@@ -38,8 +38,7 @@ import wtf.s1.android.ptr.util.PtrCLog;
  * while refreshing / hide header view while refreshing
  * It defines {@link PtrListener}, which allows you customize the UI easily.
  */
-public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
-        NestedScrollingChild {
+public class PtrLayout extends ViewGroup implements NestedScrollingParent, NestedScrollingChild {
 
     // status enum
     public final static int PTR_STATUS_INIT = 1;
@@ -79,24 +78,20 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
     private boolean mKeepHeaderWhenRefresh = true;
     private boolean mPullToRefresh = false;
     private View mHeaderView;
-    private PtrListenerHolder mPtrListenerHolder = PtrListenerHolder.create();
-    private PtrHandler mPtrHandler;
+    private final PtrListenerHolder mPtrListenerHolder = PtrListenerHolder.create();
     // working parameters
-    private ScrollChecker mScrollChecker;
+    private final ScrollChecker mScrollChecker;
 
     private int mHeaderHeight;
-    // enable margin property on layout or not
-    private boolean mHeaderLayoutMarginEnable = false;
-    private PtrUIHandlerHook mRefreshCompleteHook;
 
     private PtrIndicator mPtrIndicator;
 
     //touch handle
     private int mActivePointerId = INVALID_POINTER;
     private boolean mIsBeingDragged = false;
-    private PointF mInitialTouch = new PointF(-1, -1);
-    private PointF mLastTouch = new PointF(-1, -1);
-    private int mTouchSlop;
+    private final PointF mInitialTouch = new PointF(-1, -1);
+    private final PointF mLastTouch = new PointF(-1, -1);
+    private final int mTouchSlop;
     private boolean mIsInTouchProgress;
 
     //NestScroll
@@ -116,38 +111,36 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
         }
     };
 
-    public PtrFrameLayout(Context context) {
+    public PtrLayout(Context context) {
         this(context, null);
     }
 
-    public PtrFrameLayout(Context context, AttributeSet attrs) {
+    public PtrLayout(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public PtrFrameLayout(Context context, AttributeSet attrs, int defStyle) {
+    public PtrLayout(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
 
         mPtrIndicator = new PtrIndicator();
 
-        TypedArray arr = context.obtainStyledAttributes(attrs, R.styleable.PtrFrameLayout, 0, 0);
+        TypedArray arr = context.obtainStyledAttributes(attrs, R.styleable.PtrLayout, 0, 0);
         if (arr != null) {
 
-            mHeaderId = arr.getResourceId(R.styleable.PtrFrameLayout_ptr_header, mHeaderId);
-            mContainerId = arr.getResourceId(R.styleable.PtrFrameLayout_ptr_content, mContainerId);
+            mHeaderId = arr.getResourceId(R.styleable.PtrLayout_ptr_header, mHeaderId);
+            mContainerId = arr.getResourceId(R.styleable.PtrLayout_ptr_content, mContainerId);
 
             mPtrIndicator.setResistance(
-                    arr.getFloat(R.styleable.PtrFrameLayout_ptr_resistance, mPtrIndicator.getResistance()));
+                    arr.getFloat(R.styleable.PtrLayout_ptr_resistance, mPtrIndicator.getResistance()));
 
-            mDurationToLoadingPosition = arr.getInt(R.styleable.PtrFrameLayout_ptr_duration_to_loading_position, mDurationToLoadingPosition);
-            mDurationToCloseHeader = arr.getInt(R.styleable.PtrFrameLayout_ptr_duration_to_close_header, mDurationToCloseHeader);
+            mDurationToLoadingPosition = arr.getInt(R.styleable.PtrLayout_ptr_duration_to_loading_position, mDurationToLoadingPosition);
+            mDurationToCloseHeader = arr.getInt(R.styleable.PtrLayout_ptr_duration_to_close_header, mDurationToCloseHeader);
 
             float ratio = mPtrIndicator.getRatioOfHeaderToHeightRefresh();
-            ratio = arr.getFloat(R.styleable.PtrFrameLayout_ptr_ratio_of_header_height_to_refresh, ratio);
+            ratio = arr.getFloat(R.styleable.PtrLayout_ptr_ratio_of_header_height_to_refresh, ratio);
             mPtrIndicator.setRatioOfHeaderHeightToRefresh(ratio);
 
-            mKeepHeaderWhenRefresh = arr.getBoolean(R.styleable.PtrFrameLayout_ptr_keep_header_when_refresh, mKeepHeaderWhenRefresh);
-
-            mPullToRefresh = arr.getBoolean(R.styleable.PtrFrameLayout_ptr_pull_to_fresh, mPullToRefresh);
+            mPullToRefresh = arr.getBoolean(R.styleable.PtrLayout_ptr_pull_to_fresh, mPullToRefresh);
             arr.recycle();
         }
 
@@ -240,8 +233,7 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
 
         if (mHeaderView != null) {
             measureChildWithMargins(mHeaderView, widthMeasureSpec, 0, heightMeasureSpec, 0);
-            MarginLayoutParams lp = (MarginLayoutParams) mHeaderView.getLayoutParams();
-            mHeaderHeight = mHeaderView.getMeasuredHeight() + (isHeaderLayoutMarginEnable() ? 0 : (lp.topMargin + lp.bottomMargin));
+            mHeaderHeight = mHeaderView.getMeasuredHeight();
             mPtrIndicator.setHeaderHeight(mHeaderHeight);
         }
 
@@ -282,7 +274,7 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
         int paddingTop = getPaddingTop();
 
         if (mHeaderView != null) {
-            MarginLayoutParams lp = (MarginLayoutParams) mHeaderView.getLayoutParams();
+            LayoutParams lp = (LayoutParams) mHeaderView.getLayoutParams();
             final int left = paddingLeft + lp.leftMargin;
             // enhance readability(header is layout above screen when first init)
             final int top = -(mHeaderHeight - paddingTop - lp.topMargin - offset);
@@ -376,12 +368,13 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
 
                     int dy = (int) (mLastTouch.y - y);
 
-                    if (dy != 0 || mPtrIndicator.isInStartPosition()) {
+                    if (mPtrIndicator.isInStartPosition() || dy > 0) {
                         if (startNestedScroll(ViewCompat.SCROLL_AXIS_VERTICAL)) {
                             if (dispatchNestedPreScroll(0, dy, mScrollConsumed, mScrollOffset)) {
                                 mLastTouch.y = dy - mScrollOffset[1];
                                 // handle touch when parent not accept nest scroll
-                                return true;
+                                startDragging(new PointF(ev.getX(), ev.getY()));
+                                return dy > 0;
                             }
                         }
                     }
@@ -426,7 +419,7 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
 
                 int dy = (int) (mLastTouch.y - y);
 
-                if (dy < 0 || mPtrIndicator.isInStartPosition()) {
+                if (dy > 0 || mPtrIndicator.isInStartPosition()) {
                     if (startNestedScroll(ViewCompat.SCROLL_AXIS_VERTICAL)) {
                         if (dispatchNestedPreScroll(0, dy, mScrollConsumed, mScrollOffset)) {
                             mLastTouch.y = y - mScrollOffset[1];
@@ -450,19 +443,9 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
                 boolean moveUp = !moveDown;
                 boolean canMoveUp = mPtrIndicator.hasLeftStartPosition();
 
-                if (DEBUG) {
-                    boolean canMoveDown = mPtrHandler != null && mPtrHandler.checkCanDoRefresh(this, mContent, mHeaderView);
-                    PtrCLog.v(LOG_TAG, "ACTION_MOVE: offsetY:%s, currentPos: %s, moveUp: %s, canMoveUp: %s, moveDown: %s: canMoveDown: %s", offsetY, mPtrIndicator.getCurrentPosY(), moveUp, canMoveUp, moveDown, canMoveDown);
-                }
-
                 if (mPtrIndicator.getCurrentPosY() != 0) {
                     movePos(offsetY);
                     return true;
-                }
-
-                // disable move when header not reach top
-                if (moveDown && mPtrHandler != null && !mPtrHandler.checkCanDoRefresh(this, mContent, mHeaderView)) {
-                    return false;
                 }
 
                 if ((moveUp && canMoveUp) || moveDown) {
@@ -475,6 +458,7 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
 
     /**
      * //if deltaY > 0, move the content down
+     *
      * @param deltaY the y offset
      */
     private int movePos(float deltaY) {
@@ -621,25 +605,6 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
     }
 
     /**
-     * please DO REMEMBER resume the hook
-     *
-     * @param hook prt refresh complete condition hook
-     */
-
-    public void setRefreshCompleteHook(PtrUIHandlerHook hook) {
-        mRefreshCompleteHook = hook;
-        hook.setResumeAction(new Runnable() {
-            @Override
-            public void run() {
-                if (DEBUG) {
-                    PtrCLog.d(LOG_TAG, "mRefreshCompleteHook resume.");
-                }
-                notifyUIRefreshComplete(true);
-            }
-        });
-    }
-
-    /**
      * Scroll back to to if is not under touch
      */
     private void tryScrollBackToTop() {
@@ -687,9 +652,6 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
             if (DEBUG) {
                 PtrCLog.i(LOG_TAG, "PtrUIHandler: onBegin");
             }
-        }
-        if (mPtrHandler != null) {
-            mPtrHandler.onRefreshBegin(this);
         }
     }
 
@@ -740,10 +702,6 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
             PtrCLog.i(LOG_TAG, "refreshComplete");
         }
 
-        if (mRefreshCompleteHook != null) {
-            mRefreshCompleteHook.reset();
-        }
-
         int delay = (int) (mLoadingMinTime - (System.currentTimeMillis() - mLoadingStartTime));
         if (delay <= 0) {
             if (DEBUG) {
@@ -771,17 +729,6 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
      * @param ignoreHook is ignore hook
      */
     private void notifyUIRefreshComplete(boolean ignoreHook) {
-        /**
-         * After hook operation is done, {@link #notifyUIRefreshComplete} will be call in resume action to ignore hook.
-         */
-        if (mPtrIndicator.hasLeftStartPosition() && !ignoreHook && mRefreshCompleteHook != null) {
-            if (DEBUG) {
-                PtrCLog.d(LOG_TAG, "notifyUIRefreshComplete mRefreshCompleteHook run.");
-            }
-
-            mRefreshCompleteHook.takeOver();
-            return;
-        }
         if (mPtrListenerHolder.hasHandler()) {
             if (DEBUG) {
                 PtrCLog.i(LOG_TAG, "PtrUIHandler: onComplete");
@@ -878,11 +825,6 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
     @SuppressWarnings("unused")
     public View getContentView() {
         return mContent;
-    }
-
-    @SuppressWarnings("unused")
-    public void setPtrHandler(PtrHandler ptrHandler) {
-        mPtrHandler = ptrHandler;
     }
 
     public void addPtrListener(PtrListener ptrListener) {
@@ -982,14 +924,6 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
 
     public void setPullToRefresh(boolean pullToRefresh) {
         mPullToRefresh = pullToRefresh;
-    }
-
-    public boolean isHeaderLayoutMarginEnable() {
-        return mHeaderLayoutMarginEnable;
-    }
-
-    public void setHeaderLayoutMarginEnable(boolean enable) {
-        mHeaderLayoutMarginEnable = enable;
     }
 
     @SuppressWarnings("unused")
@@ -1120,7 +1054,7 @@ public class PtrFrameLayout extends ViewGroup implements NestedScrollingParent,
         // If we are in the middle of consuming, a scroll, then we want to move the ptr back up
         // before allowing the list to scroll
         if (dy > 0 && !mPtrIndicator.isInStartPosition()) {
-            consumed[1] = - movePos(-dy);
+            consumed[1] = -movePos(-dy);
         }
 
         if (dy > 0 && mTotalUnconsumed > 0 && isRefreshing()) {

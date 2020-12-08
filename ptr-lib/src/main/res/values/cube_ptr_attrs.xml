@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <declare-styleable name="PtrFrameLayout">
+    <declare-styleable name="PtrLayout">
         <!-- Optional. If you put header and content in xml, you can you these to specify them. -->
         <attr name="ptr_header" format="reference" />
         <attr name="ptr_content" format="reference" />
@@ -17,9 +17,6 @@
 
         <!-- pull to refresh, otherwise release to refresh, default is release to refresh -->
         <attr name="ptr_pull_to_fresh" format="boolean" />
-
-        <!-- keep header when refreshing-->
-        <attr name="ptr_keep_header_when_refresh" format="boolean" />
     </declare-styleable>
 
     <declare-styleable name="PtrClassicHeader">

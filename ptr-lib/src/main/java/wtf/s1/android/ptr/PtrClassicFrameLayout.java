@@ -3,7 +3,7 @@ package wtf.s1.android.ptr;
 import android.content.Context;
 import android.util.AttributeSet;
 
-public class PtrClassicFrameLayout extends PtrFrameLayout {
+public class PtrClassicFrameLayout extends PtrLayout {
 
     private PtrClassicDefaultHeader mPtrClassicHeader;
 

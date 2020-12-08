@@ -16,7 +16,7 @@
 
 package com.github.auptr.ptr_support_design
 
-import wtf.s1.android.ptr.PtrFrameLayout
+import wtf.s1.android.ptr.PtrLayout
 import wtf.s1.android.ptr.PtrSimpleListener
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -37,7 +37,7 @@ class CheeseDetailActivity : AppCompatActivity() {
 
         collapsing_toolbar.title = cheeseName
         ptr_layout.addPtrListener(object : PtrSimpleListener() {
-            override fun onBegin(frame: PtrFrameLayout) {
+            override fun onBegin(frame: PtrLayout) {
                 ptr_layout.postDelayed({ ptr_layout.refreshComplete() }, 3000)
             }
         })
