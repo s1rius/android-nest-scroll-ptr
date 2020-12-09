@@ -59,12 +59,6 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
     public static boolean DEBUG = true;
     private static int ID = 1;
     protected final String LOG_TAG = "ptr-frame-" + ++ID;
-    // auto refresh status
-    private final static byte FLAG_AUTO_REFRESH_AT_ONCE = 0x01;
-    private final static byte FLAG_AUTO_REFRESH_BUT_LATER = 0x01 << 1;
-    private final static byte FLAG_ENABLE_NEXT_PTR_AT_ONCE = 0x01 << 2;
-    private final static byte FLAG_PIN_CONTENT = 0x01 << 3;
-    private final static byte MASK_AUTO_REFRESH = 0x03;
     protected View mContent;
     // optional config for define header and content in xml file
     private int mHeaderId = 0;
@@ -72,7 +66,7 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
     // ptr config
     private int mLoadingMinTime = 500;
     private long mLoadingStartTime = 0;
-    private int mFlag = 0x00;
+    private boolean inAutoRefresh = false;
     private int mDurationToLoadingPosition = 200;
     private int mDurationToCloseHeader = 200;
     private boolean mKeepHeaderWhenRefresh = true;
@@ -286,9 +280,6 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
             }
         }
         if (mContent != null) {
-            if (isPinContent()) {
-                offset = 0;
-            }
             MarginLayoutParams lp = (MarginLayoutParams) mContent.getLayoutParams();
             final int left = paddingLeft + lp.leftMargin;
             final int top = paddingTop + lp.topMargin + offset;
@@ -496,8 +487,7 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
 
 
         // leave initiated position or just refresh complete
-        if ((mPtrIndicator.hasJustLeftStartPosition() && mStatus == PTR_STATUS_INIT) ||
-                (mPtrIndicator.goDownCrossFinishPosition() && mStatus == PTR_STATUS_COMPLETE && isEnabledNextPtrAtOnce())) {
+        if (mPtrIndicator.hasJustLeftStartPosition() && mStatus == PTR_STATUS_INIT) {
             changeStatusTo(PTR_STATUS_PREPARE);
         }
 
@@ -513,10 +503,6 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
                     && mPtrIndicator.crossRefreshLineFromTopToBottom()) {
                 tryToPerformRefresh();
             }
-            // reach header height while auto refresh
-            if (performAutoRefreshButLater() && mPtrIndicator.hasJustReachedHeaderHeightFromTopToBottom()) {
-                tryToPerformRefresh();
-            }
         }
 
         if (DEBUG) {
@@ -525,9 +511,7 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
         }
 
         mHeaderView.offsetTopAndBottom(change);
-        if (!isPinContent()) {
-            mContent.offsetTopAndBottom(change);
-        }
+        mContent.offsetTopAndBottom(change);
         invalidate();
 
         if (mPtrListenerHolder.hasHandler()) {
@@ -559,7 +543,7 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
                     // do nothing
                     if (DEBUG) {
                         PtrCLog.d(LOG_TAG, "performRefreshComplete do nothing, scrolling: %s, auto refresh: %s",
-                                mScrollChecker.mIsRunning, mFlag);
+                                mScrollChecker.mIsRunning, inAutoRefresh);
                     }
                     return;
                 }
@@ -742,74 +726,27 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
 
     @SuppressWarnings("unused")
     public void autoRefresh() {
-        autoRefresh(true, mDurationToCloseHeader);
-    }
-
-    @SuppressWarnings("unused")
-    public void autoRefresh(boolean atOnce) {
-        autoRefresh(atOnce, mDurationToCloseHeader);
+        autoRefresh(mDurationToCloseHeader);
     }
 
     private void clearFlag() {
-        // remove auto fresh flag
-        mFlag = mFlag & ~MASK_AUTO_REFRESH;
+        inAutoRefresh = false;
     }
 
-    public void autoRefresh(boolean atOnce, int duration) {
+    public void autoRefresh(int duration) {
 
         if (mStatus != PTR_STATUS_INIT) {
             return;
         }
 
-        mFlag |= atOnce ? FLAG_AUTO_REFRESH_AT_ONCE : FLAG_AUTO_REFRESH_BUT_LATER;
-
+        inAutoRefresh = true;
         changeStatusTo(PTR_STATUS_PREPARE);
         mScrollChecker.tryToScrollTo(mPtrIndicator.getOffsetToRefresh(), duration);
-        if (atOnce) {
-            changeStatusTo(PTR_STATUS_LOADING);
-        }
+        changeStatusTo(PTR_STATUS_LOADING);
     }
 
     public boolean isAutoRefresh() {
-        return (mFlag & MASK_AUTO_REFRESH) > 0;
-    }
-
-    private boolean performAutoRefreshButLater() {
-        return (mFlag & MASK_AUTO_REFRESH) == FLAG_AUTO_REFRESH_BUT_LATER;
-    }
-
-    public boolean isEnabledNextPtrAtOnce() {
-        return (mFlag & FLAG_ENABLE_NEXT_PTR_AT_ONCE) > 0;
-    }
-
-    /**
-     * If @param enable has been set to true. The user can perform next PTR at once.
-     *
-     * @param enable is next enable
-     */
-    public void setEnabledNextPtrAtOnce(boolean enable) {
-        if (enable) {
-            mFlag = mFlag | FLAG_ENABLE_NEXT_PTR_AT_ONCE;
-        } else {
-            mFlag = mFlag & ~FLAG_ENABLE_NEXT_PTR_AT_ONCE;
-        }
-    }
-
-    public boolean isPinContent() {
-        return (mFlag & FLAG_PIN_CONTENT) > 0;
-    }
-
-    /**
-     * The content view will now move when {@param pinContent} set to true.
-     *
-     * @param pinContent the pinContent
-     */
-    public void setPinContent(boolean pinContent) {
-        if (pinContent) {
-            mFlag = mFlag | FLAG_PIN_CONTENT;
-        } else {
-            mFlag = mFlag & ~FLAG_PIN_CONTENT;
-        }
+        return inAutoRefresh;
     }
 
     /**
