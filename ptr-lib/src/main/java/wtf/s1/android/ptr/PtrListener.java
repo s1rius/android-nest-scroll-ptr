@@ -1,6 +1,6 @@
 package wtf.s1.android.ptr;
 
-import wtf.s1.android.ptr.indicator.PtrIndicator;
+import wtf.s1.android.ptr.indicator.PtrStateController;
 
 /**
  *
@@ -32,5 +32,5 @@ public interface PtrListener {
     public void onComplete(PtrLayout frame);
 
 
-    public void onPositionChange(PtrLayout frame, int status, PtrIndicator ptrIndicator);
+    public void onPositionChange(PtrLayout frame, int status, PtrStateController ptrStateController);
 }

@@ -28,8 +28,7 @@ import androidx.core.widget.ListViewCompat;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-import wtf.s1.android.ptr.indicator.PtrIndicator;
-import wtf.s1.android.ptr.util.PtrCLog;
+import wtf.s1.android.ptr.indicator.PtrStateController;
 
 /**
  * This layout view for "Pull to Refresh(Ptr)" support all of the view,
@@ -78,7 +77,7 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
 
     private int mHeaderHeight;
 
-    private PtrIndicator mPtrIndicator;
+    private PtrStateController mPtrStateController;
 
     //touch handle
     private int mActivePointerId = INVALID_POINTER;
@@ -116,7 +115,7 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
     public PtrLayout(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
 
-        mPtrIndicator = new PtrIndicator();
+        mPtrStateController = new PtrStateController();
 
         TypedArray arr = context.obtainStyledAttributes(attrs, R.styleable.PtrLayout, 0, 0);
         if (arr != null) {
@@ -124,15 +123,15 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
             mHeaderId = arr.getResourceId(R.styleable.PtrLayout_ptr_header, mHeaderId);
             mContainerId = arr.getResourceId(R.styleable.PtrLayout_ptr_content, mContainerId);
 
-            mPtrIndicator.setResistance(
-                    arr.getFloat(R.styleable.PtrLayout_ptr_resistance, mPtrIndicator.getResistance()));
+            mPtrStateController.setResistance(
+                    arr.getFloat(R.styleable.PtrLayout_ptr_resistance, mPtrStateController.getResistance()));
 
             mDurationToLoadingPosition = arr.getInt(R.styleable.PtrLayout_ptr_duration_to_loading_position, mDurationToLoadingPosition);
             mDurationToCloseHeader = arr.getInt(R.styleable.PtrLayout_ptr_duration_to_close_header, mDurationToCloseHeader);
 
-            float ratio = mPtrIndicator.getRatioOfHeaderToHeightRefresh();
+            float ratio = mPtrStateController.getRatioOfHeaderToHeightRefresh();
             ratio = arr.getFloat(R.styleable.PtrLayout_ptr_ratio_of_header_height_to_refresh, ratio);
-            mPtrIndicator.setRatioOfHeaderHeightToRefresh(ratio);
+            mPtrStateController.setRatioOfHeaderHeightToRefresh(ratio);
 
             mPullToRefresh = arr.getBoolean(R.styleable.PtrLayout_ptr_pull_to_fresh, mPullToRefresh);
             arr.recycle();
@@ -218,29 +217,14 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
-        if (DEBUG) {
-            PtrCLog.d(LOG_TAG, "onMeasure frame: width: %s, height: %s, padding: %s %s %s %s",
-                    getMeasuredHeight(), getMeasuredWidth(),
-                    getPaddingLeft(), getPaddingRight(), getPaddingTop(), getPaddingBottom());
-
-        }
-
         if (mHeaderView != null) {
             measureChildWithMargins(mHeaderView, widthMeasureSpec, 0, heightMeasureSpec, 0);
             mHeaderHeight = mHeaderView.getMeasuredHeight();
-            mPtrIndicator.setHeaderHeight(mHeaderHeight);
+            mPtrStateController.setHeaderHeight(mHeaderHeight);
         }
 
         if (mContent != null) {
             measureContentView(mContent, widthMeasureSpec, heightMeasureSpec);
-            if (DEBUG) {
-                ViewGroup.MarginLayoutParams lp = (MarginLayoutParams) mContent.getLayoutParams();
-                PtrCLog.d(LOG_TAG, "onMeasure content, width: %s, height: %s, margin: %s %s %s %s",
-                        getMeasuredWidth(), getMeasuredHeight(),
-                        lp.leftMargin, lp.topMargin, lp.rightMargin, lp.bottomMargin);
-                PtrCLog.d(LOG_TAG, "onMeasure, currentPos: %s, lastPos: %s, top: %s",
-                        mPtrIndicator.getCurrentPosY(), mPtrIndicator.getLastPosY(), mContent.getTop());
-            }
         }
     }
 
@@ -263,7 +247,7 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
     }
 
     private void layoutChildren() {
-        int offset = mPtrIndicator.getCurrentPosY();
+        int offset = mPtrStateController.getCurrentPosY();
         int paddingLeft = getPaddingLeft();
         int paddingTop = getPaddingTop();
 
@@ -275,9 +259,6 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
             final int right = left + mHeaderView.getMeasuredWidth();
             final int bottom = top + mHeaderView.getMeasuredHeight();
             mHeaderView.layout(left, top, right, bottom);
-            if (DEBUG) {
-                PtrCLog.d(LOG_TAG, "onLayout header: %s %s %s %s", left, top, right, bottom);
-            }
         }
         if (mContent != null) {
             MarginLayoutParams lp = (MarginLayoutParams) mContent.getLayoutParams();
@@ -285,16 +266,12 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
             final int top = paddingTop + lp.topMargin + offset;
             final int right = left + mContent.getMeasuredWidth();
             final int bottom = top + mContent.getMeasuredHeight();
-            if (DEBUG) {
-                PtrCLog.d(LOG_TAG, "onLayout content: %s %s %s %s", left, top, right, bottom);
-            }
             mContent.layout(left, top, right, bottom);
         }
     }
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent e) {
-        if (DEBUG) PtrCLog.d(LOG_TAG, "dispatch Touch = " + e.toString());
         if (mScrollChecker.isRunning()) {
             mScrollChecker.abortIfWorking();
         }
@@ -305,10 +282,7 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
                 mIsInTouchProgress = false;
                 mIsBeingDragged = false;
                 stopNestedScroll();
-                if (mPtrIndicator.hasLeftStartPosition()) {
-                    if (DEBUG) {
-                        PtrCLog.d(LOG_TAG, "call onRelease when user release");
-                    }
+                if (mPtrStateController.hasLeftStartPosition()) {
                     onRelease(false);
                 }
                 break;
@@ -342,8 +316,6 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
                 break;
             case MotionEvent.ACTION_MOVE:
                 if (mActivePointerId == INVALID_POINTER) {
-                    if (DEBUG)
-                        PtrCLog.e(LOG_TAG, "Got ACTION_MOVE event but don't have an active pointer id.");
                     return false;
                 }
 
@@ -359,7 +331,7 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
 
                     int dy = (int) (mLastTouch.y - y);
 
-                    if (mPtrIndicator.isInStartPosition() || dy > 0) {
+                    if (mPtrStateController.isInStartPosition() || dy > 0) {
                         if (startNestedScroll(ViewCompat.SCROLL_AXIS_VERTICAL)) {
                             if (dispatchNestedPreScroll(0, dy, mScrollConsumed, mScrollOffset)) {
                                 mLastTouch.y = dy - mScrollOffset[1];
@@ -398,9 +370,6 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
                 mLastTouch.set(event.getX(pointerIndex), event.getY(pointerIndex));
 
                 if (!canChildScrollToUp()) {
-                    if (DEBUG) {
-                        PtrCLog.d(LOG_TAG, "handle action down touch event");
-                    }
                     return true;
                 }
                 startNestedScroll(ViewCompat.SCROLL_AXIS_VERTICAL);
@@ -410,7 +379,7 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
 
                 int dy = (int) (mLastTouch.y - y);
 
-                if (dy > 0 || mPtrIndicator.isInStartPosition()) {
+                if (dy > 0 || mPtrStateController.isInStartPosition()) {
                     if (startNestedScroll(ViewCompat.SCROLL_AXIS_VERTICAL)) {
                         if (dispatchNestedPreScroll(0, dy, mScrollConsumed, mScrollOffset)) {
                             mLastTouch.y = y - mScrollOffset[1];
@@ -432,9 +401,9 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
 
                 boolean moveDown = offsetY > 0;
                 boolean moveUp = !moveDown;
-                boolean canMoveUp = mPtrIndicator.hasLeftStartPosition();
+                boolean canMoveUp = mPtrStateController.hasLeftStartPosition();
 
-                if (mPtrIndicator.getCurrentPosY() != 0) {
+                if (mPtrStateController.getCurrentPosY() != 0) {
                     movePos(offsetY);
                     return true;
                 }
@@ -454,28 +423,22 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
      */
     private int movePos(float deltaY) {
         // has reached the top
-        if ((deltaY < 0 && mPtrIndicator.isInStartPosition())) {
-            if (DEBUG) {
-                PtrCLog.e(LOG_TAG, "has reached the top");
-            }
+        if ((deltaY < 0 && mPtrStateController.isInStartPosition())) {
             return 0;
         }
 
-        int to = mPtrIndicator.getCurrentPosY() + (int) deltaY;
+        int to = mPtrStateController.getCurrentPosY() + (int) deltaY;
 
         // over top
-        if (mPtrIndicator.willOverTop(to)) {
-            if (DEBUG) {
-                PtrCLog.e(LOG_TAG, "over top");
-            }
-            to = PtrIndicator.POS_START;
+        if (mPtrStateController.willOverTop(to)) {
+            to = PtrStateController.POS_START;
         }
 
-        mPtrIndicator.setCurrentPos(to);
-        if (mPtrIndicator.isInStartPosition() && isRefreshing()) {
+        mPtrStateController.setCurrentPos(to);
+        if (mPtrStateController.isInStartPosition() && isRefreshing()) {
             performRefreshComplete();
         }
-        int change = to - mPtrIndicator.getLastPosY();
+        int change = to - mPtrStateController.getLastPosY();
         updatePos(change);
         return change;
     }
@@ -487,12 +450,12 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
 
 
         // leave initiated position or just refresh complete
-        if (mPtrIndicator.hasJustLeftStartPosition() && mStatus == PTR_STATUS_INIT) {
+        if (mPtrStateController.hasJustLeftStartPosition() && mStatus == PTR_STATUS_INIT) {
             changeStatusTo(PTR_STATUS_PREPARE);
         }
 
         // back to initiated position
-        if (mPtrIndicator.hasJustBackToStartPosition()) {
+        if (mPtrStateController.hasJustBackToStartPosition()) {
             tryToNotifyReset();
         }
 
@@ -500,14 +463,9 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
         if (mStatus == PTR_STATUS_PREPARE) {
             // reach fresh height while moving from top to bottom
             if (!isAutoRefresh() && mPullToRefresh
-                    && mPtrIndicator.crossRefreshLineFromTopToBottom()) {
+                    && mPtrStateController.crossRefreshLineFromTopToBottom()) {
                 tryToPerformRefresh();
             }
-        }
-
-        if (DEBUG) {
-            PtrCLog.v(LOG_TAG, "updatePos: change: %s, current: %s last: %s, top: %s, headerHeight: %s",
-                    change, mPtrIndicator.getCurrentPosY(), mPtrIndicator.getLastPosY(), mContent.getTop(), mHeaderHeight);
         }
 
         mHeaderView.offsetTopAndBottom(change);
@@ -515,7 +473,7 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
         invalidate();
 
         if (mPtrListenerHolder.hasHandler()) {
-            mPtrListenerHolder.onPositionChange(this, mStatus, mPtrIndicator);
+            mPtrListenerHolder.onPositionChange(this, mStatus, mPtrStateController);
         }
     }
 
@@ -524,9 +482,6 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
     }
 
     public void changeStatusTo(int status) {
-        if (DEBUG) {
-            PtrCLog.d(LOG_TAG, "status change from " + mStatus + " to " + status);
-        }
         mStatus = status;
         onStateChange(mStatus);
     }
@@ -540,11 +495,6 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
             case PTR_STATUS_COMPLETE:
                 // if is auto refresh do nothing, wait scroller stop
                 if (mScrollChecker.mIsRunning && isAutoRefresh()) {
-                    // do nothing
-                    if (DEBUG) {
-                        PtrCLog.d(LOG_TAG, "performRefreshComplete do nothing, scrolling: %s, auto refresh: %s",
-                                mScrollChecker.mIsRunning, inAutoRefresh);
-                    }
                     return;
                 }
                 notifyUIRefreshComplete(false);
@@ -571,9 +521,9 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
             // keep header for fresh
             if (mKeepHeaderWhenRefresh) {
                 // scroll header back
-                if (mPtrIndicator.isOverOffsetToKeepHeaderWhileLoading() && !stayForLoading) {
+                if (mPtrStateController.isOverOffsetToKeepHeaderWhileLoading() && !stayForLoading) {
                     mScrollChecker.tryToScrollTo(
-                            mPtrIndicator.getOffsetToKeepHeaderWhileLoading(),
+                            mPtrStateController.getOffsetToKeepHeaderWhileLoading(),
                             mDurationToLoadingPosition);
                 }
             } else {
@@ -593,7 +543,7 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
      */
     private void tryScrollBackToTop() {
         if (!mIsInTouchProgress) {
-            mScrollChecker.tryToScrollTo(PtrIndicator.POS_START, mDurationToCloseHeader);
+            mScrollChecker.tryToScrollTo(PtrStateController.POS_START, mDurationToCloseHeader);
         }
     }
 
@@ -623,8 +573,8 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
             return;
         }
 
-        if ((mPtrIndicator.isOverOffsetToKeepHeaderWhileLoading() && isAutoRefresh())
-                || mPtrIndicator.isOverOffsetToRefresh()) {
+        if ((mPtrStateController.isOverOffsetToKeepHeaderWhileLoading() && isAutoRefresh())
+                || mPtrStateController.isOverOffsetToRefresh()) {
             changeStatusTo(PTR_STATUS_LOADING);
         }
     }
@@ -633,9 +583,6 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
         mLoadingStartTime = System.currentTimeMillis();
         if (mPtrListenerHolder.hasHandler()) {
             mPtrListenerHolder.onBegin(this);
-            if (DEBUG) {
-                PtrCLog.i(LOG_TAG, "PtrUIHandler: onBegin");
-            }
         }
     }
 
@@ -644,26 +591,20 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
      */
     private void tryToNotifyReset() {
         if ((mStatus == PTR_STATUS_COMPLETE || mStatus == PTR_STATUS_PREPARE)
-                && mPtrIndicator.isInStartPosition()) {
+                && mPtrStateController.isInStartPosition()) {
             changeStatusTo(PTR_STATUS_INIT);
         }
     }
 
     protected void onPtrScrollAbort() {
-        if (mPtrIndicator.hasLeftStartPosition() && isAutoRefresh()) {
-            if (DEBUG) {
-                PtrCLog.d(LOG_TAG, "call onRelease after scroll abort");
-            }
+        if (mPtrStateController.hasLeftStartPosition() && isAutoRefresh()) {
             onRelease(true);
         }
     }
 
     @SuppressWarnings("unused")
     protected void onPtrScrollFinish() {
-        if (mPtrIndicator.hasLeftStartPosition() && isAutoRefresh()) {
-            if (DEBUG) {
-                PtrCLog.d(LOG_TAG, "call onRelease after scroll finish");
-            }
+        if (mPtrStateController.hasLeftStartPosition() && isAutoRefresh()) {
             onRelease(true);
         }
     }
@@ -682,21 +623,12 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
      * The UI will perform complete at once or after a delay, depends on the time elapsed is greater then {@link #mLoadingMinTime} or not.
      */
     final public void refreshComplete() {
-        if (DEBUG) {
-            PtrCLog.i(LOG_TAG, "refreshComplete");
-        }
 
         int delay = (int) (mLoadingMinTime - (System.currentTimeMillis() - mLoadingStartTime));
         if (delay <= 0) {
-            if (DEBUG) {
-                PtrCLog.d(LOG_TAG, "performRefreshComplete at once");
-            }
             performRefreshComplete();
         } else {
             postDelayed(mPerformRefreshCompleteDelay, delay);
-            if (DEBUG) {
-                PtrCLog.d(LOG_TAG, "performRefreshComplete after delay: %s", delay);
-            }
         }
     }
 
@@ -714,12 +646,9 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
      */
     private void notifyUIRefreshComplete(boolean ignoreHook) {
         if (mPtrListenerHolder.hasHandler()) {
-            if (DEBUG) {
-                PtrCLog.i(LOG_TAG, "PtrUIHandler: onComplete");
-            }
             mPtrListenerHolder.onComplete(this);
         }
-        mPtrIndicator.onUIRefreshComplete();
+        mPtrStateController.onUIRefreshComplete();
         tryScrollBackToTopAfterComplete();
         tryToNotifyReset();
     }
@@ -741,7 +670,7 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
 
         inAutoRefresh = true;
         changeStatusTo(PTR_STATUS_PREPARE);
-        mScrollChecker.tryToScrollTo(mPtrIndicator.getOffsetToRefresh(), duration);
+        mScrollChecker.tryToScrollTo(mPtrStateController.getOffsetToRefresh(), duration);
         changeStatusTo(PTR_STATUS_LOADING);
     }
 
@@ -774,21 +703,21 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
     }
 
     @SuppressWarnings("unused")
-    public void setPtrIndicator(PtrIndicator indicator) {
-        if (mPtrIndicator != null && mPtrIndicator != indicator) {
-            indicator.convertFrom(mPtrIndicator);
+    public void setPtrIndicator(PtrStateController indicator) {
+        if (mPtrStateController != null && mPtrStateController != indicator) {
+            indicator.convertFrom(mPtrStateController);
         }
-        mPtrIndicator = indicator;
+        mPtrStateController = indicator;
     }
 
     @SuppressWarnings("unused")
     public float getResistance() {
-        return mPtrIndicator.getResistance();
+        return mPtrStateController.getResistance();
     }
 
     @SuppressWarnings("unused")
     public void setResistance(float resistance) {
-        mPtrIndicator.setResistance(resistance);
+        mPtrStateController.setResistance(resistance);
     }
 
     /**
@@ -818,31 +747,31 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
 
     @SuppressWarnings("unused")
     public void setRatioOfHeaderHeightToRefresh(float ratio) {
-        mPtrIndicator.setRatioOfHeaderHeightToRefresh(ratio);
+        mPtrStateController.setRatioOfHeaderHeightToRefresh(ratio);
     }
 
     public int getOffsetToRefresh() {
-        return mPtrIndicator.getOffsetToRefresh();
+        return mPtrStateController.getOffsetToRefresh();
     }
 
     @SuppressWarnings("unused")
     public float getRatioOfHeaderToHeightRefresh() {
-        return mPtrIndicator.getRatioOfHeaderToHeightRefresh();
+        return mPtrStateController.getRatioOfHeaderToHeightRefresh();
     }
 
     @SuppressWarnings("unused")
     public int getOffsetToKeepHeaderWhileLoading() {
-        return mPtrIndicator.getOffsetToKeepHeaderWhileLoading();
+        return mPtrStateController.getOffsetToKeepHeaderWhileLoading();
     }
 
     @SuppressWarnings("unused")
     public void setOffsetToRefresh(int offset) {
-        mPtrIndicator.setOffsetToRefresh(offset);
+        mPtrStateController.setOffsetToRefresh(offset);
     }
 
     @SuppressWarnings("unused")
     public void setOffsetToKeepHeaderWhileLoading(int offset) {
-        mPtrIndicator.setOffsetToKeepHeaderWhileLoading(offset);
+        mPtrStateController.setOffsetToKeepHeaderWhileLoading(offset);
     }
 
     @SuppressWarnings("unused")
@@ -990,7 +919,7 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
     public void onNestedPreScroll(@NonNull View target, int dx, int dy, @NonNull int[] consumed) {
         // If we are in the middle of consuming, a scroll, then we want to move the ptr back up
         // before allowing the list to scroll
-        if (dy > 0 && !mPtrIndicator.isInStartPosition()) {
+        if (dy > 0 && !mPtrStateController.isInStartPosition()) {
             consumed[1] = -movePos(-dy);
         }
 
@@ -1077,7 +1006,6 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
         } else {
             canChildScrollUp = mContent.canScrollVertically(-1);
         }
-        if (DEBUG) PtrCLog.d(LOG_TAG, "canChildScrollToUp = " + canChildScrollUp);
         return canChildScrollUp;
     }
 
@@ -1087,7 +1015,6 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
         if (yDiff > mTouchSlop && yDiff > xDiff && !mIsBeingDragged) {
             if (!canChildScrollToUp()) {
                 mIsBeingDragged = true;
-                if (DEBUG) PtrCLog.d(LOG_TAG, "ptr is beingDragged");
             }
             // if in refreshing, scroll to up will make PtrFrameLayout handle the touch event
             // and offset content view.
@@ -1141,10 +1068,10 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
         }
 
         private void tryToScrollTo(int to, int duration) {
-            if (mPtrIndicator.isAlreadyHere(to) || (to == mTo && mIsRunning)) {
+            if (mPtrStateController.isAlreadyHere(to) || (to == mTo && mIsRunning)) {
                 return;
             }
-            mStart = mPtrIndicator.getCurrentPosY();
+            mStart = mPtrStateController.getCurrentPosY();
             mTo = to;
 
             if (mAnimator.isRunning()) {
@@ -1152,11 +1079,6 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
             }
 
             mAnimator.setDuration(duration);
-
-            if (DEBUG) {
-                PtrCLog.d(LOG_TAG,
-                        "tryToScrollTo: start: %s, distance:%s, to:%s", mStart, to - mStart, to);
-            }
 
             mAnimator.start();
             mIsRunning = true;
@@ -1170,7 +1092,7 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
         public void onAnimationUpdate(ValueAnimator animation) {
             float fraction = animation.getAnimatedFraction();
             int target = mStart + (int) ((mTo - mStart) * fraction);
-            movePos(target - mPtrIndicator.getCurrentPosY());
+            movePos(target - mPtrStateController.getCurrentPosY());
         }
     }
 }

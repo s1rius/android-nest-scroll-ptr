@@ -1,7 +1,7 @@
 package wtf.s1.android.ptr.indicator;
 
 
-public class PtrIndicator {
+public class PtrStateController {
 
     public final static int POS_START = 0;
     protected int mOffsetToRefresh = 0;
@@ -79,7 +79,7 @@ public class PtrIndicator {
         mOffsetToRefresh = (int) (mRatioOfHeaderHeightToRefresh * mHeaderHeight);
     }
 
-    public void convertFrom(PtrIndicator ptrSlider) {
+    public void convertFrom(PtrStateController ptrSlider) {
         mCurrentPos = ptrSlider.mCurrentPos;
         mLastPos = ptrSlider.mLastPos;
         mHeaderHeight = ptrSlider.mHeaderHeight;
@@ -127,16 +127,6 @@ public class PtrIndicator {
 
     public boolean isAlreadyHere(int to) {
         return mCurrentPos == to;
-    }
-
-    public float getLastPercent() {
-        final float oldPercent = mHeaderHeight == 0 ? 0 : mLastPos * 1f / mHeaderHeight;
-        return oldPercent;
-    }
-
-    public float getCurrentPercent() {
-        final float currentPercent = mHeaderHeight == 0 ? 0 : mCurrentPos * 1f / mHeaderHeight;
-        return currentPercent;
     }
 
     public boolean willOverTop(int to) {

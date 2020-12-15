@@ -2,7 +2,7 @@ package wtf.s1.android.ptr;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import wtf.s1.android.ptr.indicator.PtrIndicator;
+import wtf.s1.android.ptr.indicator.PtrStateController;
 
 /**
  * A single linked list to wrap PtrUIHandler
@@ -62,9 +62,9 @@ class PtrListenerHolder implements PtrListener {
     }
 
     @Override
-    public void onPositionChange(PtrLayout frame, int status, PtrIndicator ptrIndicator) {
+    public void onPositionChange(PtrLayout frame, int status, PtrStateController ptrStateController) {
         for (PtrListener listener : listeners) {
-            listener.onPositionChange(frame, status, ptrIndicator);
+            listener.onPositionChange(frame, status, ptrStateController);
         }
     }
 }

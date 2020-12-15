@@ -11,7 +11,7 @@ import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
 import android.widget.FrameLayout;
 import android.widget.TextView;
-import wtf.s1.android.ptr.indicator.PtrIndicator;
+import wtf.s1.android.ptr.indicator.PtrStateController;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -232,11 +232,11 @@ public class PtrClassicDefaultHeader extends FrameLayout implements PtrListener 
     }
 
     @Override
-    public void onPositionChange(PtrLayout frame, int status, PtrIndicator ptrIndicator) {
+    public void onPositionChange(PtrLayout frame, int status, PtrStateController ptrStateController) {
 
         final int mOffsetToRefresh = frame.getOffsetToRefresh();
-        final int currentPos = ptrIndicator.getCurrentPosY();
-        final int lastPos = ptrIndicator.getLastPosY();
+        final int currentPos = ptrStateController.getCurrentPosY();
+        final int lastPos = ptrStateController.getLastPosY();
 
         if (currentPos < mOffsetToRefresh && lastPos >= mOffsetToRefresh) {
             if (status == PtrLayout.PTR_STATUS_PREPARE) {
