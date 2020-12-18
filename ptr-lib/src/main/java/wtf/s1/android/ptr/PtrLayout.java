@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.PointF;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -316,6 +317,7 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
                 }
                 mInitialTouch.set(ev.getX(pointerIndex), ev.getY(pointerIndex));
                 mLastTouch.set(ev.getX(pointerIndex), ev.getY(pointerIndex));
+                startNestedScroll(ViewCompat.SCROLL_AXIS_VERTICAL);
                 break;
             case MotionEvent.ACTION_MOVE:
                 if (mActivePointerId == INVALID_POINTER) {
@@ -335,13 +337,11 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
                     int dy = (int) (mLastTouch.y - y);
 
                     if (mPtrStateController.isInStartPosition() || dy > 0) {
-                        if (startNestedScroll(ViewCompat.SCROLL_AXIS_VERTICAL)) {
-                            if (dispatchNestedPreScroll(0, dy, mScrollConsumed, mScrollOffset)) {
-                                mLastTouch.y = dy - mScrollOffset[1];
-                                // handle touch when parent not accept nest scroll
-                                startDragging(new PointF(ev.getX(), ev.getY()));
-                                return dy > 0;
-                            }
+                        if (dispatchNestedPreScroll(0, dy, mScrollConsumed, mScrollOffset)) {
+                            mLastTouch.y = y - mScrollOffset[1];
+                            // handle touch when parent not accept nest scroll
+                            startDragging(new PointF(ev.getX(), ev.getY()));
+                            return mIsBeingDragged;
                         }
                     }
                 }
@@ -358,37 +358,46 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (!isEnabled() || canChildScrollToUp() || mInVerticalNestedScrolling) {
+        if (!isEnabled()
+                // || canChildScrollToUp()
+                || mInVerticalNestedScrolling) {
             return false;
         }
 
         int action = event.getActionMasked();
-        int pointerIndex = event.findPointerIndex(mActivePointerId);
         switch (action) {
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
                 return true;
             case MotionEvent.ACTION_DOWN:
+                int pointerIndex = event.findPointerIndex(mActivePointerId);
+                if (pointerIndex < 0) {
+                    Log.e(LOG_TAG, "Got ACTION_MOVE event but have an invalid active pointer id.");
+                    return false;
+                }
                 mInitialTouch.set(event.getX(pointerIndex), event.getY(pointerIndex));
                 mLastTouch.set(event.getX(pointerIndex), event.getY(pointerIndex));
+                startNestedScroll(ViewCompat.SCROLL_AXIS_VERTICAL);
 
                 if (!canChildScrollToUp()) {
                     return true;
                 }
-                startNestedScroll(ViewCompat.SCROLL_AXIS_VERTICAL);
                 return false;
             case MotionEvent.ACTION_MOVE:
+                pointerIndex = event.findPointerIndex(mActivePointerId);
+                if (pointerIndex < 0) {
+                    Log.e(LOG_TAG, "Got ACTION_MOVE event but have an invalid active pointer id.");
+                    return false;
+                }
                 final int y = (int) (event.getY(pointerIndex) + 0.5f);
 
                 int dy = (int) (mLastTouch.y - y);
 
-                if (dy > 0 || mPtrStateController.isInStartPosition()) {
-                    if (startNestedScroll(ViewCompat.SCROLL_AXIS_VERTICAL)) {
-                        if (dispatchNestedPreScroll(0, dy, mScrollConsumed, mScrollOffset)) {
-                            mLastTouch.y = y - mScrollOffset[1];
-                            // handle touch when parent not accept nest scroll
-                            return true;
-                        }
+                if (dy != 0 || mPtrStateController.isInStartPosition()) {
+                    if (dispatchNestedPreScroll(0, dy, mScrollConsumed, mScrollOffset)) {
+                        mLastTouch.y = y - mScrollOffset[1];
+                        // handle touch when parent not accept nest scroll
+                        return mScrollConsumed[1] == 0;
                     }
                 }
                 mLastTouch.y = y;
