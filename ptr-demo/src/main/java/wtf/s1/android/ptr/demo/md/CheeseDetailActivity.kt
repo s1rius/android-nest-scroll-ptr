@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package com.github.auptr.ptr_support_design
+package wtf.s1.android.ptr.demo.md
 
 import wtf.s1.android.ptr.PtrLayout
 import wtf.s1.android.ptr.PtrSimpleListener
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
+import com.github.auptr.ptr_support_design.R
 import kotlinx.android.synthetic.main.activity_detail.*
 
 class CheeseDetailActivity : AppCompatActivity() {

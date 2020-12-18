@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package com.github.auptr.ptr_support_design
+package wtf.s1.android.ptr.demo.md
 
+import com.github.auptr.ptr_support_design.R
 import java.util.Random
 
 object Cheeses {

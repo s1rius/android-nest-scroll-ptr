@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.github.auptr.ptr_support_design.SwipeToRefreshLayout
+    <wtf.s1.android.ptr.demo.SwipeToRefreshLayout
         android:id="@+id/ptr_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -15,5 +15,5 @@
             android:text="test"
             android:textSize="60sp" />
 
-    </com.github.auptr.ptr_support_design.SwipeToRefreshLayout>
+    </wtf.s1.android.ptr.demo.SwipeToRefreshLayout>
 </FrameLayout>

@@ -9,7 +9,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Base.Theme.DesignDemo">
-        <activity android:name=".MainActivity">
+        <activity android:name="wtf.s1.android.ptr.demo.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -19,12 +19,12 @@
         </activity>
 
         <activity
-            android:name=".CheeseDetailActivity"
-            android:parentActivityName=".MainActivity"
+            android:name="wtf.s1.android.ptr.demo.md.CheeseDetailActivity"
+            android:parentActivityName="wtf.s1.android.ptr.demo.MainActivity"
             android:theme="@style/Theme.DesignDemo">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".MainActivity" />
+                android:value="wtf.s1.android.ptr.demo.MainActivity" />
         </activity>
 
     </application>

@@ -1,4 +1,4 @@
-package com.github.auptr.ptr_support_design
+package wtf.s1.android.ptr.demo.md
 
 import wtf.s1.android.ptr.PtrLayout
 import wtf.s1.android.ptr.PtrSimpleListener
@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import com.github.auptr.ptr_support_design.R
 import kotlinx.android.synthetic.main.fragment_text.*
 
 class TextFragment : Fragment() {

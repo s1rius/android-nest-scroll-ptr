@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.github.auptr.ptr_support_design
+package wtf.s1.android.ptr.demo.md
 
 import android.content.Context
 import android.content.Intent
@@ -30,12 +30,14 @@ import android.widget.ImageView
 import android.widget.TextView
 
 import com.bumptech.glide.Glide
+import com.github.auptr.ptr_support_design.R
 
 import java.util.ArrayList
 import java.util.Random
 
 import wtf.s1.android.ptr.PtrLayout
 import wtf.s1.android.ptr.PtrSimpleListener
+import wtf.s1.android.ptr.demo.SwipeToRefreshLayout
 
 class CheeseRecyclerViewFragment : Fragment() {
 
