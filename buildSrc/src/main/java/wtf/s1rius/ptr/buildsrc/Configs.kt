@@ -1,3 +1,5 @@
+package wtf.s1rius.ptr.buildsrc
+
 object Versions{
     const val kotlin = "1.3.31"
     const val ktx = "1.0.0"
@@ -14,7 +16,7 @@ object Plugins{
     const val androidLib = "com.android.library"
 }
 
-object Libs{
+object Deps{
     object Kotlin {
         const val stdLib = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${Versions.kotlin}"
         const val coroutines =

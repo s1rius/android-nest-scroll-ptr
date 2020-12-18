@@ -1,0 +1,19 @@
+import wtf.s1rius.ptr.buildsrc.*
+
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+
+
+android {
+    compileSdkVersion Versions.compileSdkVersion
+
+    defaultConfig {
+        minSdkVersion Versions.minSdkVersion
+        targetSdkVersion Versions.targetSdkVersion
+    }
+}
+
+dependencies {
+    implementation Deps.AndroidX.Core.utils
+}

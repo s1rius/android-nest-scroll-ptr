@@ -1,0 +1,30 @@
+import wtf.s1rius.ptr.buildsrc.*
+
+apply plugin: "com.android.application"
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+
+android {
+    compileSdkVersion(Versions.compileSdkVersion)
+
+    defaultConfig {
+        applicationId = "com.github.s1rius.ptr_support_design"
+        minSdkVersion(Versions.minSdkVersion)
+        targetSdkVersion(Versions.targetSdkVersion)
+        versionCode = Versions.versionCode
+        versionName = Versions.versionName
+
+        testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"
+    }
+
+}
+
+dependencies {
+    implementation(project(":ptr-lib"))
+    implementation Deps.AndroidX.appcompat
+    implementation Deps.AndroidX.constraintLayout
+    implementation Deps.AndroidX.cardView
+    implementation Deps.Google.material
+    implementation Deps.Google.glide
+    implementation Deps.circleimageview
+}

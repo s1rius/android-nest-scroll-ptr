@@ -1,12 +1,14 @@
+import wtf.s1rius.ptr.buildsrc.*
+
 buildscript {
     repositories {
         google()
         jcenter()
-
     }
+
     dependencies {
-        classpath(ClassPaths.gradlePlugin)
-        classpath(ClassPaths.kotlinPlugin)
+        classpath ClassPaths.kotlinPlugin
+        classpath ClassPaths.gradlePlugin
     }
 }
 

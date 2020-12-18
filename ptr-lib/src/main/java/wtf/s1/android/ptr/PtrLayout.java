@@ -44,7 +44,10 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
     private static final int INVALID_POINTER = -1;
     private float mPullFriction = 0.56f;
 
-    @IntDef({PTR_STATUS_INIT, PTR_STATUS_PREPARE, PTR_STATUS_LOADING, PTR_STATUS_COMPLETE})
+    @IntDef({PTR_STATUS_INIT,
+            PTR_STATUS_PREPARE,
+            PTR_STATUS_LOADING,
+            PTR_STATUS_COMPLETE})
     @Retention(RetentionPolicy.SOURCE)
     @interface PlayState {
 
