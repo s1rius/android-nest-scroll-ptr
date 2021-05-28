@@ -17,20 +17,11 @@
 package wtf.s1.android.ptr.demo
 
 import android.os.Bundle
-import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
-import androidx.drawerlayout.widget.DrawerLayout
-import androidx.viewpager.widget.ViewPager
 import com.github.auptr.ptr_support_design.R
-import com.google.android.material.navigation.NavigationView
-import com.google.android.material.tabs.TabLayout
-import wtf.s1.android.ptr.demo.md.CheeseListViewFragment
-import wtf.s1.android.ptr.demo.md.CheeseRecyclerViewFragment
 import wtf.s1.android.ptr.demo.md.MDPtrView
-import wtf.s1.android.ptr.demo.md.TextFragment
 
 class MainActivity : AppCompatActivity() {
 

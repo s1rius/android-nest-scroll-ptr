@@ -1,36 +1,32 @@
-package wtf.s1.android.ptr;
-
-import wtf.s1.android.ptr.indicator.PtrStateController;
+package wtf.s1.android.ptr
 
 /**
  *
  */
-public interface PtrListener {
-
+interface PtrListener {
     /**
      * When the content view has reached top and refresh has been completed, view will be reset.
      *
      * @param frame
      */
-    public void onReset(PtrLayout frame);
+    fun onReset(frame: PtrLayout?) {}
 
     /**
      * prepare for loading
      *
      * @param frame
      */
-    public void onPrepare(PtrLayout frame);
+    fun onPrepare(frame: PtrLayout?) {}
 
     /**
      * perform refreshing UI
      */
-    public void onBegin(PtrLayout frame);
+    fun onBegin(frame: PtrLayout?) {}
 
     /**
      * perform UI after refresh
      */
-    public void onComplete(PtrLayout frame);
+    fun onComplete(frame: PtrLayout?) {}
 
-
-    public void onPositionChange(PtrLayout frame, int status, PtrStateController ptrStateController);
+    fun onPositionChange(frame: PtrLayout?, status: Int, ptrStateController: PtrStateController?) {}
 }

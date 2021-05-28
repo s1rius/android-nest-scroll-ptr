@@ -15,24 +15,51 @@
  */
 package wtf.s1.android.ptr.demo
 
-import wtf.s1.android.ptr.PtrClassicFrameLayout
 import android.content.Context
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
+import wtf.s1.android.ptr.PtrClassicFrameLayout
+import wtf.s1.android.ptr.PtrLayout
+import wtf.s1.android.ptr.PtrListener
+import wtf.s1.android.ptr.PtrStateController
 
 /**
  * Created by s1rius on 15/03/2018.
  */
 
 class SwipeToRefreshLayout : PtrClassicFrameLayout {
+
+    private var listener: OnPtrRefreshListener? = null
+
+    constructor(context: Context) : super(context)
+    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)
+
     companion object {
         val TAG = "PTR_"
     }
 
-    constructor(context: Context) : super(context)
+    init {
+        this.addPtrListener(object: PtrListener {
+            override fun onReset(frame: PtrLayout?) {}
 
-    constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
+            override fun onPrepare(frame: PtrLayout?) {}
+
+            override fun onBegin(frame: PtrLayout?) {
+                listener?.onRefresh()
+            }
+
+            override fun onComplete(frame: PtrLayout?) {}
+
+            override fun onPositionChange(frame: PtrLayout?,
+                                          status: Int,
+                                          ptrStateController: PtrStateController?) {}
+        })
+
+//        this.setOnRefreshListener {
+//            listener?.onRefresh()
+//        }
+    }
 
     override fun onNestedScroll(target: View, dxConsumed: Int, dyConsumed: Int, dxUnconsumed: Int, dyUnconsumed: Int) {
         Log.i(TAG, "---> onNestedScroll targetView = ${target::class.java.simpleName} " +
@@ -72,5 +99,13 @@ class SwipeToRefreshLayout : PtrClassicFrameLayout {
         Log.i(TAG, "---> dispatchNestedPreScroll dx = $dx dy = $dy " +
                 "consumed = [${consumed?.get(0)}, ${consumed?.get(1)}] offsetInWindow = [${offsetInWindow?.get(0)}, ${offsetInWindow?.get(1)}]")
         return preScroll
+    }
+
+    fun setPTRListener(listener: OnPtrRefreshListener) {
+        this.listener = listener
+    }
+
+    interface OnPtrRefreshListener {
+        fun onRefresh()
     }
 }

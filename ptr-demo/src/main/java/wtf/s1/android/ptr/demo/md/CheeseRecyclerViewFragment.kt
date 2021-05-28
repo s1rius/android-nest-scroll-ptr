@@ -35,8 +35,6 @@ import com.github.auptr.ptr_support_design.R
 import java.util.ArrayList
 import java.util.Random
 
-import wtf.s1.android.ptr.PtrLayout
-import wtf.s1.android.ptr.PtrSimpleListener
 import wtf.s1.android.ptr.demo.SwipeToRefreshLayout
 
 class CheeseRecyclerViewFragment : Fragment() {
@@ -47,10 +45,9 @@ class CheeseRecyclerViewFragment : Fragment() {
         val view = inflater.inflate(
                 R.layout.fragment_cheese_recycler, container, false)
         mRefreshLayout = view.findViewById(R.id.ptr_layout)
-        mRefreshLayout.addPtrListener(object : PtrSimpleListener() {
-
-            override fun onBegin(frame: PtrLayout) {
-                mRefreshLayout.postDelayed({ mRefreshLayout.refreshComplete() }, 3000)
+        mRefreshLayout.setPTRListener(object: SwipeToRefreshLayout.OnPtrRefreshListener {
+            override fun onRefresh() {
+                mRefreshLayout.postDelayed({ mRefreshLayout.isRefreshing = false }, 3000)
             }
         })
         val rv = view.findViewById<RecyclerView>(R.id.recyclerview)

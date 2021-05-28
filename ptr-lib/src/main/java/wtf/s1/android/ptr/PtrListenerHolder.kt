@@ -1,70 +1,62 @@
-package wtf.s1.android.ptr;
+package wtf.s1.android.ptr
 
-import java.util.concurrent.CopyOnWriteArrayList;
-
-import wtf.s1.android.ptr.indicator.PtrStateController;
+import java.util.concurrent.CopyOnWriteArrayList
 
 /**
  * A single linked list to wrap PtrUIHandler
  */
-class PtrListenerHolder implements PtrListener {
+internal class PtrListenerHolder private constructor() : PtrListener {
 
-    CopyOnWriteArrayList<PtrListener> listeners = new CopyOnWriteArrayList<>();
+    var listeners = CopyOnWriteArrayList<PtrListener>()
 
-    private PtrListenerHolder() {
-
+    fun hasHandler(): Boolean {
+        return listeners.size > 0
     }
 
-    public boolean hasHandler() {
-        return listeners.size() > 0;
-    }
-
-    public static PtrListenerHolder create() {
-        return new PtrListenerHolder();
-    }
-
-    public void addListener(PtrListener listener) {
+    fun addListener(listener: PtrListener) {
         if (!listeners.contains(listener)) {
-            listeners.add(listener);
+            listeners.add(listener)
         }
     }
 
-    public void removeListener(PtrListener listener) {
-        listeners.remove(listener);
+    fun removeListener(listener: PtrListener?) {
+        listeners.remove(listener)
     }
 
-    @Override
-    public void onReset(PtrLayout frame) {
-        for (PtrListener listener : listeners) {
-            listener.onReset(frame);
+    override fun onReset(frame: PtrLayout?) {
+        for (listener in listeners) {
+            listener.onReset(frame)
         }
     }
 
-    @Override
-    public void onPrepare(PtrLayout frame) {
-        for (PtrListener listener : listeners) {
-            listener.onPrepare(frame);
+    override fun onPrepare(frame: PtrLayout?) {
+        for (listener in listeners) {
+            listener.onPrepare(frame)
         }
     }
 
-    @Override
-    public void onBegin(PtrLayout frame) {
-        for (PtrListener listener : listeners) {
-            listener.onBegin(frame);
+    override fun onBegin(frame: PtrLayout?) {
+        for (listener in listeners) {
+            listener.onBegin(frame)
         }
     }
 
-    @Override
-    public void onComplete(PtrLayout frame) {
-        for (PtrListener listener : listeners) {
-            listener.onComplete(frame);
+    override fun onComplete(frame: PtrLayout?) {
+        for (listener in listeners) {
+            listener.onComplete(frame)
         }
     }
 
-    @Override
-    public void onPositionChange(PtrLayout frame, int status, PtrStateController ptrStateController) {
-        for (PtrListener listener : listeners) {
-            listener.onPositionChange(frame, status, ptrStateController);
+    override fun onPositionChange(frame: PtrLayout?, status: Int, ptrStateController: PtrStateController?) {
+        for (listener in listeners) {
+            listener.onPositionChange(frame, status, ptrStateController)
+        }
+    }
+
+    companion object {
+        @JvmStatic
+        fun create(): PtrListenerHolder {
+            return PtrListenerHolder()
         }
     }
 }

@@ -33,6 +33,8 @@ object Deps{
         object Core {
             const val utils = "androidx.legacy:legacy-support-core-utils:1.0.0"
         }
+
+        const val viewpager2 = "androidx.viewpager2:viewpager2:1.0.0"
     }
 
     object Google{

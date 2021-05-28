@@ -1,84 +1,63 @@
-package wtf.s1.android.ptr;
+package wtf.s1.android.ptr
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.res.TypedArray;
-import android.text.TextUtils;
-import android.util.AttributeSet;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.animation.LinearInterpolator;
-import android.view.animation.RotateAnimation;
-import android.widget.FrameLayout;
-import android.widget.TextView;
-import wtf.s1.android.ptr.indicator.PtrStateController;
+import android.content.Context
+import android.widget.FrameLayout
+import android.view.animation.RotateAnimation
+import android.view.LayoutInflater
+import android.view.animation.LinearInterpolator
+import android.text.TextUtils
+import android.util.AttributeSet
+import android.view.View
+import android.widget.TextView
+import java.lang.StringBuilder
+import java.text.SimpleDateFormat
+import java.util.*
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
+open class PtrClassicDefaultHeader @JvmOverloads constructor(
+        context: Context, attrs: AttributeSet? = null
+) : FrameLayout(context, attrs), PtrListener {
+    private var mRotateAniTime = 150
+    private var mFlipAnimation: RotateAnimation? = null
+    private var mReverseFlipAnimation: RotateAnimation? = null
+    private var mTitleTextView: TextView? = null
+    private var mRotateView: View? = null
+    private var mProgressBar: View? = null
+    private var mLastUpdateTime: Long = -1
+    private var mLastUpdateTextView: TextView? = null
+    private var mLastUpdateTimeKey: String? = null
+    private var mShouldShowLastUpdate = false
+    private val mLastUpdateTimeUpdater: LastUpdateTimeUpdater? = LastUpdateTimeUpdater()
 
-public class PtrClassicDefaultHeader extends FrameLayout implements PtrListener {
-
-    private final static String KEY_SharedPreferences = "cube_ptr_classic_last_update";
-    private static SimpleDateFormat sDataFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    private int mRotateAniTime = 150;
-    private RotateAnimation mFlipAnimation;
-    private RotateAnimation mReverseFlipAnimation;
-    private TextView mTitleTextView;
-    private View mRotateView;
-    private View mProgressBar;
-    private long mLastUpdateTime = -1;
-    private TextView mLastUpdateTextView;
-    private String mLastUpdateTimeKey;
-    private boolean mShouldShowLastUpdate;
-
-    private LastUpdateTimeUpdater mLastUpdateTimeUpdater = new LastUpdateTimeUpdater();
-
-    public PtrClassicDefaultHeader(Context context) {
-        super(context);
-        initViews(null);
+    init {
+        initViews(attrs)
     }
 
-    public PtrClassicDefaultHeader(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        initViews(attrs);
-    }
-
-    public PtrClassicDefaultHeader(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
-        initViews(attrs);
-    }
-
-    protected void initViews(AttributeSet attrs) {
-        TypedArray arr = getContext().obtainStyledAttributes(attrs, R.styleable.PtrClassicHeader, 0, 0);
+    private fun initViews(attrs: AttributeSet?) {
+        val arr = context.obtainStyledAttributes(attrs, R.styleable.PtrClassicHeader, 0, 0)
         if (arr != null) {
-            mRotateAniTime = arr.getInt(R.styleable.PtrClassicHeader_ptr_rotate_ani_time, mRotateAniTime);
-            arr.recycle();
+            mRotateAniTime = arr.getInt(R.styleable.PtrClassicHeader_ptr_rotate_ani_time, mRotateAniTime)
+            arr.recycle()
         }
-        buildAnimation();
-        View header = LayoutInflater.from(getContext()).inflate(R.layout.cube_ptr_classic_default_header, this);
-
-        mRotateView = header.findViewById(R.id.ptr_classic_header_rotate_view);
-
-        mTitleTextView = (TextView) header.findViewById(R.id.ptr_classic_header_rotate_view_header_title);
-        mLastUpdateTextView = (TextView) header.findViewById(R.id.ptr_classic_header_rotate_view_header_last_update);
-        mProgressBar = header.findViewById(R.id.ptr_classic_header_rotate_view_progressbar);
-        resetView();
+        buildAnimation()
+        val header = LayoutInflater.from(context).inflate(R.layout.cube_ptr_classic_default_header, this)
+        mRotateView = header.findViewById(R.id.ptr_classic_header_rotate_view)
+        mTitleTextView = header.findViewById<View>(R.id.ptr_classic_header_rotate_view_header_title) as TextView
+        mLastUpdateTextView = header.findViewById<View>(R.id.ptr_classic_header_rotate_view_header_last_update) as TextView
+        mProgressBar = header.findViewById(R.id.ptr_classic_header_rotate_view_progressbar)
+        resetView()
     }
 
-    @Override
-    protected void onDetachedFromWindow() {
-        super.onDetachedFromWindow();
-        if (mLastUpdateTimeUpdater != null) {
-            mLastUpdateTimeUpdater.stop();
-        }
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        mLastUpdateTimeUpdater?.stop()
     }
 
-    public void setRotateAniTime(int time) {
+    fun setRotateAniTime(time: Int) {
         if (time == mRotateAniTime || time == 0) {
-            return;
+            return
         }
-        mRotateAniTime = time;
-        buildAnimation();
+        mRotateAniTime = time
+        buildAnimation()
     }
 
     /**
@@ -86,11 +65,11 @@ public class PtrClassicDefaultHeader extends FrameLayout implements PtrListener 
      *
      * @param key
      */
-    public void setLastUpdateTimeKey(String key) {
+    fun setLastUpdateTimeKey(key: String?) {
         if (TextUtils.isEmpty(key)) {
-            return;
+            return
         }
-        mLastUpdateTimeKey = key;
+        mLastUpdateTimeKey = key
     }
 
     /**
@@ -98,204 +77,190 @@ public class PtrClassicDefaultHeader extends FrameLayout implements PtrListener 
      *
      * @param object
      */
-    public void setLastUpdateTimeRelateObject(Object object) {
-        setLastUpdateTimeKey(object.getClass().getName());
+    fun setLastUpdateTimeRelateObject(`object`: Any) {
+        setLastUpdateTimeKey(`object`.javaClass.name)
     }
 
-    private void buildAnimation() {
-        mFlipAnimation = new RotateAnimation(0, -180, RotateAnimation.RELATIVE_TO_SELF, 0.5f, RotateAnimation.RELATIVE_TO_SELF, 0.5f);
-        mFlipAnimation.setInterpolator(new LinearInterpolator());
-        mFlipAnimation.setDuration(mRotateAniTime);
-        mFlipAnimation.setFillAfter(true);
-
-        mReverseFlipAnimation = new RotateAnimation(-180, 0, RotateAnimation.RELATIVE_TO_SELF, 0.5f, RotateAnimation.RELATIVE_TO_SELF, 0.5f);
-        mReverseFlipAnimation.setInterpolator(new LinearInterpolator());
-        mReverseFlipAnimation.setDuration(mRotateAniTime);
-        mReverseFlipAnimation.setFillAfter(true);
+    private fun buildAnimation() {
+        mFlipAnimation = RotateAnimation(0f, (-180).toFloat(), RotateAnimation.RELATIVE_TO_SELF, 0.5f, RotateAnimation.RELATIVE_TO_SELF, 0.5f)
+        mFlipAnimation!!.interpolator = LinearInterpolator()
+        mFlipAnimation!!.duration = mRotateAniTime.toLong()
+        mFlipAnimation!!.fillAfter = true
+        mReverseFlipAnimation = RotateAnimation((-180).toFloat(), 0f, RotateAnimation.RELATIVE_TO_SELF, 0.5f, RotateAnimation.RELATIVE_TO_SELF, 0.5f)
+        mReverseFlipAnimation!!.interpolator = LinearInterpolator()
+        mReverseFlipAnimation!!.duration = mRotateAniTime.toLong()
+        mReverseFlipAnimation!!.fillAfter = true
     }
 
-    private void resetView() {
-        hideRotateView();
-        mProgressBar.setVisibility(INVISIBLE);
+    private fun resetView() {
+        hideRotateView()
+        mProgressBar!!.visibility = INVISIBLE
     }
 
-    private void hideRotateView() {
-        mRotateView.clearAnimation();
-        mRotateView.setVisibility(INVISIBLE);
+    private fun hideRotateView() {
+        mRotateView!!.clearAnimation()
+        mRotateView!!.visibility = INVISIBLE
     }
 
-    @Override
-    public void onReset(PtrLayout frame) {
-        resetView();
-        mShouldShowLastUpdate = true;
-        tryUpdateLastUpdateTime();
+    override fun onReset(frame: PtrLayout?) {
+        resetView()
+        mShouldShowLastUpdate = true
+        tryUpdateLastUpdateTime()
     }
 
-    @Override
-    public void onPrepare(PtrLayout frame) {
-
-        mShouldShowLastUpdate = true;
-        tryUpdateLastUpdateTime();
-        mLastUpdateTimeUpdater.start();
-
-        mProgressBar.setVisibility(INVISIBLE);
-
-        mRotateView.setVisibility(VISIBLE);
-        mTitleTextView.setVisibility(VISIBLE);
-        if (frame.isPullToRefresh()) {
-            mTitleTextView.setText(getResources().getString(R.string.cube_ptr_pull_down_to_refresh));
+    override fun onPrepare(frame: PtrLayout?) {
+        mShouldShowLastUpdate = true
+        tryUpdateLastUpdateTime()
+        mLastUpdateTimeUpdater!!.start()
+        mProgressBar!!.visibility = INVISIBLE
+        mRotateView!!.visibility = VISIBLE
+        mTitleTextView!!.visibility = VISIBLE
+        if (frame!!.isPullToRefresh) {
+            mTitleTextView!!.text = resources.getString(R.string.cube_ptr_pull_down_to_refresh)
         } else {
-            mTitleTextView.setText(getResources().getString(R.string.cube_ptr_pull_down));
+            mTitleTextView!!.text = resources.getString(R.string.cube_ptr_pull_down)
         }
     }
 
-    @Override
-    public void onBegin(PtrLayout frame) {
-        mShouldShowLastUpdate = false;
-        hideRotateView();
-        mProgressBar.setVisibility(VISIBLE);
-        mTitleTextView.setVisibility(VISIBLE);
-        mTitleTextView.setText(R.string.cube_ptr_refreshing);
-
-        tryUpdateLastUpdateTime();
-        mLastUpdateTimeUpdater.stop();
+    override fun onBegin(frame: PtrLayout?) {
+        mShouldShowLastUpdate = false
+        hideRotateView()
+        mProgressBar!!.visibility = VISIBLE
+        mTitleTextView!!.visibility = VISIBLE
+        mTitleTextView!!.setText(R.string.cube_ptr_refreshing)
+        tryUpdateLastUpdateTime()
+        mLastUpdateTimeUpdater!!.stop()
     }
 
-    @Override
-    public void onComplete(PtrLayout frame) {
-
-        hideRotateView();
-        mProgressBar.setVisibility(INVISIBLE);
-
-        mTitleTextView.setVisibility(VISIBLE);
-        mTitleTextView.setText(getResources().getString(R.string.cube_ptr_refresh_complete));
+    override fun onComplete(frame: PtrLayout?) {
+        hideRotateView()
+        mProgressBar!!.visibility = INVISIBLE
+        mTitleTextView!!.visibility = VISIBLE
+        mTitleTextView!!.text = resources.getString(R.string.cube_ptr_refresh_complete)
 
         // update last update time
-        SharedPreferences sharedPreferences = getContext().getSharedPreferences(KEY_SharedPreferences, 0);
+        val sharedPreferences = context.getSharedPreferences(KEY_SharedPreferences, 0)
         if (!TextUtils.isEmpty(mLastUpdateTimeKey)) {
-            mLastUpdateTime = new Date().getTime();
-            sharedPreferences.edit().putLong(mLastUpdateTimeKey, mLastUpdateTime).commit();
+            mLastUpdateTime = Date().time
+            sharedPreferences.edit().putLong(mLastUpdateTimeKey, mLastUpdateTime).commit()
         }
     }
 
-    private void tryUpdateLastUpdateTime() {
+    private fun tryUpdateLastUpdateTime() {
         if (TextUtils.isEmpty(mLastUpdateTimeKey) || !mShouldShowLastUpdate) {
-            mLastUpdateTextView.setVisibility(GONE);
+            mLastUpdateTextView!!.visibility = GONE
         } else {
-            String time = getLastUpdateTime();
+            val time = lastUpdateTime
             if (TextUtils.isEmpty(time)) {
-                mLastUpdateTextView.setVisibility(GONE);
+                mLastUpdateTextView!!.visibility = GONE
             } else {
-                mLastUpdateTextView.setVisibility(VISIBLE);
-                mLastUpdateTextView.setText(time);
+                mLastUpdateTextView!!.visibility = VISIBLE
+                mLastUpdateTextView!!.text = time
             }
         }
     }
 
-    private String getLastUpdateTime() {
-
-        if (mLastUpdateTime == -1 && !TextUtils.isEmpty(mLastUpdateTimeKey)) {
-            mLastUpdateTime = getContext().getSharedPreferences(KEY_SharedPreferences, 0).getLong(mLastUpdateTimeKey, -1);
-        }
-        if (mLastUpdateTime == -1) {
-            return null;
-        }
-        long diffTime = new Date().getTime() - mLastUpdateTime;
-        int seconds = (int) (diffTime / 1000);
-        if (diffTime < 0) {
-            return null;
-        }
-        if (seconds <= 0) {
-            return null;
-        }
-        StringBuilder sb = new StringBuilder();
-        sb.append(getContext().getString(R.string.cube_ptr_last_update));
-
-        if (seconds < 60) {
-            sb.append(seconds + getContext().getString(R.string.cube_ptr_seconds_ago));
-        } else {
-            int minutes = (seconds / 60);
-            if (minutes > 60) {
-                int hours = minutes / 60;
-                if (hours > 24) {
-                    Date date = new Date(mLastUpdateTime);
-                    sb.append(sDataFormat.format(date));
+    private val lastUpdateTime: String?
+        private get() {
+            if (mLastUpdateTime == -1L && !TextUtils.isEmpty(mLastUpdateTimeKey)) {
+                mLastUpdateTime = context.getSharedPreferences(KEY_SharedPreferences, 0).getLong(mLastUpdateTimeKey, -1)
+            }
+            if (mLastUpdateTime == -1L) {
+                return null
+            }
+            val diffTime = Date().time - mLastUpdateTime
+            val seconds = (diffTime / 1000).toInt()
+            if (diffTime < 0) {
+                return null
+            }
+            if (seconds <= 0) {
+                return null
+            }
+            val sb = StringBuilder()
+            sb.append(context.getString(R.string.cube_ptr_last_update))
+            if (seconds < 60) {
+                sb.append(seconds.toString() + context.getString(R.string.cube_ptr_seconds_ago))
+            } else {
+                val minutes = seconds / 60
+                if (minutes > 60) {
+                    val hours = minutes / 60
+                    if (hours > 24) {
+                        val date = Date(mLastUpdateTime)
+                        sb.append(sDataFormat.format(date))
+                    } else {
+                        sb.append(hours.toString() + context.getString(R.string.cube_ptr_hours_ago))
+                    }
                 } else {
-                    sb.append(hours + getContext().getString(R.string.cube_ptr_hours_ago));
+                    sb.append(minutes.toString() + context.getString(R.string.cube_ptr_minutes_ago))
                 }
-
-            } else {
-                sb.append(minutes + getContext().getString(R.string.cube_ptr_minutes_ago));
             }
+            return sb.toString()
         }
-        return sb.toString();
-    }
 
-    @Override
-    public void onPositionChange(PtrLayout frame, int status, PtrStateController ptrStateController) {
-
-        final int mOffsetToRefresh = frame.getOffsetToRefresh();
-        final int currentPos = ptrStateController.getCurrentPosY();
-        final int lastPos = ptrStateController.getLastPosY();
-
-        if (currentPos < mOffsetToRefresh && lastPos >= mOffsetToRefresh) {
+    override fun onPositionChange(frame: PtrLayout?, status: Int, ptrStateController: PtrStateController?) {
+        val mOffsetToRefresh = frame!!.offsetToRefresh
+        val currentPos = ptrStateController!!.currentPosY
+        val lastPos = ptrStateController.lastPosY
+        if (mOffsetToRefresh in (currentPos + 1)..lastPos) {
             if (status == PtrLayout.PTR_STATUS_PREPARE) {
-                crossRotateLineFromBottomUnderTouch(frame);
+                crossRotateLineFromBottomUnderTouch(frame)
                 if (mRotateView != null) {
-                    mRotateView.clearAnimation();
-                    mRotateView.startAnimation(mReverseFlipAnimation);
+                    mRotateView!!.clearAnimation()
+                    mRotateView!!.startAnimation(mReverseFlipAnimation)
                 }
             }
-        } else if (currentPos > mOffsetToRefresh && lastPos <= mOffsetToRefresh) {
+        } else if (mOffsetToRefresh in lastPos until currentPos) {
             if (status == PtrLayout.PTR_STATUS_PREPARE) {
-                crossRotateLineFromTopUnderTouch(frame);
+                crossRotateLineFromTopUnderTouch(frame)
                 if (mRotateView != null) {
-                    mRotateView.clearAnimation();
-                    mRotateView.startAnimation(mFlipAnimation);
+                    mRotateView!!.clearAnimation()
+                    mRotateView!!.startAnimation(mFlipAnimation)
                 }
             }
         }
     }
 
-    private void crossRotateLineFromTopUnderTouch(PtrLayout frame) {
-        if (!frame.isPullToRefresh()) {
-            mTitleTextView.setVisibility(VISIBLE);
-            mTitleTextView.setText(R.string.cube_ptr_release_to_refresh);
+    private fun crossRotateLineFromTopUnderTouch(frame: PtrLayout?) {
+        if (!frame!!.isPullToRefresh) {
+            mTitleTextView!!.visibility = VISIBLE
+            mTitleTextView!!.setText(R.string.cube_ptr_release_to_refresh)
         }
     }
 
-    private void crossRotateLineFromBottomUnderTouch(PtrLayout frame) {
-        mTitleTextView.setVisibility(VISIBLE);
-        if (frame.isPullToRefresh()) {
-            mTitleTextView.setText(getResources().getString(R.string.cube_ptr_pull_down_to_refresh));
+    private fun crossRotateLineFromBottomUnderTouch(frame: PtrLayout?) {
+        mTitleTextView!!.visibility = VISIBLE
+        if (frame!!.isPullToRefresh) {
+            mTitleTextView!!.text = resources.getString(R.string.cube_ptr_pull_down_to_refresh)
         } else {
-            mTitleTextView.setText(getResources().getString(R.string.cube_ptr_pull_down));
+            mTitleTextView!!.text = resources.getString(R.string.cube_ptr_pull_down)
         }
     }
 
-    private class LastUpdateTimeUpdater implements Runnable {
-
-        private boolean mRunning = false;
-
-        private void start() {
+    private inner class LastUpdateTimeUpdater : Runnable {
+        private var mRunning = false
+        fun start() {
             if (TextUtils.isEmpty(mLastUpdateTimeKey)) {
-                return;
+                return
             }
-            mRunning = true;
-            run();
+            mRunning = true
+            run()
         }
 
-        private void stop() {
-            mRunning = false;
-            removeCallbacks(this);
+        fun stop() {
+            mRunning = false
+            removeCallbacks(this)
         }
 
-        @Override
-        public void run() {
-            tryUpdateLastUpdateTime();
+        override fun run() {
+            tryUpdateLastUpdateTime()
             if (mRunning) {
-                postDelayed(this, 1000);
+                postDelayed(this, 1000)
             }
         }
+    }
+
+    companion object {
+        private const val KEY_SharedPreferences = "cube_ptr_classic_last_update"
+        private val sDataFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
     }
 }

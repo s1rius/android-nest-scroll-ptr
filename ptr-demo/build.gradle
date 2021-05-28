@@ -27,4 +27,5 @@ dependencies {
     implementation Deps.Google.material
     implementation Deps.Google.glide
     implementation Deps.circleimageview
+    implementation Deps.AndroidX.viewpager2
 }
