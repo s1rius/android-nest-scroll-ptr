@@ -391,10 +391,10 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
                 }
                 final int y = (int) (event.getY(pointerIndex) + 0.5f);
 
-                int dy = (int) (mLastTouch.y - y);
+                int dy = (int) (y - mLastTouch.y);
 
-                if (dy != 0 || mPtrStateController.isInStartPosition()) {
-                    if (dispatchNestedPreScroll(0, dy, mScrollConsumed, mScrollOffset)) {
+                if (dy > 0 || mPtrStateController.isInStartPosition()) {
+                    if (dispatchNestedPreScroll(0, -dy, mScrollConsumed, mScrollOffset)) {
                         mLastTouch.y = y - mScrollOffset[1];
                         // handle touch when parent not accept nest scroll
                         return mScrollConsumed[1] == 0;
@@ -402,26 +402,25 @@ public class PtrLayout extends ViewGroup implements NestedScrollingParent, Neste
                 }
                 mLastTouch.y = y;
 
-                float offsetY = -dy;
-                if (offsetY == 0) {
+                if (dy == 0) {
                     return true;
                 }
 
-                if (offsetY > 0) {
-                    offsetY = withFriction(offsetY);
+                if (dy > 0) {
+                    dy = withFriction(dy);
                 }
 
-                boolean moveDown = offsetY > 0;
+                boolean moveDown = dy > 0;
                 boolean moveUp = !moveDown;
                 boolean canMoveUp = mPtrStateController.hasLeftStartPosition();
 
                 if (mPtrStateController.getCurrentPosY() != 0) {
-                    movePos(offsetY);
+                    movePos(dy);
                     return true;
                 }
 
                 if ((moveUp && canMoveUp) || moveDown) {
-                    movePos(offsetY);
+                    movePos(dy);
                     return true;
                 }
         }
