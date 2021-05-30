@@ -14,7 +14,9 @@ import android.widget.ListView
 import android.widget.TextView
 import androidx.core.view.*
 import androidx.core.widget.ListViewCompat
+import wtf.s1.android.core.StateMachine
 import wtf.s1.android.ptr.PtrListenerHolder.Companion.create
+import kotlin.math.abs
 
 /**
  * This layout view for "Pull to Refresh(Ptr)" support all of the view,
@@ -30,18 +32,35 @@ open class PtrLayout @JvmOverloads constructor(
 ) : ViewGroup(context, attrs, defStyle), NestedScrollingParent, NestedScrollingChild {
 
     companion object {
-        // status enum
-        const val PTR_STATUS_INIT = 1
         private const val INVALID_POINTER = -1
-        const val PTR_STATUS_PREPARE = 2
-        const val PTR_STATUS_LOADING = 3
-        const val PTR_STATUS_COMPLETE = 4
-        var DEBUG = true
+        private const val DEBUG = true
         private var ID = 1
     }
 
+    sealed class State {
+        // 初始化状态
+        object IDLE : State()
+        // 刷新状态
+        object REFRESHING : State()
+        // 拖动状态
+        object DRAG : State()
+    }
+
+    sealed class Event {
+        object OnPull : Event()
+        object OnReleaseToIdle : Event()
+        object OnReleaseToRefreshing : Event()
+        object OnComplete : Event()
+        object OnAutoRefresh : Event()
+    }
+
+    sealed class SideEffect {
+        object OnRefreshing : SideEffect()
+        object OnDragBegin : SideEffect()
+        object OnComplete : SideEffect()
+    }
+
     private val mPullFriction = 0.56f
-    var mStatus = PTR_STATUS_INIT
     private val LOG_TAG = "ptr-frame-" + ++ID
     var contentView: View? = null
 
@@ -52,7 +71,6 @@ open class PtrLayout @JvmOverloads constructor(
     // ptr config
     private var mLoadingMinTime = 500
     private var mLoadingStartTime: Long = 0
-    var isAutoRefresh = false
     private var mDurationToLoadingPosition = 200
     private var mDurationToCloseHeader = 200
     var isKeepHeaderWhenRefresh = true
@@ -61,9 +79,90 @@ open class PtrLayout @JvmOverloads constructor(
     private val mPtrListenerHolder = create()
 
     // working parameters
-    private val mScrollChecker: ScrollChecker
+    private val mScrollChecker = ScrollChecker()
     var headerHeight = 0
-    private var mPtrStateController: PtrStateController?
+    private var mPtrStateController = PtrStateController()
+    private var stateMachine =
+        StateMachine.create<State, Event, SideEffect> {
+            initialState(State.IDLE)
+
+            state<State.IDLE> {
+                on<Event.OnPull> {
+                    transitionTo(
+                        State.DRAG,
+                        SideEffect.OnDragBegin
+                    )
+                }
+                on<Event.OnAutoRefresh> {
+                    transitionTo(
+                        State.REFRESHING,
+                        SideEffect.OnRefreshing
+                    )
+                }
+
+                onEnter {
+                    Log.i(LOG_TAG, "state idle")
+                    mPtrListenerHolder.onReset(this@PtrLayout)
+                }
+            }
+
+            state<State.REFRESHING> {
+                on<Event.OnComplete> {
+                    transitionTo(
+                        State.IDLE,
+                        SideEffect.OnComplete
+                    )
+                }
+
+                onEnter {
+                    mScrollChecker.scrollToRefreshing()
+                    Log.i(LOG_TAG, "enter refreshing")
+                    performRefresh()
+                }
+            }
+
+            state<State.DRAG> {
+                on<Event.OnReleaseToIdle> {
+                    transitionTo(
+                        State.IDLE,
+                        SideEffect.OnComplete
+                    )
+                }
+                on<Event.OnReleaseToRefreshing> {
+                    transitionTo(
+                        State.REFRESHING,
+                        SideEffect.OnRefreshing
+                    )
+                }
+                on<Event.OnComplete> {
+                    transitionTo(
+                        State.IDLE,
+                        SideEffect.OnComplete
+                    )
+                }
+
+                onEnter {
+                    Log.i(LOG_TAG, "state drag")
+                }
+            }
+
+            onTransition {
+                val validTransition = it as? StateMachine.Transition.Valid ?: return@onTransition
+                when (validTransition.sideEffect) {
+                    SideEffect.OnDragBegin -> {
+                        Log.i(LOG_TAG, "drag begin")
+                    }
+                    SideEffect.OnComplete -> {
+                        tryScrollBackToTop()
+                        notifyUIRefreshComplete()
+                        Log.i(LOG_TAG, "complete")
+                    }
+                    SideEffect.OnRefreshing -> {
+                        Log.i(LOG_TAG, "refresh")
+                    }
+                }
+            }
+        }
 
     //touch handle
     private var mActivePointerId = INVALID_POINTER
@@ -86,13 +185,12 @@ open class PtrLayout @JvmOverloads constructor(
 
 
     init {
-        mPtrStateController = PtrStateController()
         val arr = context.obtainStyledAttributes(attrs, R.styleable.PtrLayout, 0, 0)
         if (arr != null) {
             mHeaderId = arr.getResourceId(R.styleable.PtrLayout_ptr_header, mHeaderId)
             mContainerId = arr.getResourceId(R.styleable.PtrLayout_ptr_content, mContainerId)
-            mPtrStateController!!.resistance =
-                arr.getFloat(R.styleable.PtrLayout_ptr_resistance, mPtrStateController!!.resistance)
+            mPtrStateController.resistance =
+                arr.getFloat(R.styleable.PtrLayout_ptr_resistance, mPtrStateController.resistance)
             mDurationToLoadingPosition = arr.getInt(
                 R.styleable.PtrLayout_ptr_duration_to_loading_position,
                 mDurationToLoadingPosition
@@ -101,14 +199,13 @@ open class PtrLayout @JvmOverloads constructor(
                 R.styleable.PtrLayout_ptr_duration_to_close_header,
                 mDurationToCloseHeader
             )
-            var ratio = mPtrStateController!!.ratioOfHeaderToHeightRefresh
+            var ratio = mPtrStateController.ratioOfHeaderToHeightRefresh
             ratio = arr.getFloat(R.styleable.PtrLayout_ptr_ratio_of_header_height_to_refresh, ratio)
-            mPtrStateController!!.setRatioOfHeaderHeightToRefresh(ratio)
+            mPtrStateController.setRatioOfHeaderHeightToRefresh(ratio)
             isPullToRefresh =
                 arr.getBoolean(R.styleable.PtrLayout_ptr_pull_to_fresh, isPullToRefresh)
             arr.recycle()
         }
-        mScrollChecker = ScrollChecker()
         val conf = ViewConfiguration.get(getContext())
         mTouchSlop = conf.scaledTouchSlop
         isNestedScrollingEnabled = true
@@ -171,15 +268,15 @@ open class PtrLayout @JvmOverloads constructor(
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
-        mPerformRefreshCompleteDelay?.let { removeCallbacks(it) }
+        removeCallbacks(mPerformRefreshCompleteDelay)
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         if (mHeaderView != null) {
             measureChildWithMargins(mHeaderView, widthMeasureSpec, 0, heightMeasureSpec, 0)
-            headerHeight = mHeaderView!!.measuredHeight
-            mPtrStateController!!.headerHeight = headerHeight
+            headerHeight = mHeaderView?.measuredHeight?:0
+            mPtrStateController.headerHeight = headerHeight
         }
         if (contentView != null) {
             measureContentView(contentView!!, widthMeasureSpec, heightMeasureSpec)
@@ -234,30 +331,27 @@ open class PtrLayout @JvmOverloads constructor(
         if (mScrollChecker.isRunning) {
             mScrollChecker.abortIfWorking()
         }
-        val actionMasked = e.actionMasked
-        when (actionMasked) {
+        when (e.actionMasked) {
             MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                 mIsInTouchProgress = false
                 mIsBeingDragged = false
                 stopNestedScroll()
-                if (mPtrStateController!!.hasLeftStartPosition()) {
-                    onRelease(false)
-                }
+                onRelease()
             }
             MotionEvent.ACTION_DOWN -> mIsInTouchProgress = true
-            else -> {
-            }
         }
         return super.dispatchTouchEvent(e)
     }
 
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
-        if (!isEnabled || contentView == null || mHeaderView == null || mInVerticalNestedScrolling) {
+        if (!isEnabled
+            || contentView == null
+            || mHeaderView == null
+            || mInVerticalNestedScrolling) {
             return false
         }
         val pointerIndex: Int
-        val action = ev.actionMasked
-        when (action) {
+        when (ev.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
                 mIsBeingDragged = false
                 mActivePointerId = ev.getPointerId(0)
@@ -282,7 +376,7 @@ open class PtrLayout @JvmOverloads constructor(
                     // like ListView, we need enable nest scroll in intercept process
                     val y = (ev.getY(pointerIndex) + 0.5f).toInt()
                     val dy = (mLastTouch.y - y).toInt()
-                    if (mPtrStateController!!.isInStartPosition || dy > 0) {
+                    if (mPtrStateController.isInStartPosition || dy > 0) {
                         if (dispatchNestedPreScroll(0, dy, mScrollConsumed, mScrollOffset)) {
                             mLastTouch.y = (y - mScrollOffset[1]).toFloat()
                             // handle touch when parent not accept nest scroll
@@ -325,7 +419,7 @@ open class PtrLayout @JvmOverloads constructor(
                 }
                 val y = (event.getY(pointerIndex) + 0.5f).toInt()
                 var dy = (y - mLastTouch.y).toInt()
-                if (dy > 0 || mPtrStateController!!.isInStartPosition) {
+                if (dy > 0 || mPtrStateController.isInStartPosition) {
                     if (dispatchNestedPreScroll(0, -dy, mScrollConsumed, mScrollOffset)) {
                         mLastTouch.y = (y - mScrollOffset[1]).toFloat()
                         // handle touch when parent not accept nest scroll
@@ -341,8 +435,8 @@ open class PtrLayout @JvmOverloads constructor(
                 }
                 val moveDown = dy > 0
                 val moveUp = !moveDown
-                val canMoveUp = mPtrStateController!!.hasLeftStartPosition()
-                if (mPtrStateController!!.currentPosY != 0) {
+                val canMoveUp = mPtrStateController.hasLeftStartPosition()
+                if (mPtrStateController.currentPosY != 0) {
                     movePos(dy.toFloat())
                     return true
                 }
@@ -362,21 +456,24 @@ open class PtrLayout @JvmOverloads constructor(
      */
     private fun movePos(deltaY: Float): Int {
         // has reached the top
-        if (deltaY < 0 && mPtrStateController!!.isInStartPosition) {
+        if (deltaY < 0 && mPtrStateController.isInStartPosition) {
             return 0
         }
-        var to = mPtrStateController!!.currentPosY + deltaY.toInt()
+        var to = mPtrStateController.currentPosY + deltaY.toInt()
 
         // over top
-        if (mPtrStateController!!.willOverTop(to)) {
+        if (mPtrStateController.willOverTop(to)) {
             to = PtrStateController.POS_START
         }
-        mPtrStateController!!.setCurrentPos(to)
-        if (mPtrStateController!!.isInStartPosition && isRealRefreshing) {
-            performRefreshComplete()
-        }
-        val change = to - mPtrStateController!!.lastPosY
+        mPtrStateController.setCurrentPos(to)
+        val change = to - mPtrStateController.lastPosY
         updatePos(change)
+
+        if (stateMachine.state is State.IDLE
+            && mIsInTouchProgress
+            && abs(change) > 0) {
+            stateMachine.transition(Event.OnPull)
+        }
         return change
     }
 
@@ -384,32 +481,10 @@ open class PtrLayout @JvmOverloads constructor(
         if (change == 0) {
             return
         }
-
-
-        // leave initiated position or just refresh complete
-        if (mPtrStateController!!.hasJustLeftStartPosition() && mStatus == PTR_STATUS_INIT) {
-            changeStatusTo(PTR_STATUS_PREPARE)
-        }
-
-        // back to initiated position
-        if (mPtrStateController!!.hasJustBackToStartPosition()) {
-            tryToNotifyReset()
-        }
-
-        // Pull to Refresh
-        if (mStatus == PTR_STATUS_PREPARE) {
-            // reach fresh height while moving from top to bottom
-            if (!isAutoRefresh && isPullToRefresh
-                && mPtrStateController!!.crossRefreshLineFromTopToBottom()
-            ) {
-                tryToPerformRefresh()
-            }
-        }
-        mHeaderView!!.offsetTopAndBottom(change)
-        contentView!!.offsetTopAndBottom(change)
-        invalidate()
+        mHeaderView?.offsetTopAndBottom(change)
+        contentView?.offsetTopAndBottom(change)
         if (mPtrListenerHolder.hasHandler()) {
-            mPtrListenerHolder.onPositionChange(this, mStatus, mPtrStateController)
+            mPtrListenerHolder.onPositionChange(this, mPtrStateController)
         }
     }
 
@@ -417,50 +492,17 @@ open class PtrLayout @JvmOverloads constructor(
         return (force * mPullFriction).toInt()
     }
 
-    fun changeStatusTo(status: Int) {
-        mStatus = status
-        onStateChange(mStatus)
-    }
-
-    fun onStateChange(status: Int) {
-        when (status) {
-            PTR_STATUS_INIT -> {
-                clearFlag()
-                mPtrListenerHolder.onReset(this)
-            }
-            PTR_STATUS_COMPLETE -> {
-                // if is auto refresh do nothing, wait scroller stop
-                if (mScrollChecker.isRunning && isAutoRefresh) {
-                    return
+    private fun onRelease() {
+        when (stateMachine.state) {
+            is State.IDLE -> {}
+            is State.DRAG -> {
+                if (mPtrStateController.isOverOffsetToRefresh) {
+                    stateMachine.transition(Event.OnReleaseToRefreshing)
+                } else {
+                    stateMachine.transition(Event.OnReleaseToIdle)
                 }
-                notifyUIRefreshComplete(false)
             }
-            PTR_STATUS_PREPARE -> mPtrListenerHolder.onPrepare(this)
-            PTR_STATUS_LOADING -> performRefresh()
-        }
-    }
-
-    private fun onRelease(stayForLoading: Boolean) {
-        tryToPerformRefresh()
-        if (mStatus == PTR_STATUS_LOADING) {
-            // keep header for fresh
-            if (isKeepHeaderWhenRefresh) {
-                // scroll header back
-                if (mPtrStateController!!.isOverOffsetToKeepHeaderWhileLoading && !stayForLoading) {
-                    mScrollChecker.tryToScrollTo(
-                        mPtrStateController!!.offsetToKeepHeaderWhileLoading,
-                        mDurationToLoadingPosition
-                    )
-                }
-            } else {
-                tryScrollBackToTopWhileLoading()
-            }
-        } else {
-            if (mStatus == PTR_STATUS_COMPLETE) {
-                notifyUIRefreshComplete(false)
-            } else {
-                tryScrollBackToTopAbortRefresh()
-            }
+            is State.REFRESHING -> {}
         }
     }
 
@@ -469,39 +511,7 @@ open class PtrLayout @JvmOverloads constructor(
      */
     private fun tryScrollBackToTop() {
         if (!mIsInTouchProgress) {
-            mScrollChecker.tryToScrollTo(PtrStateController.POS_START, mDurationToCloseHeader)
-        }
-    }
-
-    /**
-     * just make easier to understand
-     */
-    private fun tryScrollBackToTopWhileLoading() {
-        tryScrollBackToTop()
-    }
-
-    /**
-     * just make easier to understand
-     */
-    private fun tryScrollBackToTopAfterComplete() {
-        tryScrollBackToTop()
-    }
-
-    /**
-     * just make easier to understand
-     */
-    private fun tryScrollBackToTopAbortRefresh() {
-        tryScrollBackToTop()
-    }
-
-    private fun tryToPerformRefresh() {
-        if (mStatus != PTR_STATUS_PREPARE) {
-            return
-        }
-        if (mPtrStateController!!.isOverOffsetToKeepHeaderWhileLoading && isAutoRefresh
-            || mPtrStateController!!.isOverOffsetToRefresh
-        ) {
-            changeStatusTo(PTR_STATUS_LOADING)
+            mScrollChecker.scrollToStart()
         }
     }
 
@@ -512,38 +522,8 @@ open class PtrLayout @JvmOverloads constructor(
         }
     }
 
-    /**
-     * If at the top and not in loading, reset
-     */
-    private fun tryToNotifyReset() {
-        if ((mStatus == PTR_STATUS_COMPLETE || mStatus == PTR_STATUS_PREPARE)
-            && mPtrStateController!!.isInStartPosition
-        ) {
-            changeStatusTo(PTR_STATUS_INIT)
-        }
-    }
-
-    protected fun onPtrScrollAbort() {
-        if (mPtrStateController!!.hasLeftStartPosition() && isAutoRefresh) {
-            onRelease(true)
-        }
-    }
-
-    protected fun onPtrScrollFinish() {
-        if (mPtrStateController!!.hasLeftStartPosition() && isAutoRefresh) {
-            onRelease(true)
-        }
-    }
-
-    /**
-     * Detect whether is refreshing.
-     *
-     * @return isRefreshing
-     */
-    val isRealRefreshing: Boolean
-        get() = mStatus == PTR_STATUS_LOADING
     var isRefreshing: Boolean
-        get() = isRealRefreshing
+        get() = stateMachine.state is State.REFRESHING
         set(isRefresh) {
             if (isRefresh) {
                 autoRefresh()
@@ -552,11 +532,15 @@ open class PtrLayout @JvmOverloads constructor(
             }
         }
 
+    var currentState: State = stateMachine.state
+        get() = stateMachine.state
+        private set
+
     /**
      * Call this when data is loaded.
      * The UI will perform complete at once or after a delay, depends on the time elapsed is greater then [.mLoadingMinTime] or not.
      */
-    fun refreshComplete() {
+    private fun refreshComplete() {
         val delay = (mLoadingMinTime - (System.currentTimeMillis() - mLoadingStartTime)).toInt()
         if (delay <= 0) {
             performRefreshComplete()
@@ -569,36 +553,28 @@ open class PtrLayout @JvmOverloads constructor(
      * Do refresh complete work when time elapsed is greater than [.mLoadingMinTime]
      */
     private fun performRefreshComplete() {
-        changeStatusTo(PTR_STATUS_COMPLETE)
+        stateMachine.transition(Event.OnComplete)
     }
 
     /**
      * Do real refresh work. If there is a hook, execute the hook first.
-     *
-     * @param ignoreHook is ignore hook
      */
-    private fun notifyUIRefreshComplete(ignoreHook: Boolean) {
+    private fun notifyUIRefreshComplete() {
         if (mPtrListenerHolder.hasHandler()) {
             mPtrListenerHolder.onComplete(this)
         }
-        mPtrStateController!!.onUIRefreshComplete()
-        tryScrollBackToTopAfterComplete()
-        tryToNotifyReset()
-    }
-
-    private fun clearFlag() {
-        isAutoRefresh = false
+        mPtrStateController.onUIRefreshComplete()
+        tryScrollBackToTop()
     }
 
     @JvmOverloads
     fun autoRefresh(duration: Int = mDurationToCloseHeader) {
-        if (mStatus != PTR_STATUS_INIT) {
+        if (stateMachine.state !is State.IDLE) {
             return
         }
-        isAutoRefresh = true
-        changeStatusTo(PTR_STATUS_PREPARE)
-        mScrollChecker.tryToScrollTo(mPtrStateController!!.offsetToRefresh, duration)
-        changeStatusTo(PTR_STATUS_LOADING)
+        doOnLayout {
+            stateMachine.transition(Event.OnAutoRefresh)
+        }
     }
 
     /**
@@ -619,16 +595,16 @@ open class PtrLayout @JvmOverloads constructor(
     }
 
     fun setPtrIndicator(indicator: PtrStateController) {
-        if (mPtrStateController != null && mPtrStateController != indicator) {
-            indicator.convertFrom(mPtrStateController!!)
+        if (mPtrStateController != indicator) {
+            indicator.convertFrom(mPtrStateController)
         }
         mPtrStateController = indicator
     }
 
     var resistance: Float
-        get() = mPtrStateController!!.resistance
+        get() = mPtrStateController.resistance
         set(resistance) {
-            mPtrStateController!!.resistance = resistance
+            mPtrStateController.resistance = resistance
         }
 
     /**
@@ -653,20 +629,20 @@ open class PtrLayout @JvmOverloads constructor(
     }
 
     fun setRatioOfHeaderHeightToRefresh(ratio: Float) {
-        mPtrStateController!!.setRatioOfHeaderHeightToRefresh(ratio)
+        mPtrStateController.setRatioOfHeaderHeightToRefresh(ratio)
     }
 
     var offsetToRefresh: Int
-        get() = mPtrStateController!!.offsetToRefresh
+        get() = mPtrStateController.offsetToRefresh
         set(offset) {
-            mPtrStateController!!.offsetToRefresh = offset
+            mPtrStateController.offsetToRefresh = offset
         }
     val ratioOfHeaderToHeightRefresh: Float
-        get() = mPtrStateController!!.ratioOfHeaderToHeightRefresh
+        get() = mPtrStateController.ratioOfHeaderToHeightRefresh
     var offsetToKeepHeaderWhileLoading: Int
-        get() = mPtrStateController!!.offsetToKeepHeaderWhileLoading
+        get() = mPtrStateController.offsetToKeepHeaderWhileLoading
         set(offset) {
-            mPtrStateController!!.offsetToKeepHeaderWhileLoading = offset
+            mPtrStateController.offsetToKeepHeaderWhileLoading = offset
         }
     var headerView: View?
         get() = mHeaderView
@@ -714,6 +690,7 @@ open class PtrLayout @JvmOverloads constructor(
     }
 
     // </editor-fold>
+
     // <editor-fold defaultstate="collapsed" desc="nested scroll child">
     override fun setNestedScrollingEnabled(enabled: Boolean) {
         mNestedScrollingChildHelper.isNestedScrollingEnabled = enabled
@@ -782,10 +759,11 @@ open class PtrLayout @JvmOverloads constructor(
     }
 
     // </editor-fold>
+
     // <editor-fold defaultstate="collapsed" desc="nested scroll parent">
     override fun onStartNestedScroll(child: View, target: View, axes: Int): Boolean {
         return (isEnabled
-                && !isAutoRefresh // && !isRefreshing()
+                // && !isAutoRefresh // && !isRefreshing()
                 && axes and ViewCompat.SCROLL_AXIS_VERTICAL != 0)
     }
 
@@ -804,7 +782,7 @@ open class PtrLayout @JvmOverloads constructor(
         if (dy > 0 && !mPtrStateController!!.isInStartPosition) {
             consumed[1] = -movePos(-dy.toFloat())
         }
-        if (dy > 0 && mTotalUnconsumed > 0 && isRealRefreshing) {
+        if (dy > 0 && mTotalUnconsumed > 0 && isRefreshing) {
             if (dy > mTotalUnconsumed) {
                 consumed[1] = dy - mTotalUnconsumed
                 mTotalUnconsumed = 0
@@ -834,12 +812,13 @@ open class PtrLayout @JvmOverloads constructor(
         dyUnconsumed: Int
     ) {
         // Dispatch up to the nested parent first
-        var dyUnconsumed = dyUnconsumed
-        if (mStatus != PTR_STATUS_INIT) {
-            dyUnconsumed = withFriction(dyUnconsumed.toFloat())
+        var dyUnconsumedCopy = dyUnconsumed
+        // if (mStatus != PTR_STATUS_INIT) {
+        if (stateMachine.state !is State.IDLE) {
+            dyUnconsumedCopy = withFriction(dyUnconsumedCopy.toFloat())
         }
         dispatchNestedScroll(
-            dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed,
+            dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumedCopy,
             mParentOffsetInWindow
         )
 
@@ -848,9 +827,9 @@ open class PtrLayout @JvmOverloads constructor(
         // nested scrolling parent has stopped handling events. We do that by using the
         // 'offset in window 'functionality to see if we have been moved from the event.
         // This is a decent indication of whether we should take over the event stream or not.
-        val dy = dyUnconsumed + mParentOffsetInWindow[1]
+        val dy = dyUnconsumedCopy + mParentOffsetInWindow[1]
         if (dy < 0 && !canChildScrollToUp()) {
-            mTotalUnconsumed += Math.abs(dy)
+            mTotalUnconsumed += abs(dy)
         }
         movePos(-dy.toFloat())
     }
@@ -873,6 +852,7 @@ open class PtrLayout @JvmOverloads constructor(
     }
 
     // </editor-fold>
+
     override fun requestDisallowInterceptTouchEvent(b: Boolean) {
         // if this is a List < L or another view that doesn't support nested
         // scrolling, ignore this request so that the vertical scroll event
@@ -888,9 +868,8 @@ open class PtrLayout @JvmOverloads constructor(
         }
     }
 
-    fun canChildScrollToUp(): Boolean {
-        val canChildScrollUp: Boolean
-        canChildScrollUp = if (contentView is ListView) {
+    private fun canChildScrollToUp(): Boolean {
+        return if (contentView is ListView) {
             ListViewCompat.canScrollList(
                 (contentView as ListView?)!!,
                 -1
@@ -898,7 +877,6 @@ open class PtrLayout @JvmOverloads constructor(
         } else {
             contentView!!.canScrollVertically(-1)
         }
-        return canChildScrollUp
     }
 
     private fun startDragging(move: PointF) {
@@ -910,7 +888,7 @@ open class PtrLayout @JvmOverloads constructor(
             }
             // if in refreshing, scroll to up will make PtrFrameLayout handle the touch event
             // and offset content view.
-        } else if (yDiff < 0 && Math.abs(yDiff) > mTouchSlop && isRealRefreshing) {
+        } else if (yDiff < 0 && abs(yDiff) > mTouchSlop && isRefreshing) {
             mIsBeingDragged = true
         }
     }
@@ -927,16 +905,23 @@ open class PtrLayout @JvmOverloads constructor(
 
         fun abortIfWorking() {
             if (isRunning) {
-                onPtrScrollAbort()
                 reset()
             }
         }
 
-        fun tryToScrollTo(to: Int, duration: Int) {
-            if (mPtrStateController!!.isAlreadyHere(to) || to == mTo && isRunning) {
+        fun scrollToRefreshing() {
+            mScrollChecker.tryToScrollTo(mPtrStateController.offsetToRefresh)
+        }
+
+        fun scrollToStart() {
+            mScrollChecker.tryToScrollTo(PtrStateController.POS_START)
+        }
+
+        fun tryToScrollTo(to: Int, duration: Int = 200) {
+            if (mPtrStateController.isAlreadyHere(to) || to == mTo && isRunning) {
                 return
             }
-            mStart = mPtrStateController!!.currentPosY
+            mStart = mPtrStateController.currentPosY
             mTo = to
             if (mAnimator.isRunning) {
                 mAnimator.cancel()
@@ -949,7 +934,7 @@ open class PtrLayout @JvmOverloads constructor(
         override fun onAnimationUpdate(animation: ValueAnimator) {
             val fraction = animation.animatedFraction
             val target = mStart + ((mTo - mStart) * fraction).toInt()
-            movePos((target - mPtrStateController!!.currentPosY).toFloat())
+            movePos((target - mPtrStateController.currentPosY).toFloat())
         }
 
         init {

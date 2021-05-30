@@ -28,5 +28,5 @@ interface PtrListener {
      */
     fun onComplete(frame: PtrLayout?) {}
 
-    fun onPositionChange(frame: PtrLayout?, status: Int, ptrStateController: PtrStateController?) {}
+    fun onPositionChange(frame: PtrLayout?, ptrStateController: PtrStateController?) {}
 }

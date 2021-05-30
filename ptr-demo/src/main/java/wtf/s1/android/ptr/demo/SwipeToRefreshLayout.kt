@@ -51,9 +51,10 @@ class SwipeToRefreshLayout : PtrClassicFrameLayout {
 
             override fun onComplete(frame: PtrLayout?) {}
 
-            override fun onPositionChange(frame: PtrLayout?,
-                                          status: Int,
-                                          ptrStateController: PtrStateController?) {}
+            override fun onPositionChange(
+                frame: PtrLayout?,
+                ptrStateController: PtrStateController?
+            ) {}
         })
 
 //        this.setOnRefreshListener {
@@ -73,8 +74,8 @@ class SwipeToRefreshLayout : PtrClassicFrameLayout {
         return start
     }
 
-    override fun onStartNestedScroll(child: View, target: View, nestedScrollAxes: Int): Boolean {
-        val start = super.onStartNestedScroll(child, target, nestedScrollAxes)
+    override fun onStartNestedScroll(child: View, target: View, axes: Int): Boolean {
+        val start = super.onStartNestedScroll(child, target, axes)
         Log.i(TAG, "---> onStartNestedScroll child = ${child::class.java.simpleName} target = ${child::class.java.simpleName} -> ${start}")
         return start
     }

@@ -55,9 +55,14 @@ class CheeseRecyclerViewFragment : Fragment() {
         return view
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        mRefreshLayout.isRefreshing = true
+    }
+
     private fun setupRecyclerView(recyclerView: RecyclerView) {
         recyclerView.layoutManager = LinearLayoutManager(recyclerView.context)
-        recyclerView.adapter = SimpleStringRecyclerViewAdapter(activity!!,
+        recyclerView.adapter = SimpleStringRecyclerViewAdapter(requireActivity(),
                 getRandomSublist(Cheeses.sCheeseStrings, 30))
     }
 

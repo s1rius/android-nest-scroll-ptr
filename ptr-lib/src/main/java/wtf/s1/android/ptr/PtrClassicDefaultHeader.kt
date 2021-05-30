@@ -1,5 +1,6 @@
 package wtf.s1.android.ptr
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.widget.FrameLayout
 import android.view.animation.RotateAnimation
@@ -26,7 +27,7 @@ open class PtrClassicDefaultHeader @JvmOverloads constructor(
     private var mLastUpdateTextView: TextView? = null
     private var mLastUpdateTimeKey: String? = null
     private var mShouldShowLastUpdate = false
-    private val mLastUpdateTimeUpdater: LastUpdateTimeUpdater? = LastUpdateTimeUpdater()
+    private val mLastUpdateTimeUpdater: LastUpdateTimeUpdater = LastUpdateTimeUpdater()
 
     init {
         initViews(attrs)
@@ -197,12 +198,12 @@ open class PtrClassicDefaultHeader @JvmOverloads constructor(
             return sb.toString()
         }
 
-    override fun onPositionChange(frame: PtrLayout?, status: Int, ptrStateController: PtrStateController?) {
+    override fun onPositionChange(frame: PtrLayout?, ptrStateController: PtrStateController?) {
         val mOffsetToRefresh = frame!!.offsetToRefresh
         val currentPos = ptrStateController!!.currentPosY
         val lastPos = ptrStateController.lastPosY
         if (mOffsetToRefresh in (currentPos + 1)..lastPos) {
-            if (status == PtrLayout.PTR_STATUS_PREPARE) {
+            if (frame.currentState == PtrLayout.State.DRAG) {
                 crossRotateLineFromBottomUnderTouch(frame)
                 if (mRotateView != null) {
                     mRotateView!!.clearAnimation()
@@ -210,7 +211,7 @@ open class PtrClassicDefaultHeader @JvmOverloads constructor(
                 }
             }
         } else if (mOffsetToRefresh in lastPos until currentPos) {
-            if (status == PtrLayout.PTR_STATUS_PREPARE) {
+            if (frame.currentState == PtrLayout.State.DRAG) {
                 crossRotateLineFromTopUnderTouch(frame)
                 if (mRotateView != null) {
                     mRotateView!!.clearAnimation()
@@ -261,6 +262,7 @@ open class PtrClassicDefaultHeader @JvmOverloads constructor(
 
     companion object {
         private const val KEY_SharedPreferences = "cube_ptr_classic_last_update"
+        @SuppressLint("SimpleDateFormat")
         private val sDataFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
     }
 }

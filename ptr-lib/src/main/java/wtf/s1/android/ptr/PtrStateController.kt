@@ -83,6 +83,7 @@ class PtrStateController {
 
     val isOverOffsetToKeepHeaderWhileLoading: Boolean
         get() = currentPosY > offsetToKeepHeaderWhileLoading
+
     var offsetToKeepHeaderWhileLoading: Int
         get() = if (mOffsetToKeepHeaderWhileLoading >= 0) mOffsetToKeepHeaderWhileLoading else mHeaderHeight
         set(offset) {
