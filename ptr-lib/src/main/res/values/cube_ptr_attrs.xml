@@ -14,9 +14,6 @@
 
         <attr name="ptr_duration_to_loading_position" format="integer" />
         <attr name="ptr_duration_to_close_header" format="integer" />
-
-        <!-- pull to refresh, otherwise release to refresh, default is release to refresh -->
-        <attr name="ptr_pull_to_fresh" format="boolean" />
     </declare-styleable>
 
     <declare-styleable name="PtrClassicHeader">

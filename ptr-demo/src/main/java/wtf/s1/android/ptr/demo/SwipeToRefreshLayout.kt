@@ -41,19 +41,18 @@ class SwipeToRefreshLayout : PtrClassicFrameLayout {
 
     init {
         this.addPtrListener(object: PtrListener {
-            override fun onReset(frame: PtrLayout?) {}
 
-            override fun onPrepare(frame: PtrLayout?) {}
+            override fun onDrag(frame: PtrLayout) {}
 
-            override fun onBegin(frame: PtrLayout?) {
+            override fun onRefreshing(frame: PtrLayout) {
                 listener?.onRefresh()
             }
 
-            override fun onComplete(frame: PtrLayout?) {}
+            override fun onComplete(frame: PtrLayout) {}
 
             override fun onPositionChange(
-                frame: PtrLayout?,
-                ptrStateController: PtrStateController?
+                frame: PtrLayout,
+                ptrStateController: PtrStateController
             ) {}
         })
 

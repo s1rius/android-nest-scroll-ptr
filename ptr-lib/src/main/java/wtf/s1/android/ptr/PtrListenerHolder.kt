@@ -23,31 +23,25 @@ internal class PtrListenerHolder private constructor() : PtrListener {
         listeners.remove(listener)
     }
 
-    override fun onReset(frame: PtrLayout?) {
+    override fun onDrag(frame: PtrLayout) {
         for (listener in listeners) {
-            listener.onReset(frame)
+            listener.onDrag(frame)
         }
     }
 
-    override fun onPrepare(frame: PtrLayout?) {
+    override fun onRefreshing(frame: PtrLayout) {
         for (listener in listeners) {
-            listener.onPrepare(frame)
+            listener.onRefreshing(frame)
         }
     }
 
-    override fun onBegin(frame: PtrLayout?) {
-        for (listener in listeners) {
-            listener.onBegin(frame)
-        }
-    }
-
-    override fun onComplete(frame: PtrLayout?) {
+    override fun onComplete(frame: PtrLayout) {
         for (listener in listeners) {
             listener.onComplete(frame)
         }
     }
 
-    override fun onPositionChange(frame: PtrLayout?, ptrStateController: PtrStateController?) {
+    override fun onPositionChange(frame: PtrLayout, ptrStateController: PtrStateController) {
         for (listener in listeners) {
             listener.onPositionChange(frame, ptrStateController)
         }

@@ -73,8 +73,6 @@ open class PtrLayout @JvmOverloads constructor(
     private var mLoadingStartTime: Long = 0
     private var mDurationToLoadingPosition = 200
     private var mDurationToCloseHeader = 200
-    var isKeepHeaderWhenRefresh = true
-    var isPullToRefresh = false
     private var mHeaderView: View? = null
     private val mPtrListenerHolder = create()
 
@@ -102,7 +100,7 @@ open class PtrLayout @JvmOverloads constructor(
 
                 onEnter {
                     Log.i(LOG_TAG, "state idle")
-                    mPtrListenerHolder.onReset(this@PtrLayout)
+                    mPtrListenerHolder.onComplete(this@PtrLayout)
                 }
             }
 
@@ -142,6 +140,7 @@ open class PtrLayout @JvmOverloads constructor(
                 }
 
                 onEnter {
+                    mPtrListenerHolder.onDrag(this@PtrLayout)
                     Log.i(LOG_TAG, "state drag")
                 }
             }
@@ -202,8 +201,6 @@ open class PtrLayout @JvmOverloads constructor(
             var ratio = mPtrStateController.ratioOfHeaderToHeightRefresh
             ratio = arr.getFloat(R.styleable.PtrLayout_ptr_ratio_of_header_height_to_refresh, ratio)
             mPtrStateController.setRatioOfHeaderHeightToRefresh(ratio)
-            isPullToRefresh =
-                arr.getBoolean(R.styleable.PtrLayout_ptr_pull_to_fresh, isPullToRefresh)
             arr.recycle()
         }
         val conf = ViewConfiguration.get(getContext())
@@ -260,9 +257,7 @@ open class PtrLayout @JvmOverloads constructor(
             contentView = errorView
             addView(contentView)
         }
-        if (mHeaderView != null) {
-            mHeaderView!!.bringToFront()
-        }
+        mHeaderView?.bringToFront()
         super.onFinishInflate()
     }
 
@@ -305,7 +300,7 @@ open class PtrLayout @JvmOverloads constructor(
     }
 
     private fun layoutChildren() {
-        val offset = mPtrStateController!!.currentPosY
+        val offset = mPtrStateController!!.currentPos
         val paddingLeft = paddingLeft
         val paddingTop = paddingTop
         if (mHeaderView != null) {
@@ -436,7 +431,7 @@ open class PtrLayout @JvmOverloads constructor(
                 val moveDown = dy > 0
                 val moveUp = !moveDown
                 val canMoveUp = mPtrStateController.hasLeftStartPosition()
-                if (mPtrStateController.currentPosY != 0) {
+                if (mPtrStateController.currentPos != 0) {
                     movePos(dy.toFloat())
                     return true
                 }
@@ -459,14 +454,14 @@ open class PtrLayout @JvmOverloads constructor(
         if (deltaY < 0 && mPtrStateController.isInStartPosition) {
             return 0
         }
-        var to = mPtrStateController.currentPosY + deltaY.toInt()
+        var to = mPtrStateController.currentPos + deltaY.toInt()
 
         // over top
         if (mPtrStateController.willOverTop(to)) {
-            to = PtrStateController.POS_START
+            to = mPtrStateController.startPosition
         }
-        mPtrStateController.setCurrentPos(to)
-        val change = to - mPtrStateController.lastPosY
+        mPtrStateController.currentPos = to
+        val change = to - mPtrStateController.lastPos
         updatePos(change)
 
         if (stateMachine.state is State.IDLE
@@ -518,7 +513,7 @@ open class PtrLayout @JvmOverloads constructor(
     private fun performRefresh() {
         mLoadingStartTime = System.currentTimeMillis()
         if (mPtrListenerHolder.hasHandler()) {
-            mPtrListenerHolder.onBegin(this)
+            mPtrListenerHolder.onRefreshing(this)
         }
     }
 
@@ -563,7 +558,6 @@ open class PtrLayout @JvmOverloads constructor(
         if (mPtrListenerHolder.hasHandler()) {
             mPtrListenerHolder.onComplete(this)
         }
-        mPtrStateController.onUIRefreshComplete()
         tryScrollBackToTop()
     }
 
@@ -637,13 +631,10 @@ open class PtrLayout @JvmOverloads constructor(
         set(offset) {
             mPtrStateController.offsetToRefresh = offset
         }
+
     val ratioOfHeaderToHeightRefresh: Float
         get() = mPtrStateController.ratioOfHeaderToHeightRefresh
-    var offsetToKeepHeaderWhileLoading: Int
-        get() = mPtrStateController.offsetToKeepHeaderWhileLoading
-        set(offset) {
-            mPtrStateController.offsetToKeepHeaderWhileLoading = offset
-        }
+
     var headerView: View?
         get() = mHeaderView
         set(header) {
@@ -914,14 +905,14 @@ open class PtrLayout @JvmOverloads constructor(
         }
 
         fun scrollToStart() {
-            mScrollChecker.tryToScrollTo(PtrStateController.POS_START)
+            mScrollChecker.tryToScrollTo(mPtrStateController.startPosition)
         }
 
         fun tryToScrollTo(to: Int, duration: Int = 200) {
             if (mPtrStateController.isAlreadyHere(to) || to == mTo && isRunning) {
                 return
             }
-            mStart = mPtrStateController.currentPosY
+            mStart = mPtrStateController.currentPos
             mTo = to
             if (mAnimator.isRunning) {
                 mAnimator.cancel()
@@ -934,7 +925,7 @@ open class PtrLayout @JvmOverloads constructor(
         override fun onAnimationUpdate(animation: ValueAnimator) {
             val fraction = animation.animatedFraction
             val target = mStart + ((mTo - mStart) * fraction).toInt()
-            movePos((target - mPtrStateController.currentPosY).toFloat())
+            movePos((target - mPtrStateController.currentPos).toFloat())
         }
 
         init {

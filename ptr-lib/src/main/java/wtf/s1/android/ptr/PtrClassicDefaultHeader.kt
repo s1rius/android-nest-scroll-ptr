@@ -17,6 +17,7 @@ import java.util.*
 open class PtrClassicDefaultHeader @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null
 ) : FrameLayout(context, attrs), PtrListener {
+
     private var mRotateAniTime = 150
     private var mFlipAnimation: RotateAnimation? = null
     private var mReverseFlipAnimation: RotateAnimation? = null
@@ -50,7 +51,7 @@ open class PtrClassicDefaultHeader @JvmOverloads constructor(
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
-        mLastUpdateTimeUpdater?.stop()
+        mLastUpdateTimeUpdater.stop()
     }
 
     fun setRotateAniTime(time: Int) {
@@ -103,27 +104,17 @@ open class PtrClassicDefaultHeader @JvmOverloads constructor(
         mRotateView!!.visibility = INVISIBLE
     }
 
-    override fun onReset(frame: PtrLayout?) {
-        resetView()
-        mShouldShowLastUpdate = true
-        tryUpdateLastUpdateTime()
-    }
-
-    override fun onPrepare(frame: PtrLayout?) {
+    override fun onDrag(frame: PtrLayout) {
         mShouldShowLastUpdate = true
         tryUpdateLastUpdateTime()
         mLastUpdateTimeUpdater!!.start()
         mProgressBar!!.visibility = INVISIBLE
         mRotateView!!.visibility = VISIBLE
         mTitleTextView!!.visibility = VISIBLE
-        if (frame!!.isPullToRefresh) {
-            mTitleTextView!!.text = resources.getString(R.string.cube_ptr_pull_down_to_refresh)
-        } else {
-            mTitleTextView!!.text = resources.getString(R.string.cube_ptr_pull_down)
-        }
+        mTitleTextView!!.text = resources.getString(R.string.cube_ptr_pull_down_to_refresh)
     }
 
-    override fun onBegin(frame: PtrLayout?) {
+    override fun onRefreshing(frame: PtrLayout) {
         mShouldShowLastUpdate = false
         hideRotateView()
         mProgressBar!!.visibility = VISIBLE
@@ -133,7 +124,7 @@ open class PtrClassicDefaultHeader @JvmOverloads constructor(
         mLastUpdateTimeUpdater!!.stop()
     }
 
-    override fun onComplete(frame: PtrLayout?) {
+    override fun onComplete(frame: PtrLayout) {
         hideRotateView()
         mProgressBar!!.visibility = INVISIBLE
         mTitleTextView!!.visibility = VISIBLE
@@ -198,10 +189,10 @@ open class PtrClassicDefaultHeader @JvmOverloads constructor(
             return sb.toString()
         }
 
-    override fun onPositionChange(frame: PtrLayout?, ptrStateController: PtrStateController?) {
+    override fun onPositionChange(frame: PtrLayout, ptrStateController: PtrStateController) {
         val mOffsetToRefresh = frame!!.offsetToRefresh
-        val currentPos = ptrStateController!!.currentPosY
-        val lastPos = ptrStateController.lastPosY
+        val currentPos = ptrStateController!!.currentPos
+        val lastPos = ptrStateController.lastPos
         if (mOffsetToRefresh in (currentPos + 1)..lastPos) {
             if (frame.currentState == PtrLayout.State.DRAG) {
                 crossRotateLineFromBottomUnderTouch(frame)
@@ -222,23 +213,18 @@ open class PtrClassicDefaultHeader @JvmOverloads constructor(
     }
 
     private fun crossRotateLineFromTopUnderTouch(frame: PtrLayout?) {
-        if (!frame!!.isPullToRefresh) {
-            mTitleTextView!!.visibility = VISIBLE
-            mTitleTextView!!.setText(R.string.cube_ptr_release_to_refresh)
-        }
+        mTitleTextView?.visibility = VISIBLE
+        mTitleTextView?.setText(R.string.cube_ptr_release_to_refresh)
     }
 
-    private fun crossRotateLineFromBottomUnderTouch(frame: PtrLayout?) {
-        mTitleTextView!!.visibility = VISIBLE
-        if (frame!!.isPullToRefresh) {
-            mTitleTextView!!.text = resources.getString(R.string.cube_ptr_pull_down_to_refresh)
-        } else {
-            mTitleTextView!!.text = resources.getString(R.string.cube_ptr_pull_down)
-        }
+    private fun crossRotateLineFromBottomUnderTouch(frame: PtrLayout) {
+        mTitleTextView?.visibility = VISIBLE
+        mTitleTextView?.text = resources.getString(R.string.cube_ptr_pull_down_to_refresh)
     }
 
     private inner class LastUpdateTimeUpdater : Runnable {
         private var mRunning = false
+
         fun start() {
             if (TextUtils.isEmpty(mLastUpdateTimeKey)) {
                 return
