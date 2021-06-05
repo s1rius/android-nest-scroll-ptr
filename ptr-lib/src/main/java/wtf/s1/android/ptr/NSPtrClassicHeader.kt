@@ -14,9 +14,9 @@ import java.lang.StringBuilder
 import java.text.SimpleDateFormat
 import java.util.*
 
-open class PtrClassicDefaultHeader @JvmOverloads constructor(
+open class NSPtrClassicHeader @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null
-) : FrameLayout(context, attrs), PtrListener, PtrComponent {
+) : FrameLayout(context, attrs), NSPtrListener, NSPtrComponent {
 
     private var mRotateAniTime = 150
     private var mFlipAnimation: RotateAnimation? = null
@@ -36,13 +36,8 @@ open class PtrClassicDefaultHeader @JvmOverloads constructor(
     }
 
     private fun initViews(attrs: AttributeSet?) {
-        val arr = context.obtainStyledAttributes(attrs, R.styleable.PtrClassicHeader, 0, 0)
-        if (arr != null) {
-            mRotateAniTime = arr.getInt(R.styleable.PtrClassicHeader_ptr_rotate_ani_time, mRotateAniTime)
-            arr.recycle()
-        }
         buildAnimation()
-        val header = LayoutInflater.from(context).inflate(R.layout.cube_ptr_classic_default_header, this)
+        val header = LayoutInflater.from(context).inflate(R.layout.ns_ptr_classic_default_header, this)
         mRotateView = header.findViewById(R.id.ptr_classic_header_rotate_view)
         mTitleTextView = header.findViewById<View>(R.id.ptr_classic_header_rotate_view_header_title) as TextView
         mLastUpdateTextView = header.findViewById<View>(R.id.ptr_classic_header_rotate_view_header_last_update) as TextView
@@ -105,7 +100,7 @@ open class PtrClassicDefaultHeader @JvmOverloads constructor(
         mRotateView!!.visibility = INVISIBLE
     }
 
-    override fun onDrag(frame: PtrLayout) {
+    override fun onDrag(frame: NSPtrLayout) {
         mShouldShowLastUpdate = true
         tryUpdateLastUpdateTime()
         mLastUpdateTimeUpdater!!.start()
@@ -115,7 +110,7 @@ open class PtrClassicDefaultHeader @JvmOverloads constructor(
         mTitleTextView!!.text = resources.getString(R.string.cube_ptr_pull_down_to_refresh)
     }
 
-    override fun onRefreshing(frame: PtrLayout) {
+    override fun onRefreshing(frame: NSPtrLayout) {
         mShouldShowLastUpdate = false
         hideRotateView()
         mProgressBar!!.visibility = VISIBLE
@@ -125,7 +120,7 @@ open class PtrClassicDefaultHeader @JvmOverloads constructor(
         mLastUpdateTimeUpdater!!.stop()
     }
 
-    override fun onComplete(frame: PtrLayout) {
+    override fun onComplete(frame: NSPtrLayout) {
         hideRotateView()
         mProgressBar!!.visibility = INVISIBLE
         mTitleTextView!!.visibility = VISIBLE
@@ -190,8 +185,8 @@ open class PtrClassicDefaultHeader @JvmOverloads constructor(
             return sb.toString()
         }
 
-    override fun onPositionChange(frame: PtrLayout) {
-        if (frame.currentState == PtrLayout.State.DRAG) {
+    override fun onPositionChange(frame: NSPtrLayout) {
+        if (frame.currentState == NSPtrLayout.State.DRAG) {
             if (mIsOverToRefresh != frame.isOverToRefreshPosition) {
                 if (frame.isOverToRefreshPosition) {
                     crossRotateLineFromTopUnderTouch(frame)
@@ -211,12 +206,12 @@ open class PtrClassicDefaultHeader @JvmOverloads constructor(
         }
     }
 
-    private fun crossRotateLineFromTopUnderTouch(frame: PtrLayout?) {
+    private fun crossRotateLineFromTopUnderTouch(frame: NSPtrLayout?) {
         mTitleTextView?.visibility = VISIBLE
         mTitleTextView?.setText(R.string.cube_ptr_release_to_refresh)
     }
 
-    private fun crossRotateLineFromBottomUnderTouch(frame: PtrLayout) {
+    private fun crossRotateLineFromBottomUnderTouch(frame: NSPtrLayout) {
         mTitleTextView?.visibility = VISIBLE
         mTitleTextView?.text = resources.getString(R.string.cube_ptr_pull_down_to_refresh)
     }
@@ -251,12 +246,12 @@ open class PtrClassicDefaultHeader @JvmOverloads constructor(
         private val sDataFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
     }
 
-    override fun prtMeasure(ptrLayout: PtrLayout, widthMeasureSpec: Int, heightMeasureSpec: Int) {
+    override fun prtMeasure(ptrLayout: NSPtrLayout, widthMeasureSpec: Int, heightMeasureSpec: Int) {
         measure(widthMeasureSpec, heightMeasureSpec)
     }
 
-    override fun ptrLayout(ptrLayout: PtrLayout) {
-        val lp = layoutParams as PtrLayout.LayoutParams
+    override fun ptrLayout(ptrLayout: NSPtrLayout) {
+        val lp = layoutParams as NSPtrLayout.LayoutParams
         val left = paddingLeft + lp.leftMargin
         // enhance readability(header is layout above screen when first init)
         val top = -(measuredHeight - paddingTop - lp.topMargin - ptrLayout.contentTopPosition)

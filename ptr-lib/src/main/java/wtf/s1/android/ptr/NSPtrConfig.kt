@@ -1,20 +1,20 @@
 package wtf.s1.android.ptr
 
-interface PtrConfig {
+interface NSPtrConfig {
 
-    fun startPosition(layout: PtrLayout): Int {
+    fun startPosition(layout: NSPtrLayout): Int {
         return 0
     }
 
-    fun atStartPosition(layout: PtrLayout): Boolean {
+    fun atStartPosition(layout: NSPtrLayout): Boolean {
         return layout.contentTopPosition == startPosition(layout)
     }
 
-    fun overToRefreshPosition(layout: PtrLayout): Boolean {
+    fun overToRefreshPosition(layout: NSPtrLayout): Boolean {
         return layout.contentTopPosition > layout.headerView?.height ?: 0
     }
 
-    fun refreshPosition(layout: PtrLayout): Int {
+    fun refreshPosition(layout: NSPtrLayout): Int {
         return layout.headerView?.height ?: 0
     }
 

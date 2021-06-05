@@ -14,7 +14,7 @@ import android.widget.ListView
 import android.widget.TextView
 import androidx.core.view.*
 import androidx.core.widget.ListViewCompat
-import wtf.s1.android.ptr.PtrListenerHolder.Companion.create
+import wtf.s1.android.ptr.NSPtrListenerHolder.Companion.create
 import kotlin.math.abs
 
 /**
@@ -22,9 +22,9 @@ import kotlin.math.abs
  * you can contain everything you want.
  * support: pull to refresh / release to refresh / auto refresh / keep header view
  * while refreshing / hide header view while refreshing
- * It defines [PtrListener], which allows you customize the UI easily.
+ * It defines [NSPtrListener], which allows you customize the UI easily.
  */
-open class PtrLayout @JvmOverloads constructor(
+open class NSPtrLayout @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyle: Int = 0
@@ -63,7 +63,7 @@ open class PtrLayout @JvmOverloads constructor(
     private val LOG_TAG = "ptr-frame-" + ++ID
     private var contentView: View? = null
 
-    var config = object: PtrConfig{}
+    var config = object: NSPtrConfig{}
 
     // optional config for define header and content in xml file
     private var mHeaderId = 0
@@ -99,7 +99,7 @@ open class PtrLayout @JvmOverloads constructor(
 
                 onEnter {
                     Log.i(LOG_TAG, "state idle")
-                    mPtrListenerHolder.onComplete(this@PtrLayout)
+                    mPtrListenerHolder.onComplete(this@NSPtrLayout)
                 }
             }
 
@@ -139,7 +139,7 @@ open class PtrLayout @JvmOverloads constructor(
                 }
 
                 onEnter {
-                    mPtrListenerHolder.onDrag(this@PtrLayout)
+                    mPtrListenerHolder.onDrag(this@NSPtrLayout)
                     Log.i(LOG_TAG, "state drag")
                 }
             }
@@ -210,10 +210,10 @@ open class PtrLayout @JvmOverloads constructor(
             if (contentView == null || mHeaderView == null) {
                 val child1 = getChildAt(0)
                 val child2 = getChildAt(1)
-                if (child1 is PtrListener) {
+                if (child1 is NSPtrListener) {
                     mHeaderView = child1
                     contentView = child2
-                } else if (child2 is PtrListener) {
+                } else if (child2 is NSPtrListener) {
                     mHeaderView = child2
                     contentView = child1
                 } else {
@@ -255,7 +255,7 @@ open class PtrLayout @JvmOverloads constructor(
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         if (mHeaderView != null) {
             mHeaderView?.let {
-                if (it is PtrComponent) {
+                if (it is NSPtrComponent) {
                     val lp = it.layoutParams as LayoutParams
                     val childWidthMeasureSpec = getChildMeasureSpec(
                         widthMeasureSpec,
@@ -303,7 +303,7 @@ open class PtrLayout @JvmOverloads constructor(
         val paddingTop = paddingTop
 
         mHeaderView?.let {
-            if (it is PtrComponent) {
+            if (it is NSPtrComponent) {
                 it.ptrLayout(this)
             } else {
                 val lp = it.layoutParams as LayoutParams
@@ -482,13 +482,17 @@ open class PtrLayout @JvmOverloads constructor(
             return
         }
         mHeaderView?.let {
-            if (it is PtrComponent) {
+            if (it is NSPtrComponent) {
+
                 it.ptrOnContentOffsetTopAndBottom(change)
             } else {
+                ViewCompat.offsetTopAndBottom(it, change)
                 it.offsetTopAndBottom(change)
             }
         }
-        contentView?.offsetTopAndBottom(change)
+        contentView?.let {
+            ViewCompat.offsetTopAndBottom(it, change)
+        }
         if (mPtrListenerHolder.hasHandler()) {
             mPtrListenerHolder.onPositionChange(this)
         }
@@ -590,11 +594,11 @@ open class PtrLayout @JvmOverloads constructor(
         mLoadingMinTime = time
     }
 
-    fun addPtrListener(ptrListener: PtrListener) {
+    fun addPtrListener(ptrListener: NSPtrListener) {
         mPtrListenerHolder.addListener(ptrListener)
     }
 
-    fun removePtrListener(ptrListener: PtrListener) {
+    fun removePtrListener(ptrListener: NSPtrListener) {
         mPtrListenerHolder.removeListener(ptrListener)
     }
 
@@ -870,11 +874,11 @@ open class PtrLayout @JvmOverloads constructor(
         }
 
         fun scrollToRefreshing() {
-            mScrollChecker.tryToScrollTo(config.refreshPosition(this@PtrLayout))
+            mScrollChecker.tryToScrollTo(config.refreshPosition(this@NSPtrLayout))
         }
 
         fun scrollToStart() {
-            mScrollChecker.tryToScrollTo(config.startPosition(this@PtrLayout))
+            mScrollChecker.tryToScrollTo(config.startPosition(this@NSPtrLayout))
         }
 
         private fun tryToScrollTo(to: Int, duration: Int = 200) {

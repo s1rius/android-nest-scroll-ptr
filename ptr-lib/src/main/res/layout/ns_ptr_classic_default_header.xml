@@ -2,11 +2,12 @@
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="60dp">
+    android:layout_height="60dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <LinearLayout
         android:id="@+id/ptr_classic_header_rotate_view_header_text"
-        android:layout_width="150dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:gravity="center"
@@ -36,18 +37,17 @@
         android:layout_toLeftOf="@+id/ptr_classic_header_rotate_view_header_text"
         android:layout_toStartOf="@+id/ptr_classic_header_rotate_view_header_text">
 
-        <ImageView
+        <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/ptr_classic_header_rotate_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:src="@drawable/ptr_rotate_arrow" />
+            app:srcCompat="@drawable/ns_ic_arrow_south" />
 
         <ProgressBar
             android:id="@+id/ptr_classic_header_rotate_view_progressbar"
-            style="@android:style/Widget.ProgressBar.Small"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
             android:layout_gravity="center" />
     </FrameLayout>
 </RelativeLayout>

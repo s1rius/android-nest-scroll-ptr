@@ -19,15 +19,15 @@ import android.content.Context
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
-import wtf.s1.android.ptr.PtrClassicFrameLayout
-import wtf.s1.android.ptr.PtrLayout
-import wtf.s1.android.ptr.PtrListener
+import wtf.s1.android.ptr.NSPtrClassicLayout
+import wtf.s1.android.ptr.NSPtrLayout
+import wtf.s1.android.ptr.NSPtrListener
 
 /**
  * Created by s1rius on 15/03/2018.
  */
 
-class SwipeToRefreshLayout : PtrClassicFrameLayout {
+class SwipeToRefreshLayout : NSPtrClassicLayout {
 
     private var listener: OnPtrRefreshListener? = null
 
@@ -39,17 +39,17 @@ class SwipeToRefreshLayout : PtrClassicFrameLayout {
     }
 
     init {
-        this.addPtrListener(object: PtrListener {
+        this.addPtrListener(object: NSPtrListener {
 
-            override fun onDrag(frame: PtrLayout) {}
+            override fun onDrag(frame: NSPtrLayout) {}
 
-            override fun onRefreshing(frame: PtrLayout) {
+            override fun onRefreshing(frame: NSPtrLayout) {
                 listener?.onRefresh()
             }
 
-            override fun onComplete(frame: PtrLayout) {}
+            override fun onComplete(frame: NSPtrLayout) {}
 
-            override fun onPositionChange(frame: PtrLayout) {}
+            override fun onPositionChange(frame: NSPtrLayout) {}
         })
 
 //        this.setOnRefreshListener {

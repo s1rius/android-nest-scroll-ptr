@@ -6,8 +6,4 @@
         <attr name="ptr_header" format="reference" />
         <attr name="ptr_content" format="reference" />
     </declare-styleable>
-
-    <declare-styleable name="PtrClassicHeader">
-        <attr name="ptr_rotate_ani_time" format="integer" />
-    </declare-styleable>
 </resources>

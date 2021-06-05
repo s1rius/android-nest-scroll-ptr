@@ -3,24 +3,24 @@ package wtf.s1.android.ptr
 /**
  *
  */
-interface PtrListener {
+interface NSPtrListener {
 
     /**
      * prepare for loading
      *
      * @param frame
      */
-    fun onDrag(frame: PtrLayout) {}
+    fun onDrag(frame: NSPtrLayout) {}
 
     /**
      * perform refreshing UI
      */
-    fun onRefreshing(frame: PtrLayout) {}
+    fun onRefreshing(frame: NSPtrLayout) {}
 
     /**
      * perform UI after refresh
      */
-    fun onComplete(frame: PtrLayout) {}
+    fun onComplete(frame: NSPtrLayout) {}
 
-    fun onPositionChange(frame: PtrLayout) {}
+    fun onPositionChange(frame: NSPtrLayout) {}
 }
