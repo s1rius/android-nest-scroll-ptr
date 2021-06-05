@@ -46,14 +46,15 @@ open class NSPtrLayout @JvmOverloads constructor(
     }
 
     sealed class Event {
-        object OnPull : Event()
-        object OnReleaseToIdle : Event()
-        object OnReleaseToRefreshing : Event()
-        object OnComplete : Event()
-        object OnAutoRefresh : Event()
+        object Pull : Event()
+        object ReleaseToIdle : Event()
+        object ReleaseToRefreshing : Event()
+        object RefreshComplete : Event()
+        object AutoRefresh : Event()
     }
 
     sealed class SideEffect {
+        object OnCancelToIdle: SideEffect()
         object OnRefreshing : SideEffect()
         object OnDragBegin : SideEffect()
         object OnComplete : SideEffect()
@@ -84,27 +85,22 @@ open class NSPtrLayout @JvmOverloads constructor(
             initialState(State.IDLE)
 
             state<State.IDLE> {
-                on<Event.OnPull> {
+                on<Event.Pull> {
                     transitionTo(
                         State.DRAG,
                         SideEffect.OnDragBegin
                     )
                 }
-                on<Event.OnAutoRefresh> {
+                on<Event.AutoRefresh> {
                     transitionTo(
                         State.REFRESHING,
                         SideEffect.OnRefreshing
                     )
                 }
-
-                onEnter {
-                    Log.i(LOG_TAG, "state idle")
-                    mPtrListenerHolder.onComplete(this@NSPtrLayout)
-                }
             }
 
             state<State.REFRESHING> {
-                on<Event.OnComplete> {
+                on<Event.RefreshComplete> {
                     transitionTo(
                         State.IDLE,
                         SideEffect.OnComplete
@@ -113,25 +109,24 @@ open class NSPtrLayout @JvmOverloads constructor(
 
                 onEnter {
                     mScrollChecker.scrollToRefreshing()
-                    Log.i(LOG_TAG, "enter refreshing")
                     performRefresh()
                 }
             }
 
             state<State.DRAG> {
-                on<Event.OnReleaseToIdle> {
+                on<Event.ReleaseToIdle> {
                     transitionTo(
                         State.IDLE,
-                        SideEffect.OnComplete
+                        SideEffect.OnCancelToIdle
                     )
                 }
-                on<Event.OnReleaseToRefreshing> {
+                on<Event.ReleaseToRefreshing> {
                     transitionTo(
                         State.REFRESHING,
                         SideEffect.OnRefreshing
                     )
                 }
-                on<Event.OnComplete> {
+                on<Event.RefreshComplete> {
                     transitionTo(
                         State.IDLE,
                         SideEffect.OnComplete
@@ -147,16 +142,14 @@ open class NSPtrLayout @JvmOverloads constructor(
             onTransition {
                 val validTransition = it as? StateMachine.Transition.Valid ?: return@onTransition
                 when (validTransition.sideEffect) {
-                    SideEffect.OnDragBegin -> {
-                        Log.i(LOG_TAG, "drag begin")
-                    }
+                    SideEffect.OnDragBegin -> {}
                     SideEffect.OnComplete -> {
                         tryScrollBackToTop()
                         notifyUIRefreshComplete()
-                        Log.i(LOG_TAG, "complete")
                     }
-                    SideEffect.OnRefreshing -> {
-                        Log.i(LOG_TAG, "refresh")
+                    SideEffect.OnRefreshing -> {}
+                    SideEffect.OnCancelToIdle -> {
+                        tryScrollBackToTop()
                     }
                 }
             }
@@ -472,7 +465,7 @@ open class NSPtrLayout @JvmOverloads constructor(
         if (stateMachine.state is State.IDLE
             && mIsInTouchProgress
             && abs(change) > 0) {
-            stateMachine.transition(Event.OnPull)
+            stateMachine.transition(Event.Pull)
         }
         return change
     }
@@ -504,15 +497,23 @@ open class NSPtrLayout @JvmOverloads constructor(
 
     private fun onRelease() {
         when (stateMachine.state) {
-            is State.IDLE -> {}
-            is State.DRAG -> {
-                if (config.overToRefreshPosition(this)) {
-                    stateMachine.transition(Event.OnReleaseToRefreshing)
-                } else {
-                    stateMachine.transition(Event.OnReleaseToIdle)
+            is State.IDLE -> {
+                if (contentTopPosition != config.startPosition(this)) {
+                    mScrollChecker.scrollToStart()
                 }
             }
-            is State.REFRESHING -> {}
+            is State.DRAG -> {
+                if (config.overToRefreshPosition(this)) {
+                    stateMachine.transition(Event.ReleaseToRefreshing)
+                } else {
+                    stateMachine.transition(Event.ReleaseToIdle)
+                }
+            }
+            is State.REFRESHING -> {
+                if (contentTopPosition != config.refreshPosition(this)) {
+                    mScrollChecker.scrollToRefreshing()
+                }
+            }
         }
     }
 
@@ -563,7 +564,7 @@ open class NSPtrLayout @JvmOverloads constructor(
      * Do refresh complete work when time elapsed is greater than [.mLoadingMinTime]
      */
     private fun performRefreshComplete() {
-        stateMachine.transition(Event.OnComplete)
+        stateMachine.transition(Event.RefreshComplete)
     }
 
     /**
@@ -581,7 +582,7 @@ open class NSPtrLayout @JvmOverloads constructor(
             return
         }
         doOnLayout {
-            stateMachine.transition(Event.OnAutoRefresh)
+            stateMachine.transition(Event.AutoRefresh)
         }
     }
 
