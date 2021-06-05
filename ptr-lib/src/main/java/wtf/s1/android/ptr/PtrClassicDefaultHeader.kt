@@ -16,7 +16,7 @@ import java.util.*
 
 open class PtrClassicDefaultHeader @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null
-) : FrameLayout(context, attrs), PtrListener {
+) : FrameLayout(context, attrs), PtrListener, PtrComponent {
 
     private var mRotateAniTime = 150
     private var mFlipAnimation: RotateAnimation? = null
@@ -249,5 +249,23 @@ open class PtrClassicDefaultHeader @JvmOverloads constructor(
         private const val KEY_SharedPreferences = "cube_ptr_classic_last_update"
         @SuppressLint("SimpleDateFormat")
         private val sDataFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+    }
+
+    override fun prtMeasure(ptrLayout: PtrLayout, widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        measure(widthMeasureSpec, heightMeasureSpec)
+    }
+
+    override fun ptrLayout(ptrLayout: PtrLayout) {
+        val lp = layoutParams as PtrLayout.LayoutParams
+        val left = paddingLeft + lp.leftMargin
+        // enhance readability(header is layout above screen when first init)
+        val top = -(measuredHeight - paddingTop - lp.topMargin - ptrLayout.contentTopPosition)
+        val right = left + measuredWidth
+        val bottom = top + measuredHeight
+        layout(left, top, right, bottom)
+    }
+
+    override fun ptrOnContentOffsetTopAndBottom(offset: Int) {
+        offsetTopAndBottom(offset)
     }
 }

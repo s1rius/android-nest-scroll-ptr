@@ -77,7 +77,6 @@ open class PtrLayout @JvmOverloads constructor(
 
     // working parameters
     private val mScrollChecker = ScrollChecker()
-    var headerHeight = 0
     var contentTopPosition = 0
     private set
     private var stateMachine =
@@ -244,7 +243,6 @@ open class PtrLayout @JvmOverloads constructor(
             contentView = errorView
             addView(contentView)
         }
-        mHeaderView?.bringToFront()
         super.onFinishInflate()
     }
 
@@ -256,8 +254,22 @@ open class PtrLayout @JvmOverloads constructor(
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         if (mHeaderView != null) {
-            measureChildWithMargins(mHeaderView, widthMeasureSpec, 0, heightMeasureSpec, 0)
-            headerHeight = mHeaderView?.measuredHeight?:0
+            mHeaderView?.let {
+                if (it is PtrComponent) {
+                    val lp = it.layoutParams as LayoutParams
+                    val childWidthMeasureSpec = getChildMeasureSpec(
+                        widthMeasureSpec,
+                        paddingLeft + paddingRight + lp.leftMargin + lp.rightMargin, lp.width
+                    )
+                    val childHeightMeasureSpec = getChildMeasureSpec(
+                        heightMeasureSpec,
+                        (paddingTop + paddingBottom + lp.topMargin + lp.bottomMargin), lp.height
+                    )
+                    it.prtMeasure(this, childWidthMeasureSpec, childHeightMeasureSpec)
+                } else {
+                    measureChildWithMargins(mHeaderView, widthMeasureSpec, 0, heightMeasureSpec, 0)
+                }
+            }
         }
         if (contentView != null) {
             measureContentView(contentView!!, widthMeasureSpec, heightMeasureSpec)
@@ -289,15 +301,21 @@ open class PtrLayout @JvmOverloads constructor(
         val offset = contentTopPosition
         val paddingLeft = paddingLeft
         val paddingTop = paddingTop
-        if (mHeaderView != null) {
-            val lp = mHeaderView!!.layoutParams as LayoutParams
-            val left = paddingLeft + lp.leftMargin
-            // enhance readability(header is layout above screen when first init)
-            val top = -(headerHeight - paddingTop - lp.topMargin - offset)
-            val right = left + mHeaderView!!.measuredWidth
-            val bottom = top + mHeaderView!!.measuredHeight
-            mHeaderView!!.layout(left, top, right, bottom)
+
+        mHeaderView?.let {
+            if (it is PtrComponent) {
+                it.ptrLayout(this)
+            } else {
+                val lp = it.layoutParams as LayoutParams
+                val left = paddingLeft + lp.leftMargin
+                // enhance readability(header is layout above screen when first init)
+                val top = -(it.measuredHeight - paddingTop - lp.topMargin - offset)
+                val right = left + it.measuredWidth
+                val bottom = top + it.measuredHeight
+                it.layout(left, top, right, bottom)
+            }
         }
+
         if (contentView != null) {
             val lp = contentView!!.layoutParams as MarginLayoutParams
             val left = paddingLeft + lp.leftMargin
@@ -463,7 +481,13 @@ open class PtrLayout @JvmOverloads constructor(
         if (change == 0) {
             return
         }
-        mHeaderView?.offsetTopAndBottom(change)
+        mHeaderView?.let {
+            if (it is PtrComponent) {
+                it.ptrOnContentOffsetTopAndBottom(change)
+            } else {
+                it.offsetTopAndBottom(change)
+            }
+        }
         contentView?.offsetTopAndBottom(change)
         if (mPtrListenerHolder.hasHandler()) {
             mPtrListenerHolder.onPositionChange(this)
@@ -595,7 +619,7 @@ open class PtrLayout @JvmOverloads constructor(
                 header.layoutParams = lp
             }
             mHeaderView = header
-            addView(header)
+            addView(header, 0)
         }
 
     // <editor-fold defaultstate="collapsed" desc="generate layout params">
