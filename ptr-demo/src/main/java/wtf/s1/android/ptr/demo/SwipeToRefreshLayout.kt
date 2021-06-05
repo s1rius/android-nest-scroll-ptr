@@ -22,7 +22,6 @@ import android.view.View
 import wtf.s1.android.ptr.PtrClassicFrameLayout
 import wtf.s1.android.ptr.PtrLayout
 import wtf.s1.android.ptr.PtrListener
-import wtf.s1.android.ptr.PtrStateController
 
 /**
  * Created by s1rius on 15/03/2018.
@@ -50,10 +49,7 @@ class SwipeToRefreshLayout : PtrClassicFrameLayout {
 
             override fun onComplete(frame: PtrLayout) {}
 
-            override fun onPositionChange(
-                frame: PtrLayout,
-                ptrStateController: PtrStateController
-            ) {}
+            override fun onPositionChange(frame: PtrLayout) {}
         })
 
 //        this.setOnRefreshListener {

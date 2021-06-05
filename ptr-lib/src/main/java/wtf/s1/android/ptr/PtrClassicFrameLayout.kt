@@ -11,6 +11,6 @@ open class PtrClassicFrameLayout @JvmOverloads constructor(
 
     init {
         headerView = header
-        addPtrListener(header)
+        addPtrListener(header!!)
     }
 }

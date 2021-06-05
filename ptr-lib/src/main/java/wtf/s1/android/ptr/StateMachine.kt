@@ -1,4 +1,4 @@
-package wtf.s1.android.core
+package wtf.s1.android.ptr
 
 import java.util.concurrent.atomic.AtomicReference
 
@@ -84,9 +84,9 @@ class StateMachine<STATE : Any, EVENT : Any, SIDE_EFFECT : Any> private construc
     }
 
     data class Graph<STATE : Any, EVENT : Any, SIDE_EFFECT : Any>(
-            val initialState: STATE,
-            val stateDefinitions: Map<Matcher<STATE, STATE>, State<STATE, EVENT, SIDE_EFFECT>>,
-            val onTransitionListeners: List<(Transition<STATE, EVENT, SIDE_EFFECT>) -> Unit>
+        val initialState: STATE,
+        val stateDefinitions: Map<Matcher<STATE, STATE>, State<STATE, EVENT, SIDE_EFFECT>>,
+        val onTransitionListeners: List<(Transition<STATE, EVENT, SIDE_EFFECT>) -> Unit>
     ) {
 
         class State<STATE : Any, EVENT : Any, SIDE_EFFECT : Any> internal constructor() {
@@ -135,8 +135,8 @@ class StateMachine<STATE : Any, EVENT : Any, SIDE_EFFECT : Any> private construc
         }
 
         fun <S : STATE> state(
-                stateMatcher: Matcher<STATE, S>,
-                init: StateDefinitionBuilder<S>.() -> Unit
+            stateMatcher: Matcher<STATE, S>,
+            init: StateDefinitionBuilder<S>.() -> Unit
         ) {
             stateDefinitions[stateMatcher] = StateDefinitionBuilder<S>().apply(init).build()
         }
@@ -166,8 +166,8 @@ class StateMachine<STATE : Any, EVENT : Any, SIDE_EFFECT : Any> private construc
             inline fun <reified R : EVENT> eq(value: R): Matcher<EVENT, R> = Matcher.eq(value)
 
             fun <E : EVENT> on(
-                    eventMatcher: Matcher<EVENT, E>,
-                    createTransitionTo: S.(E) -> Graph.State.TransitionTo<STATE, SIDE_EFFECT>
+                eventMatcher: Matcher<EVENT, E>,
+                createTransitionTo: S.(E) -> Graph.State.TransitionTo<STATE, SIDE_EFFECT>
             ) {
                 stateDefinition.transitions[eventMatcher] = { state, event ->
                     @Suppress("UNCHECKED_CAST")
@@ -206,7 +206,7 @@ class StateMachine<STATE : Any, EVENT : Any, SIDE_EFFECT : Any> private construc
 
             @Suppress("UNUSED") // The unused warning is probably a compiler bug.
             fun S.transitionTo(state: STATE, sideEffect: SIDE_EFFECT? = null) =
-                    Graph.State.TransitionTo(state, sideEffect)
+                Graph.State.TransitionTo(state, sideEffect)
 
             @Suppress("UNUSED") // The unused warning is probably a compiler bug.
             fun S.dontTransition(sideEffect: SIDE_EFFECT? = null) = transitionTo(this, sideEffect)
@@ -221,8 +221,8 @@ class StateMachine<STATE : Any, EVENT : Any, SIDE_EFFECT : Any> private construc
         }
 
         private fun <STATE : Any, EVENT : Any, SIDE_EFFECT : Any> create(
-                graph: Graph<STATE, EVENT, SIDE_EFFECT>?,
-                init: GraphBuilder<STATE, EVENT, SIDE_EFFECT>.() -> Unit
+            graph: Graph<STATE, EVENT, SIDE_EFFECT>?,
+            init: GraphBuilder<STATE, EVENT, SIDE_EFFECT>.() -> Unit
         ): StateMachine<STATE, EVENT, SIDE_EFFECT> {
             return StateMachine(GraphBuilder(graph).apply(init).build())
         }

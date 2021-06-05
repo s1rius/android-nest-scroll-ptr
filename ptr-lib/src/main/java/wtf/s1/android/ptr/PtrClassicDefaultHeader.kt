@@ -29,6 +29,7 @@ open class PtrClassicDefaultHeader @JvmOverloads constructor(
     private var mLastUpdateTimeKey: String? = null
     private var mShouldShowLastUpdate = false
     private val mLastUpdateTimeUpdater: LastUpdateTimeUpdater = LastUpdateTimeUpdater()
+    private var mIsOverToRefresh = false
 
     init {
         initViews(attrs)
@@ -189,25 +190,23 @@ open class PtrClassicDefaultHeader @JvmOverloads constructor(
             return sb.toString()
         }
 
-    override fun onPositionChange(frame: PtrLayout, ptrStateController: PtrStateController) {
-        val mOffsetToRefresh = frame!!.offsetToRefresh
-        val currentPos = ptrStateController!!.currentPos
-        val lastPos = ptrStateController.lastPos
-        if (mOffsetToRefresh in (currentPos + 1)..lastPos) {
-            if (frame.currentState == PtrLayout.State.DRAG) {
-                crossRotateLineFromBottomUnderTouch(frame)
-                if (mRotateView != null) {
-                    mRotateView!!.clearAnimation()
-                    mRotateView!!.startAnimation(mReverseFlipAnimation)
+    override fun onPositionChange(frame: PtrLayout) {
+        if (frame.currentState == PtrLayout.State.DRAG) {
+            if (mIsOverToRefresh != frame.isOverToRefreshPosition) {
+                if (frame.isOverToRefreshPosition) {
+                    crossRotateLineFromTopUnderTouch(frame)
+                    mRotateView?.let {
+                        it.clearAnimation()
+                        it.startAnimation(mFlipAnimation)
+                    }
+                } else {
+                    crossRotateLineFromBottomUnderTouch(frame)
+                    mRotateView?.let {
+                        it.clearAnimation()
+                        it.startAnimation(mReverseFlipAnimation)
+                    }
                 }
-            }
-        } else if (mOffsetToRefresh in lastPos until currentPos) {
-            if (frame.currentState == PtrLayout.State.DRAG) {
-                crossRotateLineFromTopUnderTouch(frame)
-                if (mRotateView != null) {
-                    mRotateView!!.clearAnimation()
-                    mRotateView!!.startAnimation(mFlipAnimation)
-                }
+                mIsOverToRefresh = frame.isOverToRefreshPosition
             }
         }
     }

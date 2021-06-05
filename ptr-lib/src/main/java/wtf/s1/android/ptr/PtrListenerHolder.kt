@@ -41,9 +41,9 @@ internal class PtrListenerHolder private constructor() : PtrListener {
         }
     }
 
-    override fun onPositionChange(frame: PtrLayout, ptrStateController: PtrStateController) {
+    override fun onPositionChange(frame: PtrLayout) {
         for (listener in listeners) {
-            listener.onPositionChange(frame, ptrStateController)
+            listener.onPositionChange(frame)
         }
     }
 
