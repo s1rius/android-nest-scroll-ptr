@@ -2,6 +2,7 @@ package wtf.s1.android.ptr
 
 import android.animation.ValueAnimator
 import android.animation.ValueAnimator.AnimatorUpdateListener
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.PointF
 import android.os.Build
@@ -176,10 +177,10 @@ open class NSPtrLayout @JvmOverloads constructor(
 
 
     init {
-        val arr = context.obtainStyledAttributes(attrs, R.styleable.PtrLayout, 0, 0)
+        val arr = context.obtainStyledAttributes(attrs, R.styleable.NSPtrLayout, 0, 0)
         if (arr != null) {
-            mHeaderId = arr.getResourceId(R.styleable.PtrLayout_ptr_header, mHeaderId)
-            mContainerId = arr.getResourceId(R.styleable.PtrLayout_ptr_content, mContainerId)
+            mHeaderId = arr.getResourceId(R.styleable.NSPtrLayout_ptr_header, mHeaderId)
+            mContainerId = arr.getResourceId(R.styleable.NSPtrLayout_ptr_content, mContainerId)
             arr.recycle()
         }
         val conf = ViewConfiguration.get(getContext())
@@ -384,6 +385,7 @@ open class NSPtrLayout @JvmOverloads constructor(
         return mIsBeingDragged
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
         if (!isEnabled // || canChildScrollToUp()
             || mInVerticalNestedScrolling
@@ -510,7 +512,7 @@ open class NSPtrLayout @JvmOverloads constructor(
                 }
             }
             is State.REFRESHING -> {
-                if (contentTopPosition != config.refreshPosition(this)) {
+                if (isOverToRefreshPosition) {
                     mScrollChecker.scrollToRefreshing()
                 }
             }
@@ -629,10 +631,10 @@ open class NSPtrLayout @JvmOverloads constructor(
 
     // <editor-fold defaultstate="collapsed" desc="generate layout params">
     class LayoutParams : MarginLayoutParams {
-        constructor(c: Context, attrs: AttributeSet) : super(c, attrs) {}
-        constructor(width: Int, height: Int) : super(width, height) {}
-        constructor(source: MarginLayoutParams?) : super(source) {}
-        constructor(source: ViewGroup.LayoutParams) : super(source) {}
+        constructor(c: Context, attrs: AttributeSet) : super(c, attrs)
+        constructor(width: Int, height: Int) : super(width, height)
+        constructor(source: MarginLayoutParams?) : super(source)
+        constructor(source: ViewGroup.LayoutParams) : super(source)
     }
 
     override fun checkLayoutParams(p: ViewGroup.LayoutParams): Boolean {

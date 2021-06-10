@@ -1,6 +1,6 @@
 package wtf.s1.android.ptr
 
-interface NSPtrComponent {
+interface NSPtrComponent: NSPtrListener {
 
     fun prtMeasure(ptrLayout: NSPtrLayout, widthMeasureSpec: Int, heightMeasureSpec: Int)
 
