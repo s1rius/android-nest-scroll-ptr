@@ -1,26 +1,44 @@
 package wtf.s1.android.ptr
 
-/**
- *
- */
 interface NSPtrListener {
-
     /**
      * prepare for loading
      *
-     * @param frame
+     * @param ptrLayout
      */
-    fun onDrag(frame: NSPtrLayout) {}
+    fun onDrag(ptrLayout: NSPtrLayout) {}
 
     /**
      * perform refreshing UI
      */
-    fun onRefreshing(frame: NSPtrLayout) {}
+    fun onRefreshing(ptrLayout: NSPtrLayout) {}
 
     /**
      * perform UI after refresh
      */
-    fun onComplete(frame: NSPtrLayout) {}
+    fun onComplete(ptrLayout: NSPtrLayout) {}
 
-    fun onPositionChange(frame: NSPtrLayout) {}
+    /**
+     *
+     */
+    fun onTransition(ptrLayout: NSPtrLayout, transition: StateMachine.Transition.Valid<NSPtrLayout.State, NSPtrLayout.Event, NSPtrLayout.SideEffect>) {
+        when (transition.toState) {
+            is NSPtrLayout.State.IDLE -> {
+                if (transition.event == NSPtrLayout.Event.RefreshComplete) {
+                    onComplete(ptrLayout)
+                }
+            }
+            is NSPtrLayout.State.REFRESHING -> {
+                onRefreshing(ptrLayout)
+            }
+            is NSPtrLayout.State.DRAG -> {
+                onDrag(ptrLayout)
+            }
+        }
+    }
+
+    /**
+     *
+     */
+    fun onPositionChange(frame: NSPtrLayout, offset: Int) {}
 }

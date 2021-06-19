@@ -5,7 +5,7 @@ import java.util.concurrent.CopyOnWriteArrayList
 /**
  * A single linked list to wrap PtrUIHandler
  */
-internal class NSPtrListenerHolder private constructor() : NSPtrListener {
+internal class NSPtrListenerHolder: NSPtrListener {
 
     var listeners = CopyOnWriteArrayList<NSPtrListener>()
 
@@ -23,34 +23,33 @@ internal class NSPtrListenerHolder private constructor() : NSPtrListener {
         listeners.remove(listener)
     }
 
-    override fun onDrag(frame: NSPtrLayout) {
-        for (listener in listeners) {
-            listener.onDrag(frame)
-        }
-    }
-
-    override fun onRefreshing(frame: NSPtrLayout) {
-        for (listener in listeners) {
-            listener.onRefreshing(frame)
-        }
-    }
-
     override fun onComplete(frame: NSPtrLayout) {
         for (listener in listeners) {
             listener.onComplete(frame)
         }
     }
 
-    override fun onPositionChange(frame: NSPtrLayout) {
+    override fun onPositionChange(ptrLayout: NSPtrLayout, offset: Int) {
         for (listener in listeners) {
-            listener.onPositionChange(frame)
+            listener.onPositionChange(ptrLayout, offset)
         }
     }
 
-    companion object {
-        @JvmStatic
-        fun create(): NSPtrListenerHolder {
-            return NSPtrListenerHolder()
+    override fun onDrag(ptrLayout: NSPtrLayout) {
+        for (listener in listeners) {
+            listener.onDrag(ptrLayout)
+        }
+    }
+
+    override fun onRefreshing(ptrLayout: NSPtrLayout) {
+        for (listener in listeners) {
+            listener.onRefreshing(ptrLayout)
+        }
+    }
+
+    override fun onTransition(ptrLayout: NSPtrLayout, transition: StateMachine.Transition.Valid<NSPtrLayout.State, NSPtrLayout.Event, NSPtrLayout.SideEffect>) {
+        for (listener in listeners) {
+            listener.onTransition(ptrLayout, transition)
         }
     }
 }

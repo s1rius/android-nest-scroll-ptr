@@ -6,6 +6,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.PointF
 import android.os.Build
+import android.os.SystemClock
 import android.util.AttributeSet
 import android.util.Log
 import android.view.*
@@ -15,7 +16,6 @@ import android.widget.ListView
 import android.widget.TextView
 import androidx.core.view.*
 import androidx.core.widget.ListViewCompat
-import wtf.s1.android.ptr.NSPtrListenerHolder.Companion.create
 import kotlin.math.abs
 
 /**
@@ -33,7 +33,6 @@ open class NSPtrLayout @JvmOverloads constructor(
 
     companion object {
         private const val INVALID_POINTER = -1
-        private const val DEBUG = true
         private var ID = 1
     }
 
@@ -62,10 +61,10 @@ open class NSPtrLayout @JvmOverloads constructor(
     }
 
     private val mPullFriction = 0.56f
-    private val LOG_TAG = "ptr-frame-" + ++ID
+    private val ptrId = "ptr-frame-" + ++ID
     private var contentView: View? = null
 
-    var config = object: NSPtrConfig{}
+    var config = NSPtrConfig(this)
 
     // optional config for define header and content in xml file
     private var mHeaderId = 0
@@ -75,7 +74,7 @@ open class NSPtrLayout @JvmOverloads constructor(
     private var mLoadingMinTime = 500
     private var mLoadingStartTime: Long = 0
     private var mHeaderView: View? = null
-    private val mPtrListenerHolder = create()
+    private val mPtrListenerHolder = NSPtrListenerHolder()
 
     // working parameters
     private val mScrollChecker = ScrollChecker()
@@ -107,9 +106,7 @@ open class NSPtrLayout @JvmOverloads constructor(
                         SideEffect.OnComplete
                     )
                 }
-
                 onEnter {
-                    mScrollChecker.scrollToRefreshing()
                     performRefresh()
                 }
             }
@@ -133,11 +130,6 @@ open class NSPtrLayout @JvmOverloads constructor(
                         SideEffect.OnComplete
                     )
                 }
-
-                onEnter {
-                    mPtrListenerHolder.onDrag(this@NSPtrLayout)
-                    Log.i(LOG_TAG, "state drag")
-                }
             }
 
             onTransition {
@@ -153,6 +145,7 @@ open class NSPtrLayout @JvmOverloads constructor(
                         tryScrollBackToTop()
                     }
                 }
+                mPtrListenerHolder.onTransition(this@NSPtrLayout, it)
             }
         }
 
@@ -188,6 +181,14 @@ open class NSPtrLayout @JvmOverloads constructor(
         isNestedScrollingEnabled = true
     }
 
+    override fun addView(child: View?, index: Int, params: ViewGroup.LayoutParams?) {
+        super.addView(child, index, params)
+        if (child is NSPtrListener) {
+            mPtrListenerHolder.addListener(child)
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
     override fun onFinishInflate() {
         val childCount = childCount// both are not specified
         // not specify header or content
@@ -369,7 +370,7 @@ open class NSPtrLayout @JvmOverloads constructor(
                     // like ListView, we need enable nest scroll in intercept process
                     val y = (ev.getY(pointerIndex) + 0.5f).toInt()
                     val dy = (mLastTouch.y - y).toInt()
-                    if (config.atStartPosition(this) || dy > 0) {
+                    if (config.atStartPosition() || dy > 0) {
                         if (dispatchNestedPreScroll(0, dy, mScrollConsumed, mScrollOffset)) {
                             mLastTouch.y = (y - mScrollOffset[1]).toFloat()
                             // handle touch when parent not accept nest scroll
@@ -397,7 +398,7 @@ open class NSPtrLayout @JvmOverloads constructor(
             MotionEvent.ACTION_DOWN -> {
                 val pointerIndex = event.findPointerIndex(mActivePointerId)
                 if (pointerIndex < 0) {
-                    Log.e(LOG_TAG, "Got ACTION_MOVE event but have an invalid active pointer id.")
+                    Log.e(ptrId, "Got ACTION_MOVE event but have an invalid active pointer id.")
                     return false
                 }
                 mInitialTouch[event.getX(pointerIndex)] = event.getY(pointerIndex)
@@ -408,12 +409,12 @@ open class NSPtrLayout @JvmOverloads constructor(
             MotionEvent.ACTION_MOVE -> {
                 val  pointerIndex = event.findPointerIndex(mActivePointerId)
                 if (pointerIndex < 0) {
-                    Log.e(LOG_TAG, "Got ACTION_MOVE event but have an invalid active pointer id.")
+                    Log.e(ptrId, "Got ACTION_MOVE event but have an invalid active pointer id.")
                     return false
                 }
                 val y = (event.getY(pointerIndex) + 0.5f).toInt()
                 var dy = (y - mLastTouch.y).toInt()
-                if (dy > 0 || config.atStartPosition(this)) {
+                if (dy > 0 || config.atStartPosition()) {
                     if (dispatchNestedPreScroll(0, -dy, mScrollConsumed, mScrollOffset)) {
                         mLastTouch.y = (y - mScrollOffset[1]).toFloat()
                         // handle touch when parent not accept nest scroll
@@ -429,7 +430,7 @@ open class NSPtrLayout @JvmOverloads constructor(
                 }
                 val moveDown = dy > 0
                 val moveUp = !moveDown
-                val canMoveUp = config.atStartPosition(this)
+                val canMoveUp = config.atStartPosition()
                 if (contentTopPosition != 0) {
                     movePos(dy.toFloat())
                     return true
@@ -450,14 +451,14 @@ open class NSPtrLayout @JvmOverloads constructor(
      */
     private fun movePos(deltaY: Float): Int {
         // has reached the top
-        if (deltaY < 0 && config.atStartPosition(this)) {
+        if (deltaY < 0 && config.atStartPosition()) {
             return 0
         }
         var to = contentTopPosition + deltaY.toInt()
 
         // over top
-        if (to < config.startPosition(this)) {
-            to = config.startPosition(this)
+        if (to < config.startPosition()) {
+            to = config.startPosition()
         }
 
         val change = to - contentTopPosition
@@ -477,19 +478,15 @@ open class NSPtrLayout @JvmOverloads constructor(
             return
         }
         mHeaderView?.let {
-            if (it is NSPtrComponent) {
-
-                it.ptrOnContentOffsetTopAndBottom(change)
-            } else {
-                ViewCompat.offsetTopAndBottom(it, change)
-                it.offsetTopAndBottom(change)
+            if (it is NSPtrListener) {
+                it.onPositionChange(this, change)
             }
         }
         contentView?.let {
             ViewCompat.offsetTopAndBottom(it, change)
         }
         if (mPtrListenerHolder.hasHandler()) {
-            mPtrListenerHolder.onPositionChange(this)
+            mPtrListenerHolder.onPositionChange(this, change)
         }
     }
 
@@ -500,12 +497,12 @@ open class NSPtrLayout @JvmOverloads constructor(
     private fun onRelease() {
         when (stateMachine.state) {
             is State.IDLE -> {
-                if (contentTopPosition != config.startPosition(this)) {
+                if (contentTopPosition != config.startPosition()) {
                     mScrollChecker.scrollToStart()
                 }
             }
             is State.DRAG -> {
-                if (config.overToRefreshPosition(this)) {
+                if (config.overToRefreshPosition()) {
                     stateMachine.transition(Event.ReleaseToRefreshing)
                 } else {
                     stateMachine.transition(Event.ReleaseToIdle)
@@ -529,10 +526,8 @@ open class NSPtrLayout @JvmOverloads constructor(
     }
 
     private fun performRefresh() {
-        mLoadingStartTime = System.currentTimeMillis()
-        if (mPtrListenerHolder.hasHandler()) {
-            mPtrListenerHolder.onRefreshing(this)
-        }
+        mScrollChecker.scrollToRefreshing()
+        mLoadingStartTime = SystemClock.uptimeMillis()
     }
 
     var isRefreshing: Boolean
@@ -554,7 +549,7 @@ open class NSPtrLayout @JvmOverloads constructor(
      * The UI will perform complete at once or after a delay, depends on the time elapsed is greater then [.mLoadingMinTime] or not.
      */
     private fun refreshComplete() {
-        val delay = (mLoadingMinTime - (System.currentTimeMillis() - mLoadingStartTime)).toInt()
+        val delay = (mLoadingMinTime - (SystemClock.uptimeMillis() - mLoadingStartTime)).toInt()
         if (delay <= 0) {
             performRefreshComplete()
         } else {
@@ -608,7 +603,7 @@ open class NSPtrLayout @JvmOverloads constructor(
     var isOverToRefreshPosition: Boolean = false
     private set
     get() {
-        return config.overToRefreshPosition(this)
+        return config.overToRefreshPosition()
     }
 
     var headerView: View?
@@ -746,7 +741,7 @@ open class NSPtrLayout @JvmOverloads constructor(
     override fun onNestedPreScroll(target: View, dx: Int, dy: Int, consumed: IntArray) {
         // If we are in the middle of consuming, a scroll, then we want to move the ptr back up
         // before allowing the list to scroll
-        if (dy > 0 && !config.atStartPosition(this)) {
+        if (dy > 0 && !config.atStartPosition()) {
             consumed[1] = -movePos(-dy.toFloat())
         }
         if (dy > 0 && mTotalUnconsumed > 0 && isRefreshing) {
@@ -877,11 +872,11 @@ open class NSPtrLayout @JvmOverloads constructor(
         }
 
         fun scrollToRefreshing() {
-            mScrollChecker.tryToScrollTo(config.refreshPosition(this@NSPtrLayout))
+            mScrollChecker.tryToScrollTo(config.refreshPosition())
         }
 
         fun scrollToStart() {
-            mScrollChecker.tryToScrollTo(config.startPosition(this@NSPtrLayout))
+            mScrollChecker.tryToScrollTo(config.startPosition())
         }
 
         private fun tryToScrollTo(to: Int, duration: Int = 200) {
