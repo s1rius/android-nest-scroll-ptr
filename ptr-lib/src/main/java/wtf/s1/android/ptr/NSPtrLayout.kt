@@ -29,7 +29,7 @@ open class NSPtrLayout @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyle: Int = 0
-) : ViewGroup(context, attrs, defStyle), NestedScrollingParent, NestedScrollingChild {
+) : ViewGroup(context, attrs, defStyle), NestedScrollingParent3, NestedScrollingChild3 {
 
     companion object {
         private const val INVALID_POINTER = -1
@@ -39,8 +39,10 @@ open class NSPtrLayout @JvmOverloads constructor(
     sealed class State {
         // 初始化状态
         object IDLE : State()
+
         // 刷新状态
         object REFRESHING : State()
+
         // 拖动状态
         object DRAG : State()
     }
@@ -54,7 +56,7 @@ open class NSPtrLayout @JvmOverloads constructor(
     }
 
     sealed class SideEffect {
-        object OnCancelToIdle: SideEffect()
+        object OnCancelToIdle : SideEffect()
         object OnRefreshing : SideEffect()
         object OnDragBegin : SideEffect()
         object OnComplete : SideEffect()
@@ -79,7 +81,7 @@ open class NSPtrLayout @JvmOverloads constructor(
     // working parameters
     private val mScrollChecker = ScrollChecker()
     var contentTopPosition = 0
-    private set
+        private set
     private var stateMachine =
         StateMachine.create<State, Event, SideEffect> {
             initialState(State.IDLE)
@@ -135,17 +137,23 @@ open class NSPtrLayout @JvmOverloads constructor(
             onTransition {
                 val validTransition = it as? StateMachine.Transition.Valid ?: return@onTransition
                 when (validTransition.sideEffect) {
-                    SideEffect.OnDragBegin -> {}
+                    SideEffect.OnDragBegin -> {
+                    }
                     SideEffect.OnComplete -> {
                         tryScrollBackToTop()
                         notifyUIRefreshComplete()
                     }
-                    SideEffect.OnRefreshing -> {}
+                    SideEffect.OnRefreshing -> {
+                    }
                     SideEffect.OnCancelToIdle -> {
                         tryScrollBackToTop()
                     }
                 }
                 mPtrListenerHolder.onTransition(this@NSPtrLayout, it)
+            }
+
+            onEvent {
+                mPtrListenerHolder.onEvent(it)
             }
         }
 
@@ -341,7 +349,8 @@ open class NSPtrLayout @JvmOverloads constructor(
         if (!isEnabled
             || contentView == null
             || mHeaderView == null
-            || mInVerticalNestedScrolling) {
+            || mInVerticalNestedScrolling
+        ) {
             return false
         }
         val pointerIndex: Int
@@ -407,7 +416,7 @@ open class NSPtrLayout @JvmOverloads constructor(
                 return !canChildScrollToUp()
             }
             MotionEvent.ACTION_MOVE -> {
-                val  pointerIndex = event.findPointerIndex(mActivePointerId)
+                val pointerIndex = event.findPointerIndex(mActivePointerId)
                 if (pointerIndex < 0) {
                     Log.e(ptrId, "Got ACTION_MOVE event but have an invalid active pointer id.")
                     return false
@@ -467,7 +476,8 @@ open class NSPtrLayout @JvmOverloads constructor(
 
         if (stateMachine.state is State.IDLE
             && mIsInTouchProgress
-            && abs(change) > 0) {
+            && abs(change) > 0
+        ) {
             stateMachine.transition(Event.Pull)
         }
         return change
@@ -476,11 +486,6 @@ open class NSPtrLayout @JvmOverloads constructor(
     private fun updatePos(change: Int) {
         if (change == 0) {
             return
-        }
-        mHeaderView?.let {
-            if (it is NSPtrListener) {
-                it.onPositionChange(this, change)
-            }
         }
         contentView?.let {
             ViewCompat.offsetTopAndBottom(it, change)
@@ -601,10 +606,10 @@ open class NSPtrLayout @JvmOverloads constructor(
     }
 
     var isOverToRefreshPosition: Boolean = false
-    private set
-    get() {
-        return config.overToRefreshPosition()
-    }
+        private set
+        get() {
+            return config.overToRefreshPosition()
+        }
 
     var headerView: View?
         get() = mHeaderView
@@ -663,15 +668,27 @@ open class NSPtrLayout @JvmOverloads constructor(
     }
 
     override fun startNestedScroll(axes: Int): Boolean {
-        return mNestedScrollingChildHelper.startNestedScroll(axes)
+        return startNestedScroll(axes, ViewCompat.TYPE_TOUCH)
+    }
+
+    override fun startNestedScroll(axes: Int, type: Int): Boolean {
+        return mNestedScrollingChildHelper.startNestedScroll(axes, type)
     }
 
     override fun stopNestedScroll() {
-        mNestedScrollingChildHelper.stopNestedScroll()
+        stopNestedScroll(ViewCompat.TYPE_TOUCH)
+    }
+
+    override fun stopNestedScroll(type: Int) {
+        mNestedScrollingChildHelper.stopNestedScroll(type)
     }
 
     override fun hasNestedScrollingParent(): Boolean {
-        return mNestedScrollingChildHelper.hasNestedScrollingParent()
+        return hasNestedScrollingParent(ViewCompat.TYPE_TOUCH)
+    }
+
+    override fun hasNestedScrollingParent(type: Int): Boolean {
+        return mNestedScrollingChildHelper.hasNestedScrollingParent(type)
     }
 
     override fun dispatchNestedScroll(
@@ -684,12 +701,62 @@ open class NSPtrLayout @JvmOverloads constructor(
         )
     }
 
+    override fun dispatchNestedScroll(
+        dxConsumed: Int,
+        dyConsumed: Int,
+        dxUnconsumed: Int,
+        dyUnconsumed: Int,
+        offsetInWindow: IntArray?,
+        type: Int,
+        consumed: IntArray
+    ) {
+        mNestedScrollingChildHelper.dispatchNestedScroll(
+            dxConsumed,
+            dyConsumed,
+            dxUnconsumed,
+            dyUnconsumed,
+            offsetInWindow,
+            type,
+            consumed
+        )
+    }
+
+    override fun dispatchNestedScroll(
+        dxConsumed: Int,
+        dyConsumed: Int,
+        dxUnconsumed: Int,
+        dyUnconsumed: Int,
+        offsetInWindow: IntArray?,
+        type: Int
+    ): Boolean {
+        return mNestedScrollingChildHelper.dispatchNestedScroll(
+            dxConsumed,
+            dyConsumed,
+            dxUnconsumed,
+            dyUnconsumed,
+            offsetInWindow,
+            type
+        )
+    }
+
     override fun dispatchNestedPreScroll(
-        dx: Int, dy: Int, consumed: IntArray?,
+        dx: Int,
+        dy: Int,
+        consumed: IntArray?,
         offsetInWindow: IntArray?
     ): Boolean {
+        return dispatchNestedPreScroll(dx, dy, consumed, offsetInWindow, ViewCompat.TYPE_TOUCH)
+    }
+
+    override fun dispatchNestedPreScroll(
+        dx: Int,
+        dy: Int,
+        consumed: IntArray?,
+        offsetInWindow: IntArray?,
+        type: Int
+    ): Boolean {
         return mNestedScrollingChildHelper.dispatchNestedPreScroll(
-            dx, dy, consumed, offsetInWindow
+            dx, dy, consumed, offsetInWindow, type
         )
     }
 
@@ -724,12 +791,18 @@ open class NSPtrLayout @JvmOverloads constructor(
 
     // <editor-fold defaultstate="collapsed" desc="nested scroll parent">
     override fun onStartNestedScroll(child: View, target: View, axes: Int): Boolean {
-        return (isEnabled
-                // && !isAutoRefresh // && !isRefreshing()
-                && axes and ViewCompat.SCROLL_AXIS_VERTICAL != 0)
+        return onStartNestedScroll(child, target, axes, ViewCompat.TYPE_TOUCH)
+    }
+
+    override fun onStartNestedScroll(child: View, target: View, axes: Int, type: Int): Boolean {
+        return isEnabled && axes and ViewCompat.SCROLL_AXIS_VERTICAL != 0
     }
 
     override fun onNestedScrollAccepted(child: View, target: View, axes: Int) {
+        onNestedScrollAccepted(child, target, axes, ViewCompat.TYPE_TOUCH)
+    }
+
+    override fun onNestedScrollAccepted(child: View, target: View, axes: Int, type: Int) {
         // Reset the counter of how much leftover scroll needs to be consumed.
         mNestedScrollingParentHelper.onNestedScrollAccepted(child, target, axes)
         // Dispatch up to the nested parent
@@ -739,6 +812,10 @@ open class NSPtrLayout @JvmOverloads constructor(
     }
 
     override fun onNestedPreScroll(target: View, dx: Int, dy: Int, consumed: IntArray) {
+        onNestedPreScroll(target, dx, dy, consumed, ViewCompat.TYPE_TOUCH)
+    }
+
+    override fun onNestedPreScroll(target: View, dx: Int, dy: Int, consumed: IntArray, type: Int) {
         // If we are in the middle of consuming, a scroll, then we want to move the ptr back up
         // before allowing the list to scroll
         if (dy > 0 && !config.atStartPosition()) {
@@ -773,15 +850,71 @@ open class NSPtrLayout @JvmOverloads constructor(
         dxUnconsumed: Int,
         dyUnconsumed: Int
     ) {
+        onNestedScroll(
+            target,
+            dxConsumed,
+            dyConsumed,
+            dxUnconsumed,
+            dyUnconsumed,
+            ViewCompat.TYPE_TOUCH
+        )
+    }
+
+    override fun onNestedScroll(
+        target: View,
+        dxConsumed: Int,
+        dyConsumed: Int,
+        dxUnconsumed: Int,
+        dyUnconsumed: Int,
+        type: Int
+    ) {
+        internalOnNestedScroll(
+            dxConsumed,
+            dyConsumed,
+            dxUnconsumed,
+            dyUnconsumed,
+            type,
+            null
+        )
+    }
+
+    override fun onNestedScroll(
+        target: View,
+        dxConsumed: Int,
+        dyConsumed: Int,
+        dxUnconsumed: Int,
+        dyUnconsumed: Int,
+        type: Int,
+        consumed: IntArray
+    ) {
+        internalOnNestedScroll(
+            dxConsumed,
+            dyConsumed,
+            dxUnconsumed,
+            dyUnconsumed,
+            type,
+            consumed
+        )
+    }
+
+    private fun internalOnNestedScroll(
+        dxConsumed: Int,
+        dyConsumed: Int,
+        dxUnconsumed: Int,
+        dyUnconsumed: Int,
+        type: Int,
+        consumed: IntArray?
+    ) {
+
         // Dispatch up to the nested parent first
         var dyUnconsumedCopy = dyUnconsumed
-        // if (mStatus != PTR_STATUS_INIT) {
         if (stateMachine.state !is State.IDLE) {
             dyUnconsumedCopy = withFriction(dyUnconsumedCopy.toFloat())
         }
-        dispatchNestedScroll(
+
+        mNestedScrollingChildHelper.dispatchNestedScroll(
             dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumedCopy,
-            mParentOffsetInWindow
+            mParentOffsetInWindow, type, consumed
         )
 
         // This is a bit of a hack. Nested scrolling works from the bottom up, and as we are
@@ -797,7 +930,11 @@ open class NSPtrLayout @JvmOverloads constructor(
     }
 
     override fun onStopNestedScroll(child: View) {
-        mNestedScrollingParentHelper.onStopNestedScroll(child)
+        onStopNestedScroll(child, ViewCompat.TYPE_TOUCH)
+    }
+
+    override fun onStopNestedScroll(target: View, type: Int) {
+        mNestedScrollingParentHelper.onStopNestedScroll(target)
         // Finish the spinner for nested scrolling if we ever consumed any
         // unconsumed nested scroll
         if (mTotalUnconsumed > 0) {
@@ -807,6 +944,10 @@ open class NSPtrLayout @JvmOverloads constructor(
         // Dispatch up our nested parent
         stopNestedScroll()
         mInVerticalNestedScrolling = false
+
+        if (type == ViewCompat.TYPE_NON_TOUCH) {
+            onRelease()
+        }
     }
 
     override fun getNestedScrollAxes(): Int {
