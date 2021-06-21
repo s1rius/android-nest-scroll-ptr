@@ -37,6 +37,8 @@ interface NSPtrListener {
         }
     }
 
+    fun onEvent(event: NSPtrLayout.Event) {}
+
     /**
      *
      */

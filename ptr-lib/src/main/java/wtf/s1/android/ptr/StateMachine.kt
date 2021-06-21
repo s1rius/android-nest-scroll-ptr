@@ -31,6 +31,7 @@ class StateMachine<STATE : Any, EVENT : Any, SIDE_EFFECT : Any> private construc
                 }
             }
         }
+        notifyEvent(event)
         return transition
     }
 
@@ -65,6 +66,10 @@ class StateMachine<STATE : Any, EVENT : Any, SIDE_EFFECT : Any> private construc
         graph.onTransitionListeners.forEach { it(this) }
     }
 
+    private fun notifyEvent(case: EVENT) {
+        graph.onEventListener?.invoke(case)
+    }
+
     @Suppress("UNUSED")
     sealed class Transition<out STATE : Any, out EVENT : Any, out SIDE_EFFECT : Any> {
         abstract val fromState: STATE
@@ -86,7 +91,8 @@ class StateMachine<STATE : Any, EVENT : Any, SIDE_EFFECT : Any> private construc
     data class Graph<STATE : Any, EVENT : Any, SIDE_EFFECT : Any>(
         val initialState: STATE,
         val stateDefinitions: Map<Matcher<STATE, STATE>, State<STATE, EVENT, SIDE_EFFECT>>,
-        val onTransitionListeners: List<(Transition<STATE, EVENT, SIDE_EFFECT>) -> Unit>
+        val onTransitionListeners: List<(Transition<STATE, EVENT, SIDE_EFFECT>) -> Unit>,
+        val onEventListener: ((event: EVENT) -> Unit)?
     ) {
 
         class State<STATE : Any, EVENT : Any, SIDE_EFFECT : Any> internal constructor() {
@@ -129,6 +135,7 @@ class StateMachine<STATE : Any, EVENT : Any, SIDE_EFFECT : Any> private construc
         private var initialState = graph?.initialState
         private val stateDefinitions = LinkedHashMap(graph?.stateDefinitions ?: emptyMap())
         private val onTransitionListeners = ArrayList(graph?.onTransitionListeners ?: emptyList())
+        private var onEventListener = graph?.onEventListener
 
         fun initialState(initialState: STATE) {
             this.initialState = initialState
@@ -153,8 +160,12 @@ class StateMachine<STATE : Any, EVENT : Any, SIDE_EFFECT : Any> private construc
             onTransitionListeners.add(listener)
         }
 
+        fun onEvent(listener: ((event: EVENT) -> Unit)) {
+            onEventListener = listener
+        }
+
         fun build(): Graph<STATE, EVENT, SIDE_EFFECT> {
-            return Graph(requireNotNull(initialState), stateDefinitions.toMap(), onTransitionListeners.toList())
+            return Graph(requireNotNull(initialState), stateDefinitions.toMap(), onTransitionListeners.toList(), onEventListener)
         }
 
         inner class StateDefinitionBuilder<S : STATE> {
