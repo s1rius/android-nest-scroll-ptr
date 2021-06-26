@@ -7,7 +7,7 @@ import android.widget.FrameLayout
 
 open class NSPtrEZHeader @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null
-) : FrameLayout(context, attrs), NSPtrComponent, NSPtrListener {
+) : FrameLayout(context, attrs), NSPtrHeader, NSPtrListener {
 
     private var mIsOverToRefresh = false
     private val progressBar: NSPtrProgressBar = NSPtrProgressBar(context).apply {
@@ -51,8 +51,8 @@ open class NSPtrEZHeader @JvmOverloads constructor(
 
     override fun ptrLayout(ptrLayout: NSPtrLayout) {
         val lp = layoutParams as NSPtrLayout.LayoutParams
-        val left = paddingLeft + lp.leftMargin
-        val top = 0
+        val left = ptrLayout.paddingLeft + lp.leftMargin
+        val top = lp.topMargin + ptrLayout.paddingTop
         val right = left + measuredWidth
         val bottom = top + measuredHeight
         layout(left, top, right, bottom)

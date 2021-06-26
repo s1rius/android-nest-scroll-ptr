@@ -1,21 +1,17 @@
 package wtf.s1.android.ptr
 
-class NSPtrConfig(val layout: NSPtrLayout) {
+interface NSPtrConfig {
 
-    fun startPosition(): Int {
-        return 0
-    }
+    fun getLayout(): NSPtrLayout
 
-    fun atStartPosition(): Boolean {
-        return layout.contentTopPosition == startPosition()
-    }
+    fun startPosition(): Int = 0
 
-    fun overToRefreshPosition(): Boolean {
-        return layout.contentTopPosition > layout.headerView?.height ?: 0
-    }
+    fun atStartPosition(): Boolean = false
 
-    fun refreshPosition(): Int {
-        return layout.headerView?.height ?: 0
-    }
+    fun overToRefreshPosition(): Boolean = false
+
+    fun refreshPosition(): Int = Int.MAX_VALUE
+
+    fun pullFriction(type: Int): Float = 0.56f
 
 }

@@ -13,7 +13,6 @@ import android.view.*
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.AbsListView
 import android.widget.ListView
-import android.widget.TextView
 import androidx.core.view.*
 import androidx.core.widget.ListViewCompat
 import kotlin.math.abs
@@ -62,11 +61,35 @@ open class NSPtrLayout @JvmOverloads constructor(
         object OnComplete : SideEffect()
     }
 
-    private val mPullFriction = 0.56f
     private val ptrId = "ptr-frame-" + ++ID
     private var contentView: View? = null
 
-    var config = NSPtrConfig(this)
+    var config = object :NSPtrConfig {
+
+        override fun getLayout(): NSPtrLayout {
+            return this@NSPtrLayout
+        }
+
+        override fun startPosition(): Int {
+            return 0
+        }
+
+        override fun atStartPosition(): Boolean {
+            return contentTopPosition == startPosition()
+        }
+
+        override fun overToRefreshPosition(): Boolean {
+            return contentTopPosition > headerView?.height ?: 0
+        }
+
+        override fun refreshPosition(): Int {
+            return headerView?.height ?: 0
+        }
+
+        override fun pullFriction(type: Int): Float {
+            return if (type == ViewCompat.TYPE_TOUCH) super.pullFriction(type) else 2f
+        }
+    }
 
     // optional config for define header and content in xml file
     private var mHeaderId = 0
@@ -166,7 +189,9 @@ open class NSPtrLayout @JvmOverloads constructor(
     private var mIsInTouchProgress = false
 
     //NestScroll
+    @Suppress("LeakingThis")
     private val mNestedScrollingParentHelper = NestedScrollingParentHelper(this)
+    @Suppress("LeakingThis")
     private val mNestedScrollingChildHelper = NestedScrollingChildHelper(this)
     private val mScrollOffset = IntArray(2)
     private val mScrollConsumed = IntArray(2)
@@ -193,15 +218,20 @@ open class NSPtrLayout @JvmOverloads constructor(
         super.addView(child, index, params)
         if (child is NSPtrListener) {
             mPtrListenerHolder.addListener(child)
+        } else {
+            if (contentView == null) {
+                contentView = child
+            }
         }
     }
 
     @SuppressLint("SetTextI18n")
     override fun onFinishInflate() {
         val childCount = childCount// both are not specified
-        // not specify header or content
-        check(childCount <= 2) { "PtrFrameLayout can only contains 2 children" }
-        if (childCount == 2) {
+
+        if (childCount == 1) {
+            contentView = getChildAt(0)
+        } else {
             if (mHeaderId != 0 && mHeaderView == null) {
                 mHeaderView = findViewById(mHeaderId)
             }
@@ -211,40 +241,17 @@ open class NSPtrLayout @JvmOverloads constructor(
 
             // not specify header or content
             if (contentView == null || mHeaderView == null) {
-                val child1 = getChildAt(0)
-                val child2 = getChildAt(1)
-                if (child1 is NSPtrListener) {
-                    mHeaderView = child1
-                    contentView = child2
-                } else if (child2 is NSPtrListener) {
-                    mHeaderView = child2
-                    contentView = child1
-                } else {
-                    // both are not specified
-                    if (contentView == null && mHeaderView == null) {
-                        mHeaderView = child1
-                        contentView = child2
-                    } else {
-                        if (mHeaderView == null) {
-                            mHeaderView = if (contentView === child1) child2 else child1
-                        } else {
-                            contentView = if (mHeaderView === child1) child2 else child1
-                        }
+                children.forEach {
+                    if (it is NSPtrHeader && mHeaderView == null) {
+                        mHeaderView = it
+                    }
+                    if (it !is NSPtrHeader
+                        && it !is NSPtrFooter
+                        && contentView == null) {
+                        contentView = it
                     }
                 }
             }
-        } else if (childCount == 1) {
-            contentView = getChildAt(0)
-        } else {
-            val errorView = TextView(context)
-            errorView.isClickable = true
-            errorView.setTextColor(-0x9a00)
-            errorView.gravity = Gravity.CENTER
-            errorView.textSize = 20f
-            errorView.text =
-                "The content view in PtrFrameLayout is empty. Do you forget to specify its id in xml layout file?"
-            contentView = errorView
-            addView(contentView)
         }
         super.onFinishInflate()
     }
@@ -340,7 +347,10 @@ open class NSPtrLayout @JvmOverloads constructor(
                 stopNestedScroll()
                 onRelease()
             }
-            MotionEvent.ACTION_DOWN -> mIsInTouchProgress = true
+            MotionEvent.ACTION_DOWN -> {
+                stopNestedScroll(ViewCompat.TYPE_NON_TOUCH)
+                mIsInTouchProgress = true
+            }
         }
         return super.dispatchTouchEvent(e)
     }
@@ -348,7 +358,6 @@ open class NSPtrLayout @JvmOverloads constructor(
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
         if (!isEnabled
             || contentView == null
-            || mHeaderView == null
             || mInVerticalNestedScrolling
         ) {
             return false
@@ -435,7 +444,7 @@ open class NSPtrLayout @JvmOverloads constructor(
                     return true
                 }
                 if (dy > 0) {
-                    dy = withFriction(dy.toFloat())
+                    dy = withFriction(dy.toFloat(), ViewCompat.TYPE_TOUCH)
                 }
                 val moveDown = dy > 0
                 val moveUp = !moveDown
@@ -495,8 +504,8 @@ open class NSPtrLayout @JvmOverloads constructor(
         }
     }
 
-    private fun withFriction(force: Float): Int {
-        return (force * mPullFriction).toInt()
+    private fun withFriction(force: Float, touchType: Int): Int {
+        return (force * config.pullFriction(touchType)).toInt()
     }
 
     private fun onRelease() {
@@ -897,7 +906,7 @@ open class NSPtrLayout @JvmOverloads constructor(
         )
     }
 
-    private fun internalOnNestedScroll(
+    open fun internalOnNestedScroll(
         dxConsumed: Int,
         dyConsumed: Int,
         dxUnconsumed: Int,
@@ -907,13 +916,8 @@ open class NSPtrLayout @JvmOverloads constructor(
     ) {
 
         // Dispatch up to the nested parent first
-        var dyUnconsumedCopy = dyUnconsumed
-        if (stateMachine.state !is State.IDLE) {
-            dyUnconsumedCopy = withFriction(dyUnconsumedCopy.toFloat())
-        }
-
         mNestedScrollingChildHelper.dispatchNestedScroll(
-            dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumedCopy,
+            dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed,
             mParentOffsetInWindow, type, consumed
         )
 
@@ -922,6 +926,8 @@ open class NSPtrLayout @JvmOverloads constructor(
         // nested scrolling parent has stopped handling events. We do that by using the
         // 'offset in window 'functionality to see if we have been moved from the event.
         // This is a decent indication of whether we should take over the event stream or not.
+        // todo var dyUnconsumedCopy = dyUnconsumed + (consumed?.getOrElse(1) {0} ?:0)
+        var dyUnconsumedCopy = withFriction(dyUnconsumed.toFloat(), type)
         val dy = dyUnconsumedCopy + mParentOffsetInWindow[1]
         if (dy < 0 && !canChildScrollToUp()) {
             mTotalUnconsumed += abs(dy)
@@ -938,7 +944,6 @@ open class NSPtrLayout @JvmOverloads constructor(
         // Finish the spinner for nested scrolling if we ever consumed any
         // unconsumed nested scroll
         if (mTotalUnconsumed > 0) {
-            //finishSpinner(mTotalUnconsumed);
             mTotalUnconsumed = 0
         }
         // Dispatch up our nested parent

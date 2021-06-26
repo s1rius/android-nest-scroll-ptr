@@ -6,3 +6,7 @@ interface NSPtrComponent {
 
     fun ptrLayout(ptrLayout: NSPtrLayout){}
 }
+
+interface NSPtrHeader: NSPtrComponent
+
+interface NSPtrFooter: NSPtrComponent
