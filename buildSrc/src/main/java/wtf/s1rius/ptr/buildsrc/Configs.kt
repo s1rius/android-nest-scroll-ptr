@@ -4,12 +4,13 @@ object Versions {
     const val kotlin = "1.5.0"
     const val ktx = "1.0.0"
     const val kotlinCoroutines = "1.0.1"
-    const val gradlePlugin = "3.5.1"
+    const val gradlePlugin = "4.1.0"
     const val compileSdkVersion = 28
     const val minSdkVersion = 14
     const val targetSdkVersion = 28
     const val versionCode = 1
     const val versionName = "1.0.0"
+    const val bytex = "0.2.7"
 }
 
 object Plugins {
@@ -45,9 +46,13 @@ object Deps {
     }
 
     const val circleimageview = "de.hdodenhof:circleimageview:1.3.0"
+
+    const val hugo2 = "wtf.s1.pudge:hugo2-core:0.1.4"
 }
 
 object ClassPaths {
     const val gradlePlugin = "com.android.tools.build:gradle:${Versions.gradlePlugin}"
     const val kotlinPlugin = "org.jetbrains.kotlin:kotlin-gradle-plugin:${Versions.kotlin}"
+    const val bytex = "com.bytedance.android.byteX:base-plugin:${Versions.bytex}"
+    const val hugoByteX = "wtf.s1.pudge:hugo2-bytex:0.1.4"
 }

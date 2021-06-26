@@ -2,7 +2,6 @@ import wtf.s1rius.ptr.buildsrc.*
 
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
 
 
 android {

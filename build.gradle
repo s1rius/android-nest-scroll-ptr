@@ -2,19 +2,25 @@ import wtf.s1rius.ptr.buildsrc.*
 
 buildscript {
     repositories {
+        mavenLocal()
         google()
+        mavenCentral()
         jcenter()
     }
 
     dependencies {
         classpath ClassPaths.kotlinPlugin
         classpath ClassPaths.gradlePlugin
+        classpath ClassPaths.bytex
+        classpath ClassPaths.hugoByteX
     }
 }
 
 allprojects {
     repositories {
+        mavenLocal()
         google()
+        mavenCentral()
         jcenter()
     }
 }
