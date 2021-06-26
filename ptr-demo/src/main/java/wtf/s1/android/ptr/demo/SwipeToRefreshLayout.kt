@@ -107,8 +107,8 @@ class SwipeToRefreshLayout : NSPtrEZLayout {
         return super.onStartNestedScroll(child, target, axes)
     }
 
-    override fun onStopNestedScroll(child: View) {
-        super.onStopNestedScroll(child)
+    override fun onStopNestedScroll(target: View, type: Int) {
+        super.onStopNestedScroll(target, type)
     }
 
     override fun onNestedPreScroll(target: View, dx: Int, dy: Int, consumed: IntArray) {

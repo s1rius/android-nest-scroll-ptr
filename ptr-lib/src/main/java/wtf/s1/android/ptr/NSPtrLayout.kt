@@ -198,7 +198,7 @@ open class NSPtrLayout @JvmOverloads constructor(
     private val mParentOffsetInWindow = IntArray(2)
     private val mParentScrollConsumed = IntArray(2)
     private var mTotalUnconsumed = 0
-    private var mInVerticalNestedScrolling = false
+    private var mInVerticalNestedScrollTouch = false
     private val mPerformRefreshCompleteDelay: Runnable = Runnable { performRefreshComplete() }
 
 
@@ -358,7 +358,7 @@ open class NSPtrLayout @JvmOverloads constructor(
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
         if (!isEnabled
             || contentView == null
-            || mInVerticalNestedScrolling
+            || mInVerticalNestedScrollTouch
         ) {
             return false
         }
@@ -371,8 +371,8 @@ open class NSPtrLayout @JvmOverloads constructor(
                 if (pointerIndex < 0) {
                     return false
                 }
-                mInitialTouch[ev.getX(pointerIndex)] = ev.getY(pointerIndex)
-                mLastTouch[ev.getX(pointerIndex)] = ev.getY(pointerIndex)
+                mInitialTouch.set(ev.getX(pointerIndex), ev.getY(pointerIndex))
+                mLastTouch.set(ev.getX(pointerIndex), ev.getY(pointerIndex))
                 startNestedScroll(ViewCompat.SCROLL_AXIS_VERTICAL)
             }
             MotionEvent.ACTION_MOVE -> {
@@ -406,9 +406,8 @@ open class NSPtrLayout @JvmOverloads constructor(
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        if (!isEnabled // || canChildScrollToUp()
-            || mInVerticalNestedScrolling
-        ) {
+        if (!isEnabled
+            || mInVerticalNestedScrollTouch) {
             return false
         }
         when (event.actionMasked) {
@@ -419,8 +418,8 @@ open class NSPtrLayout @JvmOverloads constructor(
                     Log.e(ptrId, "Got ACTION_MOVE event but have an invalid active pointer id.")
                     return false
                 }
-                mInitialTouch[event.getX(pointerIndex)] = event.getY(pointerIndex)
-                mLastTouch[event.getX(pointerIndex)] = event.getY(pointerIndex)
+                mInitialTouch.set(event.getX(pointerIndex), event.getY(pointerIndex))
+                mLastTouch.set(event.getX(pointerIndex), event.getY(pointerIndex))
                 startNestedScroll(ViewCompat.SCROLL_AXIS_VERTICAL)
                 return !canChildScrollToUp()
             }
@@ -430,6 +429,11 @@ open class NSPtrLayout @JvmOverloads constructor(
                     Log.e(ptrId, "Got ACTION_MOVE event but have an invalid active pointer id.")
                     return false
                 }
+                if (mLastTouch.x < 0 && mLastTouch.y < 0) {
+                    mLastTouch.set(event.getX(pointerIndex), event.getY(pointerIndex))
+                    return false
+                }
+
                 val y = (event.getY(pointerIndex) + 0.5f).toInt()
                 var dy = (y - mLastTouch.y).toInt()
                 if (dy > 0 || config.atStartPosition()) {
@@ -639,6 +643,7 @@ open class NSPtrLayout @JvmOverloads constructor(
         }
 
     // <editor-fold defaultstate="collapsed" desc="generate layout params">
+    @Suppress("unused")
     class LayoutParams : MarginLayoutParams {
         constructor(c: Context, attrs: AttributeSet) : super(c, attrs)
         constructor(width: Int, height: Int) : super(width, height)
@@ -813,11 +818,13 @@ open class NSPtrLayout @JvmOverloads constructor(
 
     override fun onNestedScrollAccepted(child: View, target: View, axes: Int, type: Int) {
         // Reset the counter of how much leftover scroll needs to be consumed.
-        mNestedScrollingParentHelper.onNestedScrollAccepted(child, target, axes)
+        mNestedScrollingParentHelper.onNestedScrollAccepted(child, target, axes, type)
         // Dispatch up to the nested parent
-        startNestedScroll(axes and ViewCompat.SCROLL_AXIS_VERTICAL)
+        startNestedScroll(axes and ViewCompat.SCROLL_AXIS_VERTICAL, type)
         mTotalUnconsumed = 0
-        mInVerticalNestedScrolling = true
+        if (type == ViewCompat.TYPE_TOUCH) {
+            mInVerticalNestedScrollTouch = true
+        }
     }
 
     override fun onNestedPreScroll(target: View, dx: Int, dy: Int, consumed: IntArray) {
@@ -927,7 +934,7 @@ open class NSPtrLayout @JvmOverloads constructor(
         // 'offset in window 'functionality to see if we have been moved from the event.
         // This is a decent indication of whether we should take over the event stream or not.
         // todo var dyUnconsumedCopy = dyUnconsumed + (consumed?.getOrElse(1) {0} ?:0)
-        var dyUnconsumedCopy = withFriction(dyUnconsumed.toFloat(), type)
+        val dyUnconsumedCopy = withFriction(dyUnconsumed.toFloat(), type)
         val dy = dyUnconsumedCopy + mParentOffsetInWindow[1]
         if (dy < 0 && !canChildScrollToUp()) {
             mTotalUnconsumed += abs(dy)
@@ -940,18 +947,22 @@ open class NSPtrLayout @JvmOverloads constructor(
     }
 
     override fun onStopNestedScroll(target: View, type: Int) {
-        mNestedScrollingParentHelper.onStopNestedScroll(target)
+        mNestedScrollingParentHelper.onStopNestedScroll(target, type)
         // Finish the spinner for nested scrolling if we ever consumed any
         // unconsumed nested scroll
         if (mTotalUnconsumed > 0) {
             mTotalUnconsumed = 0
         }
         // Dispatch up our nested parent
-        stopNestedScroll()
-        mInVerticalNestedScrolling = false
+        stopNestedScroll(type)
+        if (type == ViewCompat.TYPE_TOUCH) {
+            mInVerticalNestedScrollTouch = false
+        }
 
         if (type == ViewCompat.TYPE_NON_TOUCH) {
             onRelease()
+        } else {
+            mLastTouch.set(-1f, -1f)
         }
     }
 

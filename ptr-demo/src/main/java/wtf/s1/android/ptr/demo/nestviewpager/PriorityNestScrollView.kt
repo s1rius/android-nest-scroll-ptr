@@ -15,7 +15,7 @@ class PriorityNestScrollView @JvmOverloads constructor(
                                          type: Int): Boolean {
         val superHandler = super.dispatchNestedPreScroll(dx, dy, consumed, offsetInWindow, type)
         val unconsumedDy = dy - (consumed?.getOrElse(1) {0}?:0)
-        if (!superHandler && unconsumedDy > 0) {
+        if (!superHandler && unconsumedDy != 0) {
             val oldScrollY = scrollY
             scrollBy(0, unconsumedDy)
             val myConsumed = scrollY - oldScrollY
