@@ -197,7 +197,6 @@ open class NSPtrLayout @JvmOverloads constructor(
     private val mScrollConsumed = IntArray(2)
     private val mParentOffsetInWindow = IntArray(2)
     private val mParentScrollConsumed = IntArray(2)
-    private var mTotalUnconsumed = 0
     private var mInVerticalNestedScrollTouch = false
     private val mPerformRefreshCompleteDelay: Runnable = Runnable { performRefreshComplete() }
 
@@ -821,7 +820,6 @@ open class NSPtrLayout @JvmOverloads constructor(
         mNestedScrollingParentHelper.onNestedScrollAccepted(child, target, axes, type)
         // Dispatch up to the nested parent
         startNestedScroll(axes and ViewCompat.SCROLL_AXIS_VERTICAL, type)
-        mTotalUnconsumed = 0
         if (type == ViewCompat.TYPE_TOUCH) {
             mInVerticalNestedScrollTouch = true
         }
@@ -836,16 +834,6 @@ open class NSPtrLayout @JvmOverloads constructor(
         // before allowing the list to scroll
         if (dy > 0 && !config.atStartPosition()) {
             consumed[1] = -movePos(-dy.toFloat())
-        }
-        if (dy > 0 && mTotalUnconsumed > 0 && isRefreshing) {
-            if (dy > mTotalUnconsumed) {
-                consumed[1] = dy - mTotalUnconsumed
-                mTotalUnconsumed = 0
-            } else {
-                mTotalUnconsumed -= dy
-                consumed[1] = dy
-            }
-            movePos(-dy.toFloat())
         }
 
         // Now let our nested parent consume the leftovers
@@ -928,17 +916,9 @@ open class NSPtrLayout @JvmOverloads constructor(
             mParentOffsetInWindow, type, consumed
         )
 
-        // This is a bit of a hack. Nested scrolling works from the bottom up, and as we are
-        // sometimes between two nested scrolling views, we need a way to be able to know when any
-        // nested scrolling parent has stopped handling events. We do that by using the
-        // 'offset in window 'functionality to see if we have been moved from the event.
-        // This is a decent indication of whether we should take over the event stream or not.
         // todo var dyUnconsumedCopy = dyUnconsumed + (consumed?.getOrElse(1) {0} ?:0)
         val dyUnconsumedCopy = withFriction(dyUnconsumed.toFloat(), type)
         val dy = dyUnconsumedCopy + mParentOffsetInWindow[1]
-        if (dy < 0 && !canChildScrollToUp()) {
-            mTotalUnconsumed += abs(dy)
-        }
         movePos(-dy.toFloat())
     }
 
@@ -948,11 +928,7 @@ open class NSPtrLayout @JvmOverloads constructor(
 
     override fun onStopNestedScroll(target: View, type: Int) {
         mNestedScrollingParentHelper.onStopNestedScroll(target, type)
-        // Finish the spinner for nested scrolling if we ever consumed any
-        // unconsumed nested scroll
-        if (mTotalUnconsumed > 0) {
-            mTotalUnconsumed = 0
-        }
+
         // Dispatch up our nested parent
         stopNestedScroll(type)
         if (type == ViewCompat.TYPE_TOUCH) {
