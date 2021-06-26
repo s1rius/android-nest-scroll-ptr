@@ -8,7 +8,7 @@ android {
     compileSdkVersion(Versions.compileSdkVersion)
 
     defaultConfig {
-        applicationId = "com.github.s1rius.ptr_support_design"
+        applicationId = "wtf.s1.android.ptr"
         minSdkVersion(Versions.minSdkVersion)
         targetSdkVersion(Versions.targetSdkVersion)
         versionCode = Versions.versionCode
@@ -36,4 +36,20 @@ dependencies {
     implementation Deps.Google.glide
     implementation Deps.circleimageview
     implementation Deps.AndroidX.viewpager2
+    implementation Deps.hugo2
+}
+
+
+apply plugin: 'bytex'
+ByteX {
+    enable true
+    enableInDebug true
+    logLevel "DEBUG"
+}
+
+apply plugin: "s1.hugo2.bytex"
+hugo2ByteX {
+    enable true
+    enableInDebug true
+    logLevel "DEBUG"
 }

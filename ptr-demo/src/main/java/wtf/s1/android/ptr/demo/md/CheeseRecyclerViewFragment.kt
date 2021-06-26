@@ -16,20 +16,14 @@
 
 package wtf.s1.android.ptr.demo.md
 
-import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
 
-import com.bumptech.glide.Glide
 import com.github.auptr.ptr_support_design.R
 
 import java.util.ArrayList
@@ -75,53 +69,4 @@ class CheeseRecyclerViewFragment : Fragment() {
         return list
     }
 
-    class SimpleStringRecyclerViewAdapter(context: Context, private val mValues: List<String>) : RecyclerView.Adapter<SimpleStringRecyclerViewAdapter.ViewHolder>() {
-
-        private val mTypedValue = TypedValue()
-        private val mBackground: Int
-
-        class ViewHolder(val mView: View) : RecyclerView.ViewHolder(mView) {
-            var mBoundString: String? = null
-            val mImageView: ImageView = mView.findViewById(R.id.avatar)
-            val mTextView: TextView = mView.findViewById(android.R.id.text1)
-
-            override fun toString(): String {
-                return super.toString() + " '" + mTextView.text
-            }
-        }
-
-        init {
-            context.theme.resolveAttribute(R.attr.selectableItemBackground, mTypedValue, true)
-            mBackground = mTypedValue.resourceId
-        }
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-            val view = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.list_item, parent, false)
-            view.setBackgroundResource(mBackground)
-            return ViewHolder(view)
-        }
-
-        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            holder.mBoundString = mValues[position]
-            holder.mTextView.text = mValues[position]
-
-            holder.mView.setOnClickListener { v ->
-                val context = v.context
-                val intent = Intent(context, CheeseDetailActivity::class.java)
-                intent.putExtra(CheeseDetailActivity.EXTRA_NAME, holder.mBoundString)
-
-                context.startActivity(intent)
-            }
-
-            Glide.with(holder.mImageView.context)
-                    .load(Cheeses.randomCheeseDrawable)
-                    .fitCenter()
-                    .into(holder.mImageView)
-        }
-
-        override fun getItemCount(): Int {
-            return mValues.size
-        }
-    }
 }

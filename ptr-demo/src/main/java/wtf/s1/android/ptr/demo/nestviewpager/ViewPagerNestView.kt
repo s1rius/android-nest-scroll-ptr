@@ -3,7 +3,6 @@ package wtf.s1.android.ptr.demo.nestviewpager
 import android.content.Context
 import android.os.Build
 import android.util.AttributeSet
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.FrameLayout
@@ -13,10 +12,11 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.github.auptr.ptr_support_design.R
 import com.google.android.material.tabs.TabLayout
+import wtf.s1.android.ptr.demo.SimpleTextListView
 import wtf.s1.android.ptr.demo.SwipeToRefreshLayout
 
 class ViewPagerNestView @JvmOverloads constructor(
-        context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
+    context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : FrameLayout(context, attrs, defStyleAttr) {
 
     var bannerView: FrameLayout? = null
@@ -29,39 +29,12 @@ class ViewPagerNestView @JvmOverloads constructor(
         LayoutInflater.from(context).inflate(R.layout.viewpager_nest, this, true)
 
         scrollView = findViewById(R.id.scrollView)
-        scrollView?.setOnScrollChangeListener(NestedScrollView.OnScrollChangeListener {
-            v,
-            scrollX,
-            scrollY,
-            oldScrollX,
-            oldScrollY
-            ->
-             if (v.getChildAt(0).bottom <=( scrollView?.height ?:0 + scrollY)) {
-                Log.i("simple text", "End of NestedScrollView")
-             }
-
-            if (scrollY > oldScrollY) {
-                Log.i("simple text", "Scroll DOWN");
-            }
-            if (scrollY < oldScrollY) {
-                Log.i("simple text", "Scroll UP");
-            }
-
-            if (scrollY == 0) {
-                Log.i("simple text", "TOP SCROLL");
-            }
-
-            if (oldScrollY == ( v.getMeasuredHeight() - v.getChildAt(0).getMeasuredHeight() )) {
-                Log.i("simple text", "BOTTOM SCROLL");
-            }
-
-        })
 
         ptrView = findViewById(R.id.ptr)
-        ptrView?.setPTRListener(object: SwipeToRefreshLayout.OnPtrRefreshListener {
+        ptrView?.setPTRListener(object : SwipeToRefreshLayout.OnPtrRefreshListener {
             override fun onRefresh() {
                 requestLayout()
-                ptrView?.postDelayed({ptrView?.isRefreshing = false}, 2000L)
+                ptrView?.postDelayed({ ptrView?.isRefreshing = false }, 2000L)
             }
         })
 
@@ -75,12 +48,16 @@ class ViewPagerNestView @JvmOverloads constructor(
             viewpager?.isNestedScrollingEnabled = false
         }
 
-        viewpager?.adapter = object: RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+        viewpager?.adapter = object : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-            override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-                return object: RecyclerView.ViewHolder(SimpleTextListView(context).apply {
-                    layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
-                }){}
+            override fun onCreateViewHolder(
+                parent: ViewGroup,
+                viewType: Int
+            ): RecyclerView.ViewHolder {
+                return object : RecyclerView.ViewHolder(SimpleTextListView(context).apply {
+                    layoutParams =
+                        LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
+                }) {}
             }
 
             override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
@@ -97,15 +74,11 @@ class ViewPagerNestView @JvmOverloads constructor(
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
 
-        val p = viewpager?.layoutParams?: LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, 0)
-        if (p.height !=h) {
+        val p = viewpager?.layoutParams ?: LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, 0)
+        if (p.height != h) {
             p.height = h
             viewpager?.layoutParams = p
             requestLayout()
         }
-    }
-
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
     }
 }

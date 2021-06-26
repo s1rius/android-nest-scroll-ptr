@@ -21,7 +21,7 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import com.github.auptr.ptr_support_design.R
-import wtf.s1.android.ptr.demo.md.MDPtrView
+import wtf.s1.android.ptr.demo.nestviewpager.ViewPagerNestView
 
 class MainActivity : AppCompatActivity() {
 
@@ -29,7 +29,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         findViewById<FrameLayout>(R.id.container)
-                .addView(MDPtrView(this),
+                .addView(
+                    ViewPagerNestView(this),
                         ViewGroup.LayoutParams(
                                 ViewGroup.LayoutParams.MATCH_PARENT,
                                 ViewGroup.LayoutParams.MATCH_PARENT))

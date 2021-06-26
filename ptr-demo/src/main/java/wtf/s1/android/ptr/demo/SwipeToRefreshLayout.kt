@@ -22,11 +22,12 @@ import android.view.View
 import wtf.s1.android.ptr.NSPtrEZLayout
 import wtf.s1.android.ptr.NSPtrLayout
 import wtf.s1.android.ptr.NSPtrListener
+import wtf.s1.pudge.hugo2.DebugLog
 
 /**
  * Created by s1rius on 15/03/2018.
  */
-
+@DebugLog
 class SwipeToRefreshLayout : NSPtrEZLayout {
 
     private var listener: OnPtrRefreshListener? = null
@@ -51,50 +52,71 @@ class SwipeToRefreshLayout : NSPtrEZLayout {
 
             override fun onPositionChange(frame: NSPtrLayout, offset: Int) {}
         })
+    }
 
-//        this.setOnRefreshListener {
-//            listener?.onRefresh()
-//        }
+    override fun dispatchNestedPreScroll(
+        dx: Int,
+        dy: Int,
+        consumed: IntArray?,
+        offsetInWindow: IntArray?,
+        type: Int
+    ): Boolean {
+        return super.dispatchNestedPreScroll(dx, dy, consumed, offsetInWindow, type)
+    }
+
+    override fun internalOnNestedScroll(
+        dxConsumed: Int,
+        dyConsumed: Int,
+        dxUnconsumed: Int,
+        dyUnconsumed: Int,
+        type: Int,
+        consumed: IntArray?
+    ) {
+        super.internalOnNestedScroll(
+            dxConsumed,
+            dyConsumed,
+            dxUnconsumed,
+            dyUnconsumed,
+            type,
+            consumed
+        )
+    }
+
+    override fun onNestedFling(
+        target: View,
+        velocityX: Float,
+        velocityY: Float,
+        consumed: Boolean
+    ): Boolean {
+        return super.onNestedFling(target, velocityX, velocityY, consumed)
+    }
+
+    override fun onNestedPreFling(target: View, velocityX: Float, velocityY: Float): Boolean {
+        return super.onNestedPreFling(target, velocityX, velocityY)
     }
 
     override fun onNestedScroll(target: View, dxConsumed: Int, dyConsumed: Int, dxUnconsumed: Int, dyUnconsumed: Int) {
-        Log.i(TAG, "---> onNestedScroll targetView = ${target::class.java.simpleName} " +
-                "dxConsumed = $dxConsumed dyConsumed = $dyConsumed dxUnconsumed = $dxUnconsumed dyUnconsumed = $dyUnconsumed"  )
         super.onNestedScroll(target, dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed)
     }
 
     override fun startNestedScroll(axes: Int): Boolean {
-        val start = super.startNestedScroll(axes)
-        Log.i(TAG, "---> startNestedScroll -> ${start}")
-        return start
+        return super.startNestedScroll(axes)
     }
 
     override fun onStartNestedScroll(child: View, target: View, axes: Int): Boolean {
-        val start = super.onStartNestedScroll(child, target, axes)
-        Log.i(TAG, "---> onStartNestedScroll child = ${child::class.java.simpleName} target = ${child::class.java.simpleName} -> ${start}")
-        return start
+        return super.onStartNestedScroll(child, target, axes)
     }
 
     override fun onStopNestedScroll(child: View) {
         super.onStopNestedScroll(child)
-        Log.i(TAG, "---> onStopNestedScroll")
     }
 
     override fun onNestedPreScroll(target: View, dx: Int, dy: Int, consumed: IntArray) {
         super.onNestedPreScroll(target, dx, dy, consumed)
-        Log.i(TAG, "---> onNestedPreScroll target = ${target::class.java.simpleName} dx = $dx dy = $dy consumed = [${consumed[0]},${consumed[1]}]")
     }
 
     override fun onNestedScrollAccepted(child: View, target: View, axes: Int) {
         super.onNestedScrollAccepted(child, target, axes)
-        Log.i(TAG, "---> onNestedScrollAccepted child = ${child::class.java.simpleName} target = ${target::class.java.simpleName}")
-    }
-
-    override fun dispatchNestedPreScroll(dx: Int, dy: Int, consumed: IntArray?, offsetInWindow: IntArray?): Boolean {
-        val preScroll = super.dispatchNestedPreScroll(dx, dy, consumed, offsetInWindow)
-        Log.i(TAG, "---> dispatchNestedPreScroll dx = $dx dy = $dy " +
-                "consumed = [${consumed?.get(0)}, ${consumed?.get(1)}] offsetInWindow = [${offsetInWindow?.get(0)}, ${offsetInWindow?.get(1)}]")
-        return preScroll
     }
 
     fun setPTRListener(listener: OnPtrRefreshListener) {

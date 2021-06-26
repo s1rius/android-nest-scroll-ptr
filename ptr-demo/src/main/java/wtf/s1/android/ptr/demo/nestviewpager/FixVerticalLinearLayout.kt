@@ -13,28 +13,13 @@ class FixVerticalLinearLayout @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : LinearLayoutCompat(context, attrs, defStyleAttr) {
 
-    companion object {
-        const val TAG = "UseMatchLayout"
-        const val DEBUG = true
-    }
-
     init {
         orientation = VERTICAL
-
     }
 
     var mMoreTotalLength: Int = 0
-    var parentHeight : Int = 0
-
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val pH = MeasureSpec.getSize(heightMeasureSpec)
-        if (DEBUG) Log.i(TAG, "measureSpec ${MeasureSpec.getSize(widthMeasureSpec)} " +
-                "${pH} parent measure height ${(parent as? View)?.measuredHeight}" +
-                " root view ${rootView.measuredHeight}")
-        if (pH > 0) {
-            parentHeight = pH
-        }
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
 
         if (orientation == VERTICAL) {
@@ -49,14 +34,6 @@ class FixVerticalLinearLayout @JvmOverloads constructor(
                 }
             }
             setMeasuredDimension(measuredWidth, mMoreTotalLength)
-            if (DEBUG) {
-
-                Log.i(TAG, "total height $mMoreTotalLength")
-            }
-        }
-
-        if (DEBUG) {
-            Log.i(TAG, "current height = $measuredHeight")
         }
     }
 
@@ -76,15 +53,9 @@ class FixVerticalLinearLayout @JvmOverloads constructor(
             val childHeightMeasureSpec = getChildMeasureSpec(parentHeightMeasureSpec,
                     (child.paddingTop + child.paddingBottom + lp.topMargin + lp.bottomMargin + heightUsed),
                     MeasureSpec.getSize(parentHeightMeasureSpec))
-
-            Log.i(TAG, "${MeasureSpec.getSize(parentHeightMeasureSpec)}  cur ${MeasureSpec.getSize(parentHeight)}")
             child.measure(childWidthMeasureSpec, childHeightMeasureSpec)
         } else {
             super.measureChildWithMargins(child, parentWidthMeasureSpec, widthUsed, parentHeightMeasureSpec, heightUsed)
         }
-    }
-
-    override fun generateDefaultLayoutParams(): LayoutParams {
-        return super.generateDefaultLayoutParams()
     }
 }
