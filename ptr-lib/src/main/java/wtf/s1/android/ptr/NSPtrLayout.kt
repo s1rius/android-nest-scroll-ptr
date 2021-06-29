@@ -12,6 +12,7 @@ import android.util.Log
 import android.view.*
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.AbsListView
+import android.widget.FrameLayout
 import android.widget.ListView
 import androidx.core.view.*
 import androidx.core.widget.ListViewCompat
@@ -28,7 +29,7 @@ open class NSPtrLayout @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyle: Int = 0
-) : ViewGroup(context, attrs, defStyle), NestedScrollingParent3, NestedScrollingChild3 {
+) : FrameLayout(context, attrs, defStyle), NestedScrollingParent3, NestedScrollingChild3 {
 
     companion object {
         private const val INVALID_POINTER = -1
@@ -143,11 +144,11 @@ open class NSPtrLayout @JvmOverloads constructor(
         }
 
         override fun overToRefreshPosition(): Boolean {
-            return contentTopPosition > headerView?.height ?: 0
+            return contentTopPosition > headerView?.height ?: measuredHeight
         }
 
         override fun refreshPosition(): Int {
-            return headerView?.height ?: 0
+            return headerView?.height ?: measuredHeight
         }
 
         override fun pullFriction(type: Int): Float {
@@ -252,76 +253,80 @@ open class NSPtrLayout @JvmOverloads constructor(
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-        if (mHeaderView != null) {
-            mHeaderView?.let {
-                if (it is NSPtrComponent) {
-                    val lp = it.layoutParams as LayoutParams
-                    val childWidthMeasureSpec = getChildMeasureSpec(
-                        widthMeasureSpec,
-                        paddingLeft + paddingRight + lp.leftMargin + lp.rightMargin, lp.width
-                    )
-                    val childHeightMeasureSpec = getChildMeasureSpec(
-                        heightMeasureSpec,
-                        (paddingTop + paddingBottom + lp.topMargin + lp.bottomMargin), lp.height
-                    )
-                    it.prtMeasure(this, childWidthMeasureSpec, childHeightMeasureSpec)
+        children.forEach {child->
+            if (!child.isGone) {
+               if (child is NSPtrComponent) {
+                    child.prtMeasure(this, widthMeasureSpec, heightMeasureSpec)
                 } else {
-                    measureChildWithMargins(mHeaderView, widthMeasureSpec, 0, heightMeasureSpec, 0)
+                    measureChildWithMargins(child, widthMeasureSpec, 0, heightMeasureSpec, 0)
                 }
             }
         }
-        if (contentView != null) {
-            measureContentView(contentView!!, widthMeasureSpec, heightMeasureSpec)
-        }
     }
 
-    private fun measureContentView(
-        child: View,
-        parentWidthMeasureSpec: Int,
-        parentHeightMeasureSpec: Int
-    ) {
-        val lp = child.layoutParams as MarginLayoutParams
-        val childWidthMeasureSpec = getChildMeasureSpec(
-            parentWidthMeasureSpec,
-            paddingLeft + paddingRight + lp.leftMargin + lp.rightMargin, lp.width
-        )
-        val childHeightMeasureSpec = getChildMeasureSpec(
-            parentHeightMeasureSpec,
-            paddingTop + paddingBottom + lp.topMargin, lp.height
-        )
-        child.measure(childWidthMeasureSpec, childHeightMeasureSpec)
+    override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
+        layoutChildren(l, t, r, b)
     }
 
-    override fun onLayout(flag: Boolean, i: Int, j: Int, k: Int, l: Int) {
-        layoutChildren()
-    }
-
-    private fun layoutChildren() {
+    private fun layoutChildren(l: Int, t: Int, r: Int, b: Int) {
         val offset = contentTopPosition
-        val paddingLeft = paddingLeft
-        val paddingTop = paddingTop
+        val parentLeft: Int = paddingLeft
+        val parentRight: Int = r - l - paddingRight
+        val parentTop: Int = paddingTop
+        val parentBottom: Int = b - t - paddingBottom
 
-        mHeaderView?.let {
-            if (it is NSPtrComponent) {
-                it.ptrLayout(this)
-            } else {
-                val lp = it.layoutParams as LayoutParams
-                val left = paddingLeft + lp.leftMargin
-                // enhance readability(header is layout above screen when first init)
-                val top = -(it.measuredHeight - paddingTop - lp.topMargin - offset)
-                val right = left + it.measuredWidth
-                val bottom = top + it.measuredHeight
-                it.layout(left, top, right, bottom)
+        val count = childCount
+        for (i in 0 until count) {
+            val child = getChildAt(i)
+            if (child.visibility != GONE) {
+
+                if (child === contentView) {
+                    val lp = child.layoutParams as MarginLayoutParams
+                    val left = paddingLeft + lp.leftMargin
+                    val top = paddingTop + lp.topMargin + offset
+                    val right = left + child.measuredWidth
+                    val bottom = top + child.measuredHeight
+                    child.layout(left, top, right, bottom)
+                } else if (child is NSPtrComponent) {
+                    child.ptrLayout(this)
+                } else {
+                    val lp = child.layoutParams as FrameLayout.LayoutParams
+                    val width = child.measuredWidth
+                    val height = child.measuredHeight
+                    var childLeft: Int
+                    var childTop: Int
+                    var gravity = lp.gravity
+                    if (gravity == -1) {
+                        gravity = Gravity.START or Gravity.TOP
+                    }
+
+                    val absoluteGravity =
+                        Gravity.getAbsoluteGravity(gravity, ViewCompat.getLayoutDirection(this))
+                    val verticalGravity = gravity and Gravity.VERTICAL_GRAVITY_MASK
+                    childLeft = when (absoluteGravity and Gravity.HORIZONTAL_GRAVITY_MASK) {
+                        Gravity.CENTER_HORIZONTAL ->
+                            (paddingLeft
+                                    + (parentRight - parentLeft - width) / 2
+                                    + lp.leftMargin
+                                    - lp.rightMargin)
+                        Gravity.RIGHT ->
+                            parentRight - width - lp.rightMargin
+                        Gravity.LEFT ->
+                            parentLeft + lp.leftMargin
+                        else ->
+                            parentLeft + lp.leftMargin
+                    }
+                    childTop = when (verticalGravity) {
+                        Gravity.TOP -> parentTop + lp.topMargin
+                        Gravity.CENTER_VERTICAL -> (parentTop
+                                + (parentBottom - parentTop - height) / 2
+                                + lp.topMargin - lp.bottomMargin)
+                        Gravity.BOTTOM -> parentBottom - height - lp.bottomMargin
+                        else -> parentTop + lp.topMargin
+                    }
+                    child.layout(childLeft, childTop, childLeft + width, childTop + height)
+                }
             }
-        }
-
-        if (contentView != null) {
-            val lp = contentView!!.layoutParams as MarginLayoutParams
-            val left = paddingLeft + lp.leftMargin
-            val top = paddingTop + lp.topMargin + offset
-            val right = left + contentView!!.measuredWidth
-            val bottom = top + contentView!!.measuredHeight
-            contentView!!.layout(left, top, right, bottom)
         }
     }
 
@@ -633,10 +638,10 @@ open class NSPtrLayout @JvmOverloads constructor(
 
     // <editor-fold defaultstate="collapsed" desc="generate layout params">
     @Suppress("unused")
-    class LayoutParams : MarginLayoutParams {
+    class LayoutParams : FrameLayout.LayoutParams {
         constructor(c: Context, attrs: AttributeSet) : super(c, attrs)
         constructor(width: Int, height: Int) : super(width, height)
-        constructor(source: MarginLayoutParams?) : super(source)
+        constructor(source: MarginLayoutParams) : super(source)
         constructor(source: ViewGroup.LayoutParams) : super(source)
     }
 
@@ -644,18 +649,18 @@ open class NSPtrLayout @JvmOverloads constructor(
         return p is LayoutParams
     }
 
-    override fun generateDefaultLayoutParams(): ViewGroup.LayoutParams {
+    override fun generateDefaultLayoutParams(): LayoutParams {
         return LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.MATCH_PARENT
         )
     }
 
-    override fun generateLayoutParams(p: ViewGroup.LayoutParams): ViewGroup.LayoutParams {
+    override fun generateLayoutParams(p: ViewGroup.LayoutParams): LayoutParams {
         return LayoutParams(p)
     }
 
-    override fun generateLayoutParams(attrs: AttributeSet): ViewGroup.LayoutParams {
+    override fun generateLayoutParams(attrs: AttributeSet): LayoutParams {
         return LayoutParams(context, attrs)
     }
 

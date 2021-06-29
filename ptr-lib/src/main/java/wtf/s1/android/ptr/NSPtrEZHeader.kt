@@ -45,8 +45,22 @@ open class NSPtrEZHeader @JvmOverloads constructor(
         }
     }
 
-    override fun prtMeasure(ptrLayout: NSPtrLayout, widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        measure(widthMeasureSpec, heightMeasureSpec)
+    override fun prtMeasure(ptrLayout: NSPtrLayout, parentWidthMeasureSpec: Int, parentHeightMeasureSpec: Int) {
+        val lp = layoutParams as NSPtrLayout.LayoutParams
+        val childWidthMeasureSpec = getChildMeasureSpec(
+            parentWidthMeasureSpec,
+            ptrLayout.paddingLeft + ptrLayout.paddingRight
+                    + lp.leftMargin + lp.rightMargin,
+            lp.width
+        )
+        val childHeightMeasureSpec = getChildMeasureSpec(
+            parentHeightMeasureSpec,
+            (ptrLayout.paddingTop + ptrLayout.paddingBottom
+                    + lp.topMargin + lp.bottomMargin),
+            lp.height
+        )
+
+        measure(childWidthMeasureSpec, childHeightMeasureSpec)
     }
 
     override fun ptrLayout(ptrLayout: NSPtrLayout) {
