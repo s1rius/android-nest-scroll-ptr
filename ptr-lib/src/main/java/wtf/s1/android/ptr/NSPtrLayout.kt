@@ -38,28 +38,92 @@ open class NSPtrLayout @JvmOverloads constructor(
     sealed class State {
         // 初始化状态
         object IDLE : State()
-
         // 刷新状态
         object REFRESHING : State()
-
         // 拖动状态
         object DRAG : State()
     }
 
     sealed class Event {
+        // 下拉事件
         object Pull : Event()
+        // 放手回到空闲
         object ReleaseToIdle : Event()
+        // 放手开始刷新
         object ReleaseToRefreshing : Event()
+        // 刷新完成
         object RefreshComplete : Event()
+        // 自动刷新
         object AutoRefresh : Event()
     }
 
     sealed class SideEffect {
+        // 手势取消回到顶部
         object OnCancelToIdle : SideEffect()
+        // 刷新动作
         object OnRefreshing : SideEffect()
+        // 开始拖动控件
         object OnDragBegin : SideEffect()
+        // 刷新完成的动作
         object OnComplete : SideEffect()
     }
+
+    private var stateMachine =
+        StateMachine.create<State, Event, SideEffect> {
+            initialState(State.IDLE)
+
+            state<State.IDLE> {
+                on<Event.Pull> {
+                    transitionTo(State.DRAG, SideEffect.OnDragBegin)
+                }
+                on<Event.AutoRefresh> {
+                    transitionTo(State.REFRESHING, SideEffect.OnRefreshing)
+                }
+            }
+
+            state<State.REFRESHING> {
+                on<Event.RefreshComplete> {
+                    transitionTo(State.IDLE, SideEffect.OnComplete)
+                }
+                onEnter {
+                    performRefresh()
+                }
+            }
+
+            state<State.DRAG> {
+                on<Event.ReleaseToIdle> {
+                    transitionTo(State.IDLE, SideEffect.OnCancelToIdle)
+                }
+                on<Event.ReleaseToRefreshing> {
+                    transitionTo(State.REFRESHING, SideEffect.OnRefreshing)
+                }
+                on<Event.RefreshComplete> {
+                    transitionTo(State.IDLE, SideEffect.OnComplete)
+                }
+            }
+
+            onTransition {
+                val validTransition = it as? StateMachine.Transition.Valid ?: return@onTransition
+                when (validTransition.sideEffect) {
+                    SideEffect.OnDragBegin -> {
+                    }
+                    SideEffect.OnComplete -> {
+                        tryScrollBackToTop()
+                        notifyUIRefreshComplete()
+                    }
+                    SideEffect.OnRefreshing -> {
+                    }
+                    SideEffect.OnCancelToIdle -> {
+                        tryScrollBackToTop()
+                    }
+                }
+                mPtrListenerHolder.onTransition(this@NSPtrLayout, it)
+            }
+
+            onEvent {
+                mPtrListenerHolder.onEvent(it)
+            }
+        }
 
     private val ptrId = "ptr-frame-" + ++ID
     private var contentView: View? = null
@@ -105,80 +169,6 @@ open class NSPtrLayout @JvmOverloads constructor(
     private val mScrollChecker = ScrollChecker()
     var contentTopPosition = 0
         private set
-    private var stateMachine =
-        StateMachine.create<State, Event, SideEffect> {
-            initialState(State.IDLE)
-
-            state<State.IDLE> {
-                on<Event.Pull> {
-                    transitionTo(
-                        State.DRAG,
-                        SideEffect.OnDragBegin
-                    )
-                }
-                on<Event.AutoRefresh> {
-                    transitionTo(
-                        State.REFRESHING,
-                        SideEffect.OnRefreshing
-                    )
-                }
-            }
-
-            state<State.REFRESHING> {
-                on<Event.RefreshComplete> {
-                    transitionTo(
-                        State.IDLE,
-                        SideEffect.OnComplete
-                    )
-                }
-                onEnter {
-                    performRefresh()
-                }
-            }
-
-            state<State.DRAG> {
-                on<Event.ReleaseToIdle> {
-                    transitionTo(
-                        State.IDLE,
-                        SideEffect.OnCancelToIdle
-                    )
-                }
-                on<Event.ReleaseToRefreshing> {
-                    transitionTo(
-                        State.REFRESHING,
-                        SideEffect.OnRefreshing
-                    )
-                }
-                on<Event.RefreshComplete> {
-                    transitionTo(
-                        State.IDLE,
-                        SideEffect.OnComplete
-                    )
-                }
-            }
-
-            onTransition {
-                val validTransition = it as? StateMachine.Transition.Valid ?: return@onTransition
-                when (validTransition.sideEffect) {
-                    SideEffect.OnDragBegin -> {
-                    }
-                    SideEffect.OnComplete -> {
-                        tryScrollBackToTop()
-                        notifyUIRefreshComplete()
-                    }
-                    SideEffect.OnRefreshing -> {
-                    }
-                    SideEffect.OnCancelToIdle -> {
-                        tryScrollBackToTop()
-                    }
-                }
-                mPtrListenerHolder.onTransition(this@NSPtrLayout, it)
-            }
-
-            onEvent {
-                mPtrListenerHolder.onEvent(it)
-            }
-        }
 
     //touch handle
     private var mActivePointerId = INVALID_POINTER
