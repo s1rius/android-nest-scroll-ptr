@@ -41,7 +41,7 @@ open class NSPtrEZHeader @JvmOverloads constructor(
             if (mIsOverToRefresh != frame.isOverToRefreshPosition) {
                 mIsOverToRefresh = frame.isOverToRefreshPosition
             }
-            progressBar.progress = (frame.contentTopPosition * 100f / frame.config.refreshPosition()).toInt()
+            progressBar.progress = (frame.contentTopPosition * 100f / frame.config.startRefreshPosition()).toInt()
         }
     }
 

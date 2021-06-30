@@ -135,24 +135,24 @@ open class NSPtrLayout @JvmOverloads constructor(
             return this@NSPtrLayout
         }
 
-        override fun startPosition(): Int {
+        override fun initPosition(): Int {
             return 0
         }
 
-        override fun atStartPosition(): Boolean {
-            return contentTopPosition == startPosition()
+        override fun atInitPosition(): Boolean {
+            return contentTopPosition == initPosition()
         }
 
-        override fun overToRefreshPosition(): Boolean {
+        override fun startCrossRefreshLine(): Boolean {
             return contentTopPosition > headerView?.height ?: measuredHeight
         }
 
-        override fun refreshPosition(): Int {
+        override fun startRefreshPosition(): Int {
             return headerView?.height ?: measuredHeight
         }
 
         override fun pullFriction(type: Int): Float {
-            return if (type == ViewCompat.TYPE_TOUCH) super.pullFriction(type) else 2f
+            return if (type == ViewCompat.TYPE_TOUCH) super.pullFriction(type) else 1f
         }
     }
 
@@ -339,7 +339,6 @@ open class NSPtrLayout @JvmOverloads constructor(
                 mIsInTouchProgress = false
                 mIsBeingDragged = false
                 stopNestedScroll()
-                onRelease()
             }
             MotionEvent.ACTION_DOWN -> {
                 stopNestedScroll(ViewCompat.TYPE_NON_TOUCH)
@@ -382,7 +381,7 @@ open class NSPtrLayout @JvmOverloads constructor(
                     // like ListView, we need enable nest scroll in intercept process
                     val y = (ev.getY(pointerIndex) + 0.5f).toInt()
                     val dy = (mLastTouch.y - y).toInt()
-                    if (config.atStartPosition() || dy > 0) {
+                    if (config.atInitPosition() || dy > 0) {
                         if (dispatchNestedPreScroll(0, dy, mScrollConsumed, mScrollOffset)) {
                             mLastTouch.y = (y - mScrollOffset[1]).toFloat()
                             // handle touch when parent not accept nest scroll
@@ -415,7 +414,7 @@ open class NSPtrLayout @JvmOverloads constructor(
                 mInitialTouch.set(event.getX(pointerIndex), event.getY(pointerIndex))
                 mLastTouch.set(event.getX(pointerIndex), event.getY(pointerIndex))
                 startNestedScroll(ViewCompat.SCROLL_AXIS_VERTICAL)
-                return !canChildScrollToUp()
+                return !canContentScrollToUp()
             }
             MotionEvent.ACTION_MOVE -> {
                 val pointerIndex = event.findPointerIndex(mActivePointerId)
@@ -430,7 +429,7 @@ open class NSPtrLayout @JvmOverloads constructor(
 
                 val y = (event.getY(pointerIndex) + 0.5f).toInt()
                 var dy = (y - mLastTouch.y).toInt()
-                if (dy > 0 || config.atStartPosition()) {
+                if (dy > 0 || config.atInitPosition()) {
                     if (dispatchNestedPreScroll(0, -dy, mScrollConsumed, mScrollOffset)) {
                         mLastTouch.y = (y - mScrollOffset[1]).toFloat()
                         // handle touch when parent not accept nest scroll
@@ -446,7 +445,7 @@ open class NSPtrLayout @JvmOverloads constructor(
                 }
                 val moveDown = dy > 0
                 val moveUp = !moveDown
-                val canMoveUp = config.atStartPosition()
+                val canMoveUp = config.atInitPosition()
                 if (contentTopPosition != 0) {
                     movePos(dy.toFloat())
                     return true
@@ -465,16 +464,31 @@ open class NSPtrLayout @JvmOverloads constructor(
      *
      * @param deltaY the y offset
      */
-    private fun movePos(deltaY: Float): Int {
-        // has reached the top
-        if (deltaY < 0 && config.atStartPosition()) {
-            return 0
-        }
+    open fun movePos(deltaY: Float, force: Boolean = false): Int {
         var to = contentTopPosition + deltaY.toInt()
+        if (!force) {
+            // has reached the top
+            // 当contentView向上移动时，contentView的本身内容还可以继续下滑，且contentView已经回到了初始位置，
+            // 就不再处理contentView向上移动
+            if (deltaY < 0
+                && contentView?.canScrollVertically(1) == true
+                && contentTopPosition <= config.initPosition()
+            ) {
+                return 0
+            }
+
+            if (deltaY > 0
+                && contentView?.canScrollVertically(-1) == true
+                && contentTopPosition >= config.initPosition()) {
+                return 0
+            }
+        }
 
         // over top
-        if (to < config.startPosition()) {
-            to = config.startPosition()
+        if (to < config.initPosition() - config.maxOffset()) {
+            to = config.initPosition() - config.maxOffset()
+        } else if (to > config.initPosition() + config.maxOffset()) {
+            to = config.initPosition() + config.maxOffset()
         }
 
         val change = to - contentTopPosition
@@ -509,12 +523,12 @@ open class NSPtrLayout @JvmOverloads constructor(
     private fun onRelease() {
         when (stateMachine.state) {
             is State.IDLE -> {
-                if (contentTopPosition != config.startPosition()) {
+                if (contentTopPosition != config.initPosition()) {
                     mScrollChecker.scrollToStart()
                 }
             }
             is State.DRAG -> {
-                if (config.overToRefreshPosition()) {
+                if (config.startCrossRefreshLine()) {
                     stateMachine.transition(Event.ReleaseToRefreshing)
                 } else {
                     stateMachine.transition(Event.ReleaseToIdle)
@@ -615,7 +629,7 @@ open class NSPtrLayout @JvmOverloads constructor(
     var isOverToRefreshPosition: Boolean = false
         private set
         get() {
-            return config.overToRefreshPosition()
+            return config.startCrossRefreshLine()
         }
 
     var headerView: View?
@@ -827,8 +841,12 @@ open class NSPtrLayout @JvmOverloads constructor(
     override fun onNestedPreScroll(target: View, dx: Int, dy: Int, consumed: IntArray, type: Int) {
         // If we are in the middle of consuming, a scroll, then we want to move the ptr back up
         // before allowing the list to scroll
-        if (dy > 0 && !config.atStartPosition()) {
+        if (dy > 0 && !config.atInitPosition()) {
             consumed[1] = -movePos(-dy.toFloat())
+        } else if (dy < 0 && contentTopPosition < config.initPosition()) {
+            movePos(-dy.toFloat())
+            // consumed[1] = -movePos(-dy.toFloat())
+            consumed[1] = dy
         }
 
         // Now let our nested parent consume the leftovers
@@ -837,7 +855,7 @@ open class NSPtrLayout @JvmOverloads constructor(
             consumed[0] += parentConsumed[0]
             consumed[1] += parentConsumed[1]
         }
-        if (consumed[1] < 0) {
+        if (consumed[1] < 0 && config.atInitPosition()) {
             consumed[1] = 0
         }
     }
@@ -914,6 +932,11 @@ open class NSPtrLayout @JvmOverloads constructor(
         // todo var dyUnconsumedCopy = dyUnconsumed + (consumed?.getOrElse(1) {0} ?:0)
         val dyUnconsumedCopy = withFriction(dyUnconsumed.toFloat(), type)
         val dy = dyUnconsumedCopy + mParentOffsetInWindow[1]
+
+        if (type == ViewCompat.TYPE_NON_TOUCH && dy > 0 ) {
+            // todo s1rius
+            return
+        }
         movePos(-dy.toFloat())
     }
 
@@ -928,13 +951,9 @@ open class NSPtrLayout @JvmOverloads constructor(
         stopNestedScroll(type)
         if (type == ViewCompat.TYPE_TOUCH) {
             mInVerticalNestedScrollTouch = false
-        }
-
-        if (type == ViewCompat.TYPE_NON_TOUCH) {
-            onRelease()
-        } else {
             mLastTouch.set(-1f, -1f)
         }
+        onRelease()
     }
 
     override fun getNestedScrollAxes(): Int {
@@ -958,7 +977,7 @@ open class NSPtrLayout @JvmOverloads constructor(
         }
     }
 
-    private fun canChildScrollToUp(): Boolean {
+    private fun canContentScrollToUp(): Boolean {
         return if (contentView is ListView) {
             ListViewCompat.canScrollList(
                 (contentView as ListView?)!!,
@@ -973,7 +992,7 @@ open class NSPtrLayout @JvmOverloads constructor(
         val yDiff = move.y - mInitialTouch.y
         val xDiff = abs(move.x - mInitialTouch.x)
         if (yDiff > mTouchSlop && yDiff > xDiff && !mIsBeingDragged) {
-            if (!canChildScrollToUp()) {
+            if (!canContentScrollToUp()) {
                 mIsBeingDragged = true
             }
             // if in refreshing, scroll to up will make PtrFrameLayout handle the touch event
@@ -1000,15 +1019,15 @@ open class NSPtrLayout @JvmOverloads constructor(
         }
 
         fun scrollToRefreshing() {
-            mScrollChecker.tryToScrollTo(config.refreshPosition())
+            mScrollChecker.tryToScrollTo(config.startRefreshPosition())
         }
 
         fun scrollToStart() {
-            mScrollChecker.tryToScrollTo(config.startPosition())
+            mScrollChecker.tryToScrollTo(config.initPosition())
         }
 
         private fun tryToScrollTo(to: Int, duration: Int = 200) {
-            if (contentTopPosition == to || to == mTo && isRunning) {
+            if (to == mTo && isRunning) {
                 return
             }
             mStart = contentTopPosition
@@ -1024,7 +1043,7 @@ open class NSPtrLayout @JvmOverloads constructor(
         override fun onAnimationUpdate(animation: ValueAnimator) {
             val fraction = animation.animatedFraction
             val target = mStart + ((mTo - mStart) * fraction).toInt()
-            movePos((target - contentTopPosition).toFloat())
+            movePos((target - contentTopPosition).toFloat(), true)
         }
 
         init {

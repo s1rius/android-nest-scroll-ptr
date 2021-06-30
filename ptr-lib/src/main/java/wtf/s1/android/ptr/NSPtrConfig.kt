@@ -4,14 +4,20 @@ interface NSPtrConfig {
 
     fun getLayout(): NSPtrLayout
 
-    fun startPosition(): Int = 0
+    fun initPosition(): Int = 0
 
-    fun atStartPosition(): Boolean = false
+    fun atInitPosition(): Boolean = false
 
-    fun overToRefreshPosition(): Boolean = false
+    fun startCrossRefreshLine(): Boolean = false
 
-    fun refreshPosition(): Int = Int.MAX_VALUE
+    fun startRefreshPosition(): Int = Int.MAX_VALUE
+
+    fun endCrossRefreshLine(): Boolean = false
+
+    fun endRefreshPosition(): Int = Int.MIN_VALUE
 
     fun pullFriction(type: Int): Float = 0.56f
+
+    fun maxOffset(): Int = Int.MAX_VALUE
 
 }
