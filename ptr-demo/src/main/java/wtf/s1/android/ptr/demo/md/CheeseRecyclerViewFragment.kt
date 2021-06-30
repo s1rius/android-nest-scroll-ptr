@@ -16,47 +16,44 @@
 
 package wtf.s1.android.ptr.demo.md
 
-import android.os.Bundle
-import androidx.fragment.app.Fragment
+
+import android.content.Context
+import android.util.AttributeSet
+import android.view.LayoutInflater
+import android.widget.FrameLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-
-import com.github.auptr.ptr_support_design.R
-
-import java.util.ArrayList
-import java.util.Random
-
 import wtf.s1.android.ptr.demo.SwipeToRefreshLayout
+import wtf.s1.android.ptr_support_design.R
+import java.util.*
 
-class CheeseRecyclerViewFragment : Fragment() {
+class CheeseRecyclerViewFragment @JvmOverloads constructor(
+    context: Context, attrs: AttributeSet? = null
+) : FrameLayout(context, attrs) {
 
     lateinit var mRefreshLayout: SwipeToRefreshLayout
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view = inflater.inflate(
-                R.layout.fragment_cheese_recycler, container, false)
-        mRefreshLayout = view.findViewById(R.id.ptr_layout)
+    init {
+        LayoutInflater.from(context).inflate(
+            R.layout.fragment_cheese_recycler, this, true)
+        mRefreshLayout = findViewById(R.id.ptr_layout)
         mRefreshLayout.setPTRListener(object: SwipeToRefreshLayout.OnPtrRefreshListener {
             override fun onRefresh() {
                 mRefreshLayout.postDelayed({ mRefreshLayout.isRefreshing = false }, 3000)
             }
         })
-        val rv = view.findViewById<RecyclerView>(R.id.recyclerview)
+        val rv = findViewById<RecyclerView>(R.id.recyclerview)
         setupRecyclerView(rv)
-        return view
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
         mRefreshLayout.isRefreshing = true
     }
 
     private fun setupRecyclerView(recyclerView: RecyclerView) {
         recyclerView.layoutManager = LinearLayoutManager(recyclerView.context)
-        recyclerView.adapter = SimpleStringRecyclerViewAdapter(requireActivity(),
+        recyclerView.adapter = SimpleStringRecyclerViewAdapter(context,
                 getRandomSublist(Cheeses.sCheeseStrings, 30))
     }
 

@@ -10,7 +10,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.github.auptr.ptr_support_design.R
+import wtf.s1.android.ptr_support_design.R
 
 class SimpleStringRecyclerViewAdapter(context: Context, values: List<String>) : RecyclerView.Adapter<SimpleStringRecyclerViewAdapter.ViewHolder>() {
 

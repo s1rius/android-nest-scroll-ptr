@@ -38,7 +38,9 @@ class SimpleTextListView @JvmOverloads constructor(
         }
     }
 
-
+    init {
+        overScrollMode = OVER_SCROLL_NEVER
+    }
 
     var count: Int = 100
         set(value) {
@@ -76,18 +78,6 @@ class SimpleTextListView @JvmOverloads constructor(
     override fun hasNestedScrollingParent(type: Int): Boolean {
         return super.hasNestedScrollingParent(type)
     }
-
-//    override fun dispatchNestedScroll(
-//        dxConsumed: Int,
-//        dyConsumed: Int,
-//        dxUnconsumed: Int,
-//        dyUnconsumed: Int,
-//        offsetInWindow: IntArray?,
-//        type: Int,
-//        consumed: IntArray
-//    ) {
-//        super.dispatchNestedScroll(dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, offsetInWindow, type, consumed)
-//    }
 
     override fun dispatchNestedPreScroll(
         dx: Int,

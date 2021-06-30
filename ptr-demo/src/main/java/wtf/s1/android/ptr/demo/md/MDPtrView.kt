@@ -1,18 +1,20 @@
 package wtf.s1.android.ptr.demo.md
 
 import android.content.Context
+import android.graphics.Color
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.appcompat.widget.Toolbar
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager
-import com.github.auptr.ptr_support_design.R
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.tabs.TabLayout
-import wtf.s1.android.ptr.demo.FragmentsViewPagerAdapter
 import wtf.s1.android.ptr.demo.util.getActivity
+import wtf.s1.android.ptr_support_design.R
 
 class MDPtrView @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
@@ -21,6 +23,7 @@ class MDPtrView @JvmOverloads constructor(
     private var mDrawerLayout: DrawerLayout? = null
 
     init {
+        setBackgroundColor(Color.WHITE)
         LayoutInflater.from(context).inflate(R.layout.md_ptr_view, this, true)
 
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
@@ -40,10 +43,37 @@ class MDPtrView @JvmOverloads constructor(
 
     private fun setupViewPager(viewPager: ViewPager) {
         getActivity()?.let {
-            val adapter = FragmentsViewPagerAdapter(it.supportFragmentManager)
-            adapter.addFragment(CheeseRecyclerViewFragment(), "Category 1")
-            adapter.addFragment(CheeseListViewFragment(), "Category 2")
-            adapter.addFragment(TextFragment(), "Category 3")
+            val adapter = object: PagerAdapter() {
+                override fun getCount(): Int = 3
+
+                override fun isViewFromObject(view: View, `object`: Any): Boolean {
+                    return `object` === view
+                }
+
+                override fun instantiateItem(container: ViewGroup, position: Int): Any {
+                    val v = when (position) {
+                        0 -> CheeseRecyclerViewFragment(context)
+                        1 -> TextFragment(context)
+                        2 -> WebFragment(context)
+                        else -> View(context)
+                    }
+                    container.addView(v)
+                    return v
+                }
+
+                override fun destroyItem(container: ViewGroup, position: Int, `object`: Any) {
+                    container.removeView(`object` as View)
+                }
+
+                override fun getPageTitle(position: Int): CharSequence? {
+                    return when (position) {
+                        0 -> "RecyclerView"
+                        1 -> "TextView"
+                        2 -> "WebView"
+                        else -> super.getPageTitle(position)
+                    }
+                }
+            }
             viewPager.adapter = adapter
         }
     }

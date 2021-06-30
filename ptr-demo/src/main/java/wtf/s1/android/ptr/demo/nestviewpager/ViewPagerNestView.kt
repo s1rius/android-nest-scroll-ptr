@@ -10,10 +10,10 @@ import android.widget.LinearLayout
 import androidx.core.widget.NestedScrollView
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
-import com.github.auptr.ptr_support_design.R
 import com.google.android.material.tabs.TabLayout
 import wtf.s1.android.ptr.demo.SimpleTextListView
 import wtf.s1.android.ptr.demo.SwipeToRefreshLayout
+import wtf.s1.android.ptr_support_design.R
 
 class ViewPagerNestView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0

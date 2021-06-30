@@ -17,22 +17,55 @@
 package wtf.s1.android.ptr.demo
 
 import android.os.Bundle
-import android.view.ViewGroup
+import android.view.View
 import android.widget.FrameLayout
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
-import com.github.auptr.ptr_support_design.R
-import wtf.s1.android.ptr.demo.nestviewpager.ViewPagerNestView
+import wtf.s1.android.ptr.demo.damping.DampingView
+import wtf.s1.android.ptr_support_design.R
 
 class MainActivity : AppCompatActivity() {
+
+    lateinit var contentContainer: FrameLayout
+
+    val components = ArrayDeque<View>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        findViewById<FrameLayout>(R.id.container)
-                .addView(
-                    ViewPagerNestView(this),
-                        ViewGroup.LayoutParams(
-                                ViewGroup.LayoutParams.MATCH_PARENT,
-                                ViewGroup.LayoutParams.MATCH_PARENT))
+
+        findViewById<FrameLayout>(R.id.container).apply {
+            contentContainer = this
+        }
+
+        push(DampingView(this))
+        onBackPressedDispatcher.addCallback(backCallBack)
+    }
+
+    private val backCallBack = object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() {
+            pop()
+            if (components.isEmpty()) {
+                finish()
+            }
+        }
+    }
+
+    fun push(view: View) {
+        components.addFirst(view)
+        contentContainer.addView(
+            view,
+            FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
+            )
+        )
+    }
+
+    fun pop(view: View? = null) {
+        view?:components.firstOrNull()?.let {
+            components.remove(it)
+            contentContainer.removeView(it)
+        }
     }
 }

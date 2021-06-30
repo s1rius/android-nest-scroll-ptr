@@ -48,6 +48,8 @@ object Deps {
     const val circleimageview = "de.hdodenhof:circleimageview:1.3.0"
 
     const val hugo2 = "wtf.s1.pudge:hugo2-core:0.1.4"
+
+    const val multitype = "com.drakeet.multitype:multitype:4.2.0"
 }
 
 object ClassPaths {

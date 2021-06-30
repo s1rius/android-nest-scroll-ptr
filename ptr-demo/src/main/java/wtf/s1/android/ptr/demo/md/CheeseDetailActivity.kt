@@ -19,9 +19,9 @@ package wtf.s1.android.ptr.demo.md
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
-import com.github.auptr.ptr_support_design.R
 import kotlinx.android.synthetic.main.activity_detail.*
 import wtf.s1.android.ptr.demo.SwipeToRefreshLayout
+import wtf.s1.android.ptr_support_design.R
 
 class CheeseDetailActivity : AppCompatActivity() {
 

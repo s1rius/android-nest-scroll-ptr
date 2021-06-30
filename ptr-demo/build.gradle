@@ -37,6 +37,8 @@ dependencies {
     implementation Deps.circleimageview
     implementation Deps.AndroidX.viewpager2
     implementation Deps.hugo2
+    implementation Deps.multitype
+    implementation Deps.AndroidX.Core.ktx
 }
 
 
