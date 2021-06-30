@@ -35,8 +35,8 @@ import java.util.Random
 
 import android.widget.BaseAdapter
 import android.widget.ListView
-import com.github.auptr.ptr_support_design.R
 import wtf.s1.android.ptr.demo.SwipeToRefreshLayout
+import wtf.s1.android.ptr_support_design.R
 
 class CheeseListViewFragment : Fragment() {
 
@@ -58,7 +58,7 @@ class CheeseListViewFragment : Fragment() {
     }
 
     private fun setupListView(listView: ListView) {
-        listView.adapter = SimpleStringRecyclerViewAdapter(activity!!,
+        listView.adapter = SimpleStringRecyclerViewAdapter(requireActivity(),
                 getRandomSublist(Cheeses.sCheeseStrings, 30))
     }
 

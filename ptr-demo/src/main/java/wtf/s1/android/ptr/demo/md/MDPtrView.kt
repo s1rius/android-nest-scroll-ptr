@@ -8,11 +8,11 @@ import android.widget.FrameLayout
 import androidx.appcompat.widget.Toolbar
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.viewpager.widget.ViewPager
-import com.github.auptr.ptr_support_design.R
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.tabs.TabLayout
 import wtf.s1.android.ptr.demo.FragmentsViewPagerAdapter
 import wtf.s1.android.ptr.demo.util.getActivity
+import wtf.s1.android.ptr_support_design.R
 
 class MDPtrView @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0

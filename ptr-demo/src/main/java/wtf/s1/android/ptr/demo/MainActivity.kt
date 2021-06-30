@@ -20,8 +20,9 @@ import android.os.Bundle
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
-import com.github.auptr.ptr_support_design.R
+import wtf.s1.android.ptr.demo.damping.DampingView
 import wtf.s1.android.ptr.demo.nestviewpager.ViewPagerNestView
+import wtf.s1.android.ptr_support_design.R
 
 class MainActivity : AppCompatActivity() {
 
@@ -30,7 +31,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         findViewById<FrameLayout>(R.id.container)
                 .addView(
-                    ViewPagerNestView(this),
+                    DampingView(this),
                         ViewGroup.LayoutParams(
                                 ViewGroup.LayoutParams.MATCH_PARENT,
                                 ViewGroup.LayoutParams.MATCH_PARENT))

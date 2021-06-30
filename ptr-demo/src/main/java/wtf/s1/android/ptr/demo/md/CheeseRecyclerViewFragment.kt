@@ -24,12 +24,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 
-import com.github.auptr.ptr_support_design.R
 
 import java.util.ArrayList
 import java.util.Random
 
 import wtf.s1.android.ptr.demo.SwipeToRefreshLayout
+import wtf.s1.android.ptr_support_design.R
 
 class CheeseRecyclerViewFragment : Fragment() {
 
