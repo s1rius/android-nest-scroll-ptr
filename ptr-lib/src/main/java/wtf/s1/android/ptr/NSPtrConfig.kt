@@ -14,4 +14,24 @@ interface NSPtrConfig {
 
     fun pullFriction(type: Int): Float = 0.56f
 
+    fun generateTouchReleaseEvent(): NSPtrLayout.Event? {
+        return when (getLayout().stateMachine.state) {
+            is NSPtrLayout.State.DRAG -> {
+                if (overToRefreshPosition()) {
+                    NSPtrLayout.Event.ReleaseToRefreshing
+                } else {
+                    NSPtrLayout.Event.ReleaseToIdle
+                }
+            }
+            is NSPtrLayout.State.REFRESHING -> {
+                if (!overToRefreshPosition()) {
+                    NSPtrLayout.Event.ReleaseToIdle
+                } else {
+                    null
+                }
+            }
+            else -> null
+        }
+    }
+
 }

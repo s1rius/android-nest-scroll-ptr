@@ -69,7 +69,7 @@ open class NSPtrLayout @JvmOverloads constructor(
         object OnComplete : SideEffect()
     }
 
-    private var stateMachine =
+    var stateMachine =
         StateMachine.create<State, Event, SideEffect> {
             initialState(State.IDLE)
 
@@ -84,6 +84,9 @@ open class NSPtrLayout @JvmOverloads constructor(
 
             state<State.REFRESHING> {
                 on<Event.RefreshComplete> {
+                    transitionTo(State.IDLE, SideEffect.OnComplete)
+                }
+                on<Event.ReleaseToIdle> {
                     transitionTo(State.IDLE, SideEffect.OnComplete)
                 }
             }
@@ -504,25 +507,29 @@ open class NSPtrLayout @JvmOverloads constructor(
         return (force * config.pullFriction(touchType)).toInt()
     }
 
-    private fun onRelease() {
-        when (stateMachine.state) {
-            is State.IDLE -> {
-                if (contentTopPosition != config.startPosition()) {
+    private fun onRelease(isNestedScroll: Boolean = false) {
+        val event = config.generateTouchReleaseEvent()
+        // NestScroll release will call after touch release
+        // so wait the touch release execute
+        // FIXME
+        if (isNestedScroll || event == null) {
+            when (stateMachine.state) {
+                is State.IDLE -> {
+                    if (contentTopPosition != config.startPosition()) {
+                        mScrollChecker.scrollToStart()
+                    }
+                }
+                is State.DRAG -> {
                     mScrollChecker.scrollToStart()
                 }
-            }
-            is State.DRAG -> {
-                if (config.overToRefreshPosition()) {
-                    stateMachine.transition(Event.ReleaseToRefreshing)
-                } else {
-                    stateMachine.transition(Event.ReleaseToIdle)
+                is State.REFRESHING -> {
+                    if (isOverToRefreshPosition) {
+                        mScrollChecker.scrollToRefreshing()
+                    }
                 }
             }
-            is State.REFRESHING -> {
-                if (isOverToRefreshPosition) {
-                    mScrollChecker.scrollToRefreshing()
-                }
-            }
+        } else {
+            stateMachine.transition(event)
         }
     }
 
@@ -928,9 +935,9 @@ open class NSPtrLayout @JvmOverloads constructor(
             mInVerticalNestedScrollTouch = false
         }
 
-        if (type == ViewCompat.TYPE_NON_TOUCH) {
-            onRelease()
-        } else {
+        onRelease(true)
+        // reset touch location
+        if (type == ViewCompat.TYPE_TOUCH) {
             mLastTouch.set(-1f, -1f)
         }
     }
