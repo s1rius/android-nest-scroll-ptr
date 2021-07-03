@@ -86,9 +86,6 @@ open class NSPtrLayout @JvmOverloads constructor(
                 on<Event.RefreshComplete> {
                     transitionTo(State.IDLE, SideEffect.OnComplete)
                 }
-                onEnter {
-                    performRefresh()
-                }
             }
 
             state<State.DRAG> {
@@ -113,6 +110,7 @@ open class NSPtrLayout @JvmOverloads constructor(
                         notifyUIRefreshComplete()
                     }
                     SideEffect.OnRefreshing -> {
+                        performRefresh()
                     }
                     SideEffect.OnCancelToIdle -> {
                         tryScrollBackToTop()
