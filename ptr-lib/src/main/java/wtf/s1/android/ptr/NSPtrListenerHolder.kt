@@ -52,10 +52,4 @@ internal class NSPtrListenerHolder: NSPtrListener {
             listener.onTransition(ptrLayout, transition)
         }
     }
-
-    override fun onEvent(event: NSPtrLayout.Event) {
-        for (listener in listeners) {
-            listener.onEvent(event)
-        }
-    }
 }

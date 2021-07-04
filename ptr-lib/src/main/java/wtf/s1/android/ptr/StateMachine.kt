@@ -31,7 +31,6 @@ class StateMachine<STATE : Any, EVENT : Any, SIDE_EFFECT : Any> private construc
                 }
             }
         }
-        notifyEvent(event)
         return transition
     }
 
@@ -66,10 +65,6 @@ class StateMachine<STATE : Any, EVENT : Any, SIDE_EFFECT : Any> private construc
         graph.onTransitionListeners.forEach { it(this) }
     }
 
-    private fun notifyEvent(case: EVENT) {
-        graph.onEventListener?.invoke(case)
-    }
-
     @Suppress("UNUSED")
     sealed class Transition<out STATE : Any, out EVENT : Any, out SIDE_EFFECT : Any> {
         abstract val fromState: STATE
@@ -92,7 +87,6 @@ class StateMachine<STATE : Any, EVENT : Any, SIDE_EFFECT : Any> private construc
         val initialState: STATE,
         val stateDefinitions: Map<Matcher<STATE, STATE>, State<STATE, EVENT, SIDE_EFFECT>>,
         val onTransitionListeners: List<(Transition<STATE, EVENT, SIDE_EFFECT>) -> Unit>,
-        val onEventListener: ((event: EVENT) -> Unit)?
     ) {
 
         class State<STATE : Any, EVENT : Any, SIDE_EFFECT : Any> internal constructor() {
@@ -135,7 +129,6 @@ class StateMachine<STATE : Any, EVENT : Any, SIDE_EFFECT : Any> private construc
         private var initialState = graph?.initialState
         private val stateDefinitions = LinkedHashMap(graph?.stateDefinitions ?: emptyMap())
         private val onTransitionListeners = ArrayList(graph?.onTransitionListeners ?: emptyList())
-        private var onEventListener = graph?.onEventListener
 
         fun initialState(initialState: STATE) {
             this.initialState = initialState
@@ -160,12 +153,8 @@ class StateMachine<STATE : Any, EVENT : Any, SIDE_EFFECT : Any> private construc
             onTransitionListeners.add(listener)
         }
 
-        fun onEvent(listener: ((event: EVENT) -> Unit)) {
-            onEventListener = listener
-        }
-
         fun build(): Graph<STATE, EVENT, SIDE_EFFECT> {
-            return Graph(requireNotNull(initialState), stateDefinitions.toMap(), onTransitionListeners.toList(), onEventListener)
+            return Graph(requireNotNull(initialState), stateDefinitions.toMap(), onTransitionListeners.toList())
         }
 
         inner class StateDefinitionBuilder<S : STATE> {
@@ -199,6 +188,7 @@ class StateMachine<STATE : Any, EVENT : Any, SIDE_EFFECT : Any> private construc
                 return on(eq(event), createTransitionTo)
             }
 
+            @Suppress("UNUSED")
             fun onEnter(listener: S.(EVENT) -> Unit) = with(stateDefinition) {
                 onEnterListeners.add { state, cause ->
                     @Suppress("UNCHECKED_CAST")
@@ -206,6 +196,7 @@ class StateMachine<STATE : Any, EVENT : Any, SIDE_EFFECT : Any> private construc
                 }
             }
 
+            @Suppress("UNUSED")
             fun onExit(listener: S.(EVENT) -> Unit) = with(stateDefinition) {
                 onExitListeners.add { state, cause ->
                     @Suppress("UNCHECKED_CAST")

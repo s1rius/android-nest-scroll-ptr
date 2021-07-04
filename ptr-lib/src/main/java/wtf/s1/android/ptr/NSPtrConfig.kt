@@ -2,7 +2,7 @@ package wtf.s1.android.ptr
 
 interface NSPtrConfig {
 
-    fun getLayout(): NSPtrLayout
+    fun requireLayout(): NSPtrLayout
 
     fun startPosition(): Int = 0
 
@@ -15,7 +15,7 @@ interface NSPtrConfig {
     fun pullFriction(type: Int): Float = 0.56f
 
     fun generateTouchReleaseEvent(): NSPtrLayout.Event? {
-        return when (getLayout().stateMachine.state) {
+        return when (requireLayout().stateMachine.state) {
             is NSPtrLayout.State.DRAG -> {
                 if (overToRefreshPosition()) {
                     NSPtrLayout.Event.ReleaseToRefreshing

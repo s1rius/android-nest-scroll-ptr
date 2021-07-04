@@ -2,7 +2,6 @@ package wtf.s1.android.ptr.demo
 
 import android.content.Context
 import android.graphics.Color
-import android.net.nsd.NsdManager
 import android.util.AttributeSet
 import android.view.Gravity
 import android.widget.FrameLayout
@@ -52,20 +51,20 @@ class WeChatMainView @JvmOverloads constructor(
 
                 config = object: NSPtrConfig {
 
-                    override fun getLayout(): NSPtrLayout {
+                    override fun requireLayout(): NSPtrLayout {
                         return this@apply
                     }
 
                     override fun refreshPosition(): Int {
-                        return getLayout().height - 80.dp
+                        return requireLayout().height - 80.dp
                     }
 
                     override fun overToRefreshPosition(): Boolean {
-                        return getLayout().contentTopPosition > 20.dp
+                        return requireLayout().contentTopPosition > 20.dp
                     }
 
                     override fun generateTouchReleaseEvent(): NSPtrLayout.Event? {
-                        if (getLayout().stateMachine.state == NSPtrLayout.State.REFRESHING) {
+                        if (requireLayout().stateMachine.state == NSPtrLayout.State.REFRESHING) {
                             return NSPtrLayout.Event.ReleaseToIdle
                         }
                         return super.generateTouchReleaseEvent()

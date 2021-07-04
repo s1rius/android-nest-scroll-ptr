@@ -121,10 +121,6 @@ open class NSPtrLayout @JvmOverloads constructor(
                 }
                 mPtrListenerHolder.onTransition(this@NSPtrLayout, it)
             }
-
-            onEvent {
-                mPtrListenerHolder.onEvent(it)
-            }
         }
 
     private val ptrId = "ptr-frame-" + ++ID
@@ -132,7 +128,7 @@ open class NSPtrLayout @JvmOverloads constructor(
 
     var config = object :NSPtrConfig {
 
-        override fun getLayout(): NSPtrLayout {
+        override fun requireLayout(): NSPtrLayout {
             return this@NSPtrLayout
         }
 
@@ -269,6 +265,7 @@ open class NSPtrLayout @JvmOverloads constructor(
         layoutChildren(l, t, r, b)
     }
 
+    @SuppressLint("RtlHardcoded")
     private fun layoutChildren(l: Int, t: Int, r: Int, b: Int) {
         val offset = contentTopPosition
         val parentLeft: Int = paddingLeft
@@ -281,51 +278,55 @@ open class NSPtrLayout @JvmOverloads constructor(
             val child = getChildAt(i)
             if (child.visibility != GONE) {
 
-                if (child === contentView) {
-                    val lp = child.layoutParams as MarginLayoutParams
-                    val left = paddingLeft + lp.leftMargin
-                    val top = paddingTop + lp.topMargin + offset
-                    val right = left + child.measuredWidth
-                    val bottom = top + child.measuredHeight
-                    child.layout(left, top, right, bottom)
-                } else if (child is NSPtrComponent) {
-                    child.ptrLayout(this)
-                } else {
-                    val lp = child.layoutParams as FrameLayout.LayoutParams
-                    val width = child.measuredWidth
-                    val height = child.measuredHeight
-                    var childLeft: Int
-                    var childTop: Int
-                    var gravity = lp.gravity
-                    if (gravity == -1) {
-                        gravity = Gravity.START or Gravity.TOP
+                when {
+                    child === contentView -> {
+                        val lp = child.layoutParams as MarginLayoutParams
+                        val left = paddingLeft + lp.leftMargin
+                        val top = paddingTop + lp.topMargin + offset
+                        val right = left + child.measuredWidth
+                        val bottom = top + child.measuredHeight
+                        child.layout(left, top, right, bottom)
                     }
+                    child is NSPtrComponent -> {
+                        child.ptrLayout(this)
+                    }
+                    else -> {
+                        val lp = child.layoutParams as FrameLayout.LayoutParams
+                        val width = child.measuredWidth
+                        val height = child.measuredHeight
+                        var childLeft: Int
+                        var childTop: Int
+                        var gravity = lp.gravity
+                        if (gravity == -1) {
+                            gravity = Gravity.START or Gravity.TOP
+                        }
 
-                    val absoluteGravity =
-                        Gravity.getAbsoluteGravity(gravity, ViewCompat.getLayoutDirection(this))
-                    val verticalGravity = gravity and Gravity.VERTICAL_GRAVITY_MASK
-                    childLeft = when (absoluteGravity and Gravity.HORIZONTAL_GRAVITY_MASK) {
-                        Gravity.CENTER_HORIZONTAL ->
-                            (paddingLeft
-                                    + (parentRight - parentLeft - width) / 2
-                                    + lp.leftMargin
-                                    - lp.rightMargin)
-                        Gravity.RIGHT ->
-                            parentRight - width - lp.rightMargin
-                        Gravity.LEFT ->
-                            parentLeft + lp.leftMargin
-                        else ->
-                            parentLeft + lp.leftMargin
+                        val absoluteGravity =
+                            GravityCompat.getAbsoluteGravity(gravity, ViewCompat.getLayoutDirection(this))
+                        val verticalGravity = gravity and Gravity.VERTICAL_GRAVITY_MASK
+                        childLeft = when (absoluteGravity and Gravity.HORIZONTAL_GRAVITY_MASK) {
+                            Gravity.CENTER_HORIZONTAL ->
+                                (paddingLeft
+                                        + (parentRight - parentLeft - width) / 2
+                                        + lp.leftMargin
+                                        - lp.rightMargin)
+                            Gravity.RIGHT ->
+                                parentRight - width - lp.rightMargin
+                            Gravity.LEFT ->
+                                parentLeft + lp.leftMargin
+                            else ->
+                                parentLeft + lp.leftMargin
+                        }
+                        childTop = when (verticalGravity) {
+                            Gravity.TOP -> parentTop + lp.topMargin
+                            Gravity.CENTER_VERTICAL -> (parentTop
+                                    + (parentBottom - parentTop - height) / 2
+                                    + lp.topMargin - lp.bottomMargin)
+                            Gravity.BOTTOM -> parentBottom - height - lp.bottomMargin
+                            else -> parentTop + lp.topMargin
+                        }
+                        child.layout(childLeft, childTop, childLeft + width, childTop + height)
                     }
-                    childTop = when (verticalGravity) {
-                        Gravity.TOP -> parentTop + lp.topMargin
-                        Gravity.CENTER_VERTICAL -> (parentTop
-                                + (parentBottom - parentTop - height) / 2
-                                + lp.topMargin - lp.bottomMargin)
-                        Gravity.BOTTOM -> parentBottom - height - lp.bottomMargin
-                        else -> parentTop + lp.topMargin
-                    }
-                    child.layout(childLeft, childTop, childLeft + width, childTop + height)
                 }
             }
         }

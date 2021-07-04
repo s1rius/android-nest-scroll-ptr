@@ -19,7 +19,7 @@ interface NSPtrListener {
     fun onComplete(ptrLayout: NSPtrLayout) {}
 
     /**
-     *
+     * when state transition happen
      */
     fun onTransition(ptrLayout: NSPtrLayout, transition: StateMachine.Transition.Valid<NSPtrLayout.State, NSPtrLayout.Event, NSPtrLayout.SideEffect>) {
         when (transition.toState) {
@@ -37,10 +37,8 @@ interface NSPtrListener {
         }
     }
 
-    fun onEvent(event: NSPtrLayout.Event) {}
-
     /**
-     *
+     * drag the content view and move it
      */
     fun onPositionChange(frame: NSPtrLayout, offset: Int) {}
 }

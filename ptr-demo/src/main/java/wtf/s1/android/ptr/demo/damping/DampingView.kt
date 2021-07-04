@@ -42,10 +42,10 @@ class DampingView @JvmOverloads constructor(
         addView(
             SwipeToRefreshLayout(context).apply {
                 config = object : NSPtrConfig {
-                    override fun getLayout(): NSPtrLayout = this@apply
+                    override fun requireLayout(): NSPtrLayout = this@apply
                     override fun overToRefreshPosition(): Boolean = false
                     override fun refreshPosition(): Int = Int.MAX_VALUE
-                    override fun atStartPosition(): Boolean = getLayout().contentTopPosition == 0
+                    override fun atStartPosition(): Boolean = requireLayout().contentTopPosition == 0
                     override fun pullFriction(type: Int): Float =
                         if (type == ViewCompat.TYPE_TOUCH) 0.8f else 2f
                 }
