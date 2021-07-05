@@ -17,9 +17,10 @@
 package wtf.s1.android.ptr.demo.md
 
 import android.os.Bundle
+import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
-import kotlinx.android.synthetic.main.activity_detail.*
+import com.google.android.material.appbar.CollapsingToolbarLayout
 import wtf.s1.android.ptr.demo.SwipeToRefreshLayout
 import wtf.s1.android.ptr_support_design.R
 
@@ -32,21 +33,25 @@ class CheeseDetailActivity : AppCompatActivity() {
         val intent = intent
         val cheeseName = intent.getStringExtra(EXTRA_NAME)
 
-        setSupportActionBar(toolbar)
-        supportActionBar!!.setDisplayHomeAsUpEnabled(true)
+        setSupportActionBar(findViewById(R.id.toolbar))
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        collapsing_toolbar.title = cheeseName
-        ptr_layout.setPTRListener(object: SwipeToRefreshLayout.OnPtrRefreshListener {
-            override fun onRefresh() {
-                ptr_layout.postDelayed({ ptr_layout.isRefreshing = false }, 3000)
-            }
-        })
+        findViewById<CollapsingToolbarLayout>(R.id.collapsing_toolbar).title = cheeseName
+        findViewById<SwipeToRefreshLayout>(R.id.ptr_layout).let {
+            it.setPTRListener(object: SwipeToRefreshLayout.OnPtrRefreshListener {
+                override fun onRefresh() {
+                    it.postDelayed({ it.isRefreshing = false }, 3000)
+                }
+            })
+        }
 
         loadBackdrop()
     }
 
     private fun loadBackdrop() {
-        Glide.with(this).load(Cheeses.randomCheeseDrawable).centerCrop().into(backdrop)
+        findViewById<ImageView>(R.id.backdrop)?.let {
+            Glide.with(this).load(Cheeses.randomCheeseDrawable).centerCrop().into(it)
+        }
     }
 
     companion object {

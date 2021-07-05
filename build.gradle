@@ -13,6 +13,8 @@ buildscript {
         classpath ClassPaths.gradlePlugin
         classpath ClassPaths.bytex
         classpath ClassPaths.hugoByteX
+        classpath ClassPaths.mavenPlugin
+        classpath ClassPaths.dokaa
     }
 }
 

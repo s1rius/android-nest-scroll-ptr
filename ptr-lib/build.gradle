@@ -2,6 +2,7 @@ import wtf.s1rius.ptr.buildsrc.*
 
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
+apply plugin: "com.vanniktech.maven.publish"
 
 
 android {
@@ -26,3 +27,6 @@ dependencies {
     implementation Deps.AndroidX.Core.ktx
     implementation Deps.AndroidX.appcompat
 }
+
+version = VERSION_NAME
+group = GROUP
