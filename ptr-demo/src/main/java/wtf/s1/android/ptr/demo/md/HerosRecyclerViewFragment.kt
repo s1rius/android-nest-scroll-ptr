@@ -23,15 +23,18 @@ import android.view.LayoutInflater
 import android.widget.FrameLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.drakeet.multitype.MultiTypeAdapter
+import wtf.s1.android.ptr.demo.DotaList
+import wtf.s1.android.ptr.demo.Post
+import wtf.s1.android.ptr.demo.SimpleItemDelegate
 import wtf.s1.android.ptr.demo.SwipeToRefreshLayout
 import wtf.s1.android.ptr_support_design.R
-import java.util.*
 
-class CheeseRecyclerViewFragment @JvmOverloads constructor(
+class HerosRecyclerViewFragment @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
 ) : FrameLayout(context, attrs) {
 
-    lateinit var mRefreshLayout: SwipeToRefreshLayout
+    var mRefreshLayout: SwipeToRefreshLayout
 
     init {
         LayoutInflater.from(context).inflate(
@@ -53,17 +56,10 @@ class CheeseRecyclerViewFragment @JvmOverloads constructor(
 
     private fun setupRecyclerView(recyclerView: RecyclerView) {
         recyclerView.layoutManager = LinearLayoutManager(recyclerView.context)
-        recyclerView.adapter = SimpleStringRecyclerViewAdapter(context,
-                getRandomSublist(Cheeses.sCheeseStrings, 30))
-    }
-
-    private fun getRandomSublist(array: Array<String>, amount: Int): List<String> {
-        val list = ArrayList<String>(amount)
-        val random = Random()
-        while (list.size < amount) {
-            list.add(array[random.nextInt(array.size)])
+        val currentAdapter = MultiTypeAdapter(arrayListOf<Post>()).apply {
+            register(SimpleItemDelegate())
+            items = DotaList
         }
-        return list
+        recyclerView.adapter = currentAdapter
     }
-
 }

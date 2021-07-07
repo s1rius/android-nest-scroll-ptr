@@ -17,4 +17,5 @@
 
 <resources>
     <color name="window_background">#FFF5F5F5</color>
+    <color name="gray">#2B2B2B</color>
 </resources>

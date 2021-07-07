@@ -52,7 +52,7 @@ class MDPtrView @JvmOverloads constructor(
 
                 override fun instantiateItem(container: ViewGroup, position: Int): Any {
                     val v = when (position) {
-                        0 -> CheeseRecyclerViewFragment(context)
+                        0 -> HerosRecyclerViewFragment(context)
                         1 -> TextFragment(context)
                         2 -> WebFragment(context)
                         else -> View(context)

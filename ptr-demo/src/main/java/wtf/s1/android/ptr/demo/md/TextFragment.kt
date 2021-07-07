@@ -4,8 +4,13 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.FrameLayout
+import android.widget.TextView
 import wtf.s1.android.ptr.demo.SwipeToRefreshLayout
 import wtf.s1.android.ptr_support_design.R
+import android.text.method.ScrollingMovementMethod
+
+
+
 
 class TextFragment @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
@@ -22,5 +27,6 @@ class TextFragment @JvmOverloads constructor(
                 }
             })
         }
+        findViewById<TextView>(R.id.wiki).movementMethod = ScrollingMovementMethod()
     }
 }

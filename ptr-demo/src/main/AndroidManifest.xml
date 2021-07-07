@@ -22,7 +22,7 @@
         </activity>
 
         <activity
-            android:name="wtf.s1.android.ptr.demo.md.CheeseDetailActivity"
+            android:name="wtf.s1.android.ptr.demo.md.TiDetailActivity"
             android:parentActivityName="wtf.s1.android.ptr.demo.MainActivity"
             android:theme="@style/Theme.DesignDemo">
             <meta-data

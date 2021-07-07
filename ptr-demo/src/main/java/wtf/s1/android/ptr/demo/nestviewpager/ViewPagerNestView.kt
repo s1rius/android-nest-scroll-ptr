@@ -60,12 +60,7 @@ class ViewPagerNestView @JvmOverloads constructor(
                 }) {}
             }
 
-            override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-                val simpleView = holder.itemView
-                if (simpleView is SimpleTextListView) {
-                    simpleView.count = position * 10 + 1
-                }
-            }
+            override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {}
 
             override fun getItemCount(): Int = 10
         }

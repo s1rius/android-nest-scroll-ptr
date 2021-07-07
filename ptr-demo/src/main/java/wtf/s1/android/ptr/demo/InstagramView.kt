@@ -33,9 +33,7 @@ class InstagramView @JvmOverloads constructor(
         addView(
             NSPtrEZLayout(context).apply {
                 addView(
-                    SimpleTextListView(context).apply {
-                        count = 100
-                    },
+                    SimpleTextListView(context),
                     NSPtrLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
                 )
 

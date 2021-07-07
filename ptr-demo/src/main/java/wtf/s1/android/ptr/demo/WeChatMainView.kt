@@ -3,6 +3,7 @@ package wtf.s1.android.ptr.demo
 import android.content.Context
 import android.graphics.Color
 import android.util.AttributeSet
+import android.util.TypedValue
 import android.view.Gravity
 import android.widget.FrameLayout
 import android.widget.LinearLayout
@@ -11,6 +12,7 @@ import androidx.core.view.updatePadding
 import wtf.s1.android.ptr.NSPtrConfig
 import wtf.s1.android.ptr.NSPtrLayout
 import wtf.s1.android.ptr.demo.util.dp
+import wtf.s1.android.ptr_support_design.R
 
 class WeChatMainView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
@@ -26,9 +28,9 @@ class WeChatMainView @JvmOverloads constructor(
                         addView(
                             TextView(context).apply {
                                 setTextColor(Color.BLACK)
-                                text = "WeChat"
+                                text = context.getString(R.string.wechat)
+                                setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
                                 updatePadding(left = 12.dp)
-                                textSize = 12.dp.toFloat()
                                 gravity = Gravity.CENTER
                             },
                             LinearLayout.LayoutParams(
@@ -37,9 +39,7 @@ class WeChatMainView @JvmOverloads constructor(
                             )
                         )
                         addView(
-                            SimpleTextListView(context).apply {
-                                count = 100
-                            },
+                            SimpleTextListView(context),
                             LinearLayout.LayoutParams(
                                 LayoutParams.MATCH_PARENT,
                                 LayoutParams.MATCH_PARENT
@@ -55,11 +55,11 @@ class WeChatMainView @JvmOverloads constructor(
                         return this@apply
                     }
 
-                    override fun refreshPosition(): Int {
+                    override fun contentRefreshPosition(): Int {
                         return requireLayout().height - 80.dp
                     }
 
-                    override fun overToRefreshPosition(): Boolean {
+                    override fun isContentOverRefreshPosition(): Boolean {
                         return requireLayout().contentTopPosition > 20.dp
                     }
 

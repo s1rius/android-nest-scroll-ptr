@@ -21,22 +21,20 @@ import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.google.android.material.appbar.CollapsingToolbarLayout
+import wtf.s1.android.ptr.demo.RandomDrawable
 import wtf.s1.android.ptr.demo.SwipeToRefreshLayout
 import wtf.s1.android.ptr_support_design.R
 
-class CheeseDetailActivity : AppCompatActivity() {
+class TiDetailActivity : AppCompatActivity() {
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_detail)
 
-        val intent = intent
-        val cheeseName = intent.getStringExtra(EXTRA_NAME)
-
         setSupportActionBar(findViewById(R.id.toolbar))
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        findViewById<CollapsingToolbarLayout>(R.id.collapsing_toolbar).title = cheeseName
+        findViewById<CollapsingToolbarLayout>(R.id.collapsing_toolbar).title = "TI News"
         findViewById<SwipeToRefreshLayout>(R.id.ptr_layout).let {
             it.setPTRListener(object: SwipeToRefreshLayout.OnPtrRefreshListener {
                 override fun onRefresh() {
@@ -50,11 +48,7 @@ class CheeseDetailActivity : AppCompatActivity() {
 
     private fun loadBackdrop() {
         findViewById<ImageView>(R.id.backdrop)?.let {
-            Glide.with(this).load(Cheeses.randomCheeseDrawable).centerCrop().into(it)
+            Glide.with(this).load(RandomDrawable).centerCrop().into(it)
         }
-    }
-
-    companion object {
-        const val EXTRA_NAME = "cheese_name"
     }
 }

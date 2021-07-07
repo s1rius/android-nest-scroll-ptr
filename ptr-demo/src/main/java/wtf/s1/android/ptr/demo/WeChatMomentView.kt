@@ -3,9 +3,11 @@ package wtf.s1.android.ptr.demo
 import android.content.Context
 import android.graphics.Color
 import android.util.AttributeSet
+import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
 import android.widget.FrameLayout
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -16,6 +18,7 @@ import wtf.s1.android.ptr.NSPtrHeader
 import wtf.s1.android.ptr.NSPtrLayout
 import wtf.s1.android.ptr.NSPtrListener
 import wtf.s1.android.ptr.demo.util.dp
+import wtf.s1.android.ptr.demo.util.screenRectPx
 import wtf.s1.android.ptr_support_design.R
 
 class WeChatMomentView @JvmOverloads constructor(
@@ -25,23 +28,18 @@ class WeChatMomentView @JvmOverloads constructor(
     companion object {
 
         class Avatar
-        class Moment
 
-        val list = arrayListOf(
+        val list = arrayListOf<Any>(
             Avatar(),
-            Moment(),
-            Moment(),
-            Moment(),
-            Moment(),
-            Moment(),
-            Moment(),
-        )
+        ).apply {
+            addAll(DotaList)
+        }
     }
 
-    lateinit var avatarView: View
+    var avatarView: View
 
     init {
-        setBackgroundColor(Color.WHITE)
+        setBackgroundResource(R.color.gray)
         addView(
             NSPtrLayout(context).apply {
                 addView(
@@ -63,7 +61,7 @@ class WeChatMomentView @JvmOverloads constructor(
                             register(MomentBodyDelegate())
                         }
 
-                        addOnScrollListener(object: RecyclerView.OnScrollListener() {
+                        addOnScrollListener(object : RecyclerView.OnScrollListener() {
                             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                                 super.onScrolled(recyclerView, dx, dy)
                                 avatarView.offsetTopAndBottom(-dy)
@@ -87,7 +85,7 @@ class WeChatMomentView @JvmOverloads constructor(
     ) : androidx.appcompat.widget.AppCompatImageView(context, attrs), NSPtrHeader, NSPtrListener {
 
         init {
-            setImageResource(R.mipmap.ic_launcher)
+            setImageResource(R.drawable.bg)
         }
 
         override fun prtMeasure(
@@ -103,10 +101,10 @@ class WeChatMomentView @JvmOverloads constructor(
                 lp.width
             )
             val childHeightMeasureSpec = getChildMeasureSpec(
-                parentHeightMeasureSpec,
+                parentWidthMeasureSpec,
                 (ptrLayout.paddingTop + ptrLayout.paddingBottom
                         + lp.topMargin + lp.bottomMargin),
-                190.dp
+                lp.width
             )
 
             measure(childWidthMeasureSpec, childHeightMeasureSpec)
@@ -116,7 +114,7 @@ class WeChatMomentView @JvmOverloads constructor(
             val p = ptrLayout.contentTopPosition
             val lp = layoutParams as NSPtrLayout.LayoutParams
             val left = ptrLayout.paddingLeft + lp.leftMargin
-            val top = lp.topMargin + ptrLayout.paddingTop - 40.dp + p
+            val top = lp.topMargin + ptrLayout.paddingTop - (measuredHeight / 2) + p
             val right = left + measuredWidth
             val bottom = top + measuredHeight
             layout(left, top, right, bottom)
@@ -133,15 +131,15 @@ class WeChatMomentView @JvmOverloads constructor(
 
         init {
             addView(View(context).apply {
-                setBackgroundColor(Color.GRAY)
-            }, LayoutParams(LayoutParams.MATCH_PARENT, 12.dp).apply {
+                setBackgroundResource(R.color.gray)
+            }, LayoutParams(LayoutParams.MATCH_PARENT, 26.dp).apply {
                 gravity = Gravity.BOTTOM
             })
             addView(AppCompatImageView(context).apply {
-                setImageResource(R.mipmap.ic_launcher)
-            }, LayoutParams(50.dp, 50.dp).apply {
+                setImageResource(R.drawable.pudge)
+            }, LayoutParams(80.dp, 80.dp).apply {
                 gravity = Gravity.BOTTOM or Gravity.END
-                setMargins(0, 0, 12, 0)
+                setMargins(0, 0, 40, 0)
             })
         }
     }
@@ -151,7 +149,10 @@ class WeChatMomentView @JvmOverloads constructor(
 
         override fun onCreateView(context: Context): MomentHeader {
             return MomentHeader(context).apply {
-                layoutParams = RecyclerView.LayoutParams(LayoutParams.MATCH_PARENT, 162.dp)
+                layoutParams = RecyclerView.LayoutParams(
+                    LayoutParams.MATCH_PARENT,
+                    screenRectPx.width() / 2
+                )
             }
         }
     }
@@ -160,30 +161,54 @@ class WeChatMomentView @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null
     ) : FrameLayout(context, attrs) {
 
+        var imageView: ImageView
+        var nameView: TextView
+        var picView: ImageView
+        var textView: TextView
+
         init {
-            setBackgroundColor(Color.GRAY)
-            setPadding(8.dp, 8.dp, 8.dp, 8.dp)
+            setPadding(12.dp, 8.dp, 22.dp, 8.dp)
             addView(AppCompatImageView(context).apply {
-                setImageResource(R.mipmap.ic_launcher)
-            }, LayoutParams(30.dp, 30.dp))
+                imageView = this
+            }, LayoutParams(50.dp, 50.dp))
 
             addView(TextView(context).apply {
-                text = "Jack"
-            }, LayoutParams(LayoutParams.WRAP_CONTENT, 30.dp).apply {
-                setMargins(38.dp, 0, 0, 0)
+                nameView = this
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
+                setTextColor(Color.WHITE)
+            }, LayoutParams(LayoutParams.MATCH_PARENT, 30.dp).apply {
+                setMargins(58.dp, 8.dp, 0, 0)
+            })
+
+            addView(TextView(context).apply {
+                textView = this
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+                setTextColor(Color.WHITE)
+            }, LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT).apply {
+                setMargins(58.dp, 46.dp, 0, 0)
             })
 
             addView(AppCompatImageView(context).apply {
+                picView = this
                 setImageResource(R.mipmap.ic_launcher)
             }, LayoutParams(100.dp, 100.dp).apply {
-                setMargins(38.dp, 28.dp, 0, 0)
+                setMargins(58.dp, 34.dp, 0, 0)
             })
+        }
+
+        fun bind(post: Post) {
+            nameView.text = resources.getString(post.name)
+            imageView.setImageResource(post.avatar)
+            textView.setText(post.text)
+            picView.visibility = View.GONE
         }
 
     }
 
-    class MomentBodyDelegate : ViewDelegate<Moment, MomentBody>() {
-        override fun onBindView(view: MomentBody, item: Moment) {}
+    class MomentBodyDelegate : ViewDelegate<Post, MomentBody>() {
+        override fun onBindView(view: MomentBody, item: Post) {
+            view.bind(item)
+        }
 
         override fun onCreateView(context: Context): MomentBody {
             return MomentBody(context).apply {

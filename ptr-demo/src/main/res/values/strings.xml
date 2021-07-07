@@ -18,17 +18,56 @@
 <resources>
     <string name="app_name">Cheesesquare</string>
 
-  <string name="cheese_ipsum">Jarlsberg lancashire edam. Dolcelatte hard cheese brie st. agur blue
-    cheese caerphilly bavarian bergkase cheese and biscuits mascarpone. Cheeseburger swiss bavarian
-    bergkase cream cheese fromage frais cheesy feet port-salut airedale. St. agur blue cheese rubber
-    cheese caerphilly cheddar cheesecake cream cheese manchego lancashire. Roquefort squirty cheese
-    the big cheese.</string>
-  <string name="checkin">Checkin</string>
-
-  <string name="menu_night_mode">Night mode</string>
-  <string name="menu_night_mode_system">Follow system</string>
-  <string name="menu_night_mode_day">Day (always)</string>
-  <string name="menu_night_mode_night">Night (always)</string>
-  <string name="menu_night_mode_auto">Auto</string>
+  <string name="news1">We are thrilled to announce The International 10 - Dota 2 Championships will be held this October in Bucharest, Romania, and the epic battle for the Aegis of Champions will fittingly unfold inside the country\'s largest stadium — Arena Nationala.</string>
+    <string name="news2">Group Stage will run October 7 – 10, with Main Stage play kicking off on October 12. Then on October 17, the two finest Dota 2 teams in the world will face off for the Aegis and their shares of the $40,018,195 prize pool that awaits. Additional information on ticket sales will come shortly.</string>
+    <string name="news3">We are grateful for the partnership we have formed with Romania and the city of Bucharest, and very much look forward to gathering with the global Dota 2 community, both in-person and virtually, to celebrate the elite players and amazing fandom at The International. Prepare yourselves. At long last, the battle begins.</string>
+    
+    <string name="eldertitan_line">It is only right that I am cast into this world for I had a hand in breaking it.</string>
+    <string name="undying_line">Where go the living, the dead soon follow.</string>
+    <string name="ns_line">Day walker, night stalker.</string>
+    <string name="ns">Night Stalker</string>
+    <string name="pl">Phantom Lancer</string>
+    <string name="pl_line">Another is always ready.</string>
+    <string name="clinkz">Clinkz</string>
+    <string name="clinkz_line">Better to run than curse the road.</string>
+    <string name="bm">Beast Master</string>
+    <string name="bm_line">Your elements return to nature.</string>
+    <string name="huskar">Huskar</string>
+    <string name="huskar_line">I am danche!</string>
+    <string name="batrider">Bat Rider</string>
+    <string name="batrider_line">Always a pleasure being stalked by the Templar Assassin.</string>
+    <string name="ck">Chaos Knight</string>
+    <string name="ck_line">The light shall be blackened and chaos shall reign.</string>
+    <string name="brewmaster">Brew Master</string>
+    <string name="brewmaster_line">Drink and be bleary, for tomorrow we die.</string>
+    <string name="na">Nyx Assassin</string>
+    <string name="na_line">Nyx, Nyx, my words enter the mind, but not the ear.</string>
+    <string name="nevermore">Shadow Fiend</string>
+    <string name="nevermore_line">Your soul is mine</string>
+    <string name="am">Anti-Mage</string>
+    <string name="am_line">They who live by the wand shall die by my blade.</string>
+    <string name="mirana">Mirana</string>
+    <string name="mirana_line">My pet thanks you.</string>
+    <string name="fv">Faceless Void</string>
+    <string name="fv_line">I have seen the future; you\'re not in it.</string>
+    <string name="grimstroke">Grimstroke</string>
+    <string name="grimstroke_line">I\'ll paint this world as I see fit.</string>
+    <string name="rubick">Rubick</string>
+    <string name="rubick_line">I am no thief. I merely borrow</string>
+    <string name="invoker">Invoker</string>
+    <string name="invoker_line">I am a beacon of knowledge blazing out across a black sea of ignorance.</string>
+    <string name="slardar">Slardar</string>
+    <string name="slardar_line">I came a long way to see you die.</string>
+    <string name="tw">Troll Warlord</string>
+    <string name="tw_line">There are no innocents!</string>
+    <string name="bh">Bounty Hunter</string>
+    <string name="bh_line">It was just business before. Now it\'s personal.</string>
+    <string name="zeus">Zeus</string>
+    <string name="zeus_line">Man proposes, God disposes.</string>
+    <string name="eldertitan">Elder Titan</string>
+    <string name="undying">Undying</string>
+    <string name="pudge">Pudge</string>
+    <string name="dotawiki">Dota 2 is a multiplayer online battle arena (MOBA) video game developed and published by Valve. The game is a sequel to Defense of the Ancients (DotA), which was a community-created mod for Blizzard Entertainment\'s Warcraft III: Reign of Chaos. Dota 2 is played in matches between two teams of five players, with each team occupying and defending their own separate base on the map. Each of the ten players independently controls a powerful character, known as a \"hero\", who all have unique abilities and differing styles of play. During a match players collect experience points and items for their heroes to successfully defeat the opposing team\'s heroes in player versus player combat. A team wins by being the first to destroy the other team\'s \"Ancient\", a large structure located within their base.  Development of Dota 2 began in 2009 when IceFrog, lead designer of Defense of the Ancients, was hired by Valve to create a modernized remake for them in the Source game engine. It was released for Microsoft Windows, OS X, and Linux via the digital distribution platform Steam in July 2013, following a Windows-only open beta phase that began two years prior. The game is fully free-to-play with no heroes or any other gameplay element needing to be bought or otherwise unlocked. To maintain it, Valve supports the game as a service, selling loot boxes and a battle pass subscription system called Dota Plus that offer non-gameplay altering virtual goods in return, such as hero cosmetics and audio replacement packs. The game has also been updated with various other features since release, such as a port to the Source 2 engine and support for virtual reality.  Dota 2 has a large esports scene, with teams from around the world playing in various professional leagues and tournaments. Valve manages an event format known as the Dota Pro Circuit, which are a series of tournaments that award qualification points for earning direct invitations to The International, the game\'s premier annual tournament. Internationals feature a crowdfunded prize money system that has seen amounts in upwards of US$30 million, making Dota 2 the most lucrative esports game. Media coverage of most tournaments is done by a selection of on-site staff who provide commentary and analysis for the ongoing matches, similar to traditional sporting events. In addition to playing live to audiences in arenas and stadiums, broadcasts of them are also streamed over the internet, and sometimes simulcast on television networks, with peak viewership numbers in the millions.  Despite some criticism going towards its steep learning curve and overall complexity, Dota 2 was praised for its rewarding gameplay, production quality, and faithfulness to its predecessor, with many considering it to be one of the greatest video games of all time. It has been one of the most played games on Steam since its release, with over a million concurrent players at its peak. The popularity of the game has led to official merchandise and media adaptations for it being produced, including comic books and an anime series, as well as promotional tie-ins to other games and media. The game also allows for the community to create their own gamemodes, maps, and cosmetics, which are uploaded to the Steam Workshop. Two spinoff games, Artifact and Dota Underlords, were also released by Valve. Dota 2 has also been used in machine learning experiments, with a team of bots known as the OpenAI Five showing the capability to defeat professional players.</string>
+    <string name="wechat">WeChat</string>
 
 </resources>

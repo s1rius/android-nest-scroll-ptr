@@ -8,13 +8,24 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <TextView
+        <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@android:color/white"
-            android:gravity="center"
-            android:text="test"
-            android:textSize="60sp" />
+            android:fillViewport="true">
+            <TextView
+                android:id="@+id/wiki"
+                android:padding="8dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/white"
+                android:gravity="center"
+                android:scrollbars = "vertical"
+                android:text="@string/dotawiki"
+                android:textSize="16sp" />
+
+        </androidx.core.widget.NestedScrollView>
+
+
 
     </wtf.s1.android.ptr.demo.SwipeToRefreshLayout>
 </merge>

@@ -87,13 +87,7 @@
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Info"
-                            android:textAppearance="@style/TextAppearance.AppCompat.Title" />
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="@string/cheese_ipsum" />
+                            android:text="@string/news1" />
 
                     </LinearLayout>
 
@@ -114,13 +108,7 @@
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Friends"
-                            android:textAppearance="@style/TextAppearance.AppCompat.Title" />
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="@string/cheese_ipsum" />
+                            android:text="@string/news2" />
 
                     </LinearLayout>
 
@@ -141,13 +129,7 @@
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Related"
-                            android:textAppearance="@style/TextAppearance.AppCompat.Title" />
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="@string/cheese_ipsum" />
+                            android:text="@string/news3" />
 
                     </LinearLayout>
 
