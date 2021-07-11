@@ -1,19 +1,17 @@
-# StateMachine 状态机在下拉刷新控件库中的使用
+# 状态机(StateMachine)在下拉刷新控件库中的使用
 
-文中提到的状态机均为有限状态机
-
-`3bdfc4c8` 提交中引入状态机重新实现了控件下拉刷新中的状态转换逻辑
+文中提到的状态机均为有限状态机(FSM)
 
 ### 背景
 
 - 状态转换，状态判断逻辑复杂
 
-代码中定义了4个下拉刷新的状态以及可以影响刷新状态的其他变量，在手势事件，嵌套滑动，自动刷新等事件的输入情况下，需要对几个变量进行正确判断，才能做出响应。不宜上手，维护成本较高。
+代码中定义了4个下拉刷新的状态以及可以影响刷新状态的其他变量，在手势事件，嵌套滑动，自动刷新等事件的输入情况下，需要对几个变量进行正确判断，再做出响应。
 
 ```kotlin
 private fun updatePos(change: Int) {
     ...
-    // 转换状态的同时，还需要进行状态的判断
+    // 转换状态的同时，需要进行状态的判断
     // leave initiated position or just refresh complete
     if (mPtrStateController!!.hasJustLeftStartPosition() && mStatus == PTR_STATUS_INIT) {
         changeStatusTo(PTR_STATUS_PREPARE)
@@ -34,7 +32,7 @@ private fun updatePos(change: Int) {
 事件产生，状态检查，状态转换，触发动作的代码都耦合在一起。给代码理解，debug，修复问题都增加了障碍。
 
 
-- 由于判断逻辑复杂，可读性变差，冗余方法来让代码的可读性更强
+- 由于判断逻辑复杂，可读性变差，冗余方法来让代码的可读性更好
 
 ```
 /**
@@ -64,7 +62,7 @@ private fun tryScrollBackToTopAbortRefresh() {
 并且让代码简洁，可维护性高？
 
 在思考这个问题的时候，我就想到游戏开发，他们如何在多个玩家进行大量的位移，技能释放等多种事件输入的场景下来保证逻辑正常运转的。如果只是靠简单的if，else判断，那对维护者来说，绝对是个灾难。
-随即，我看到了游戏开发中对状态机使用的一些文章。觉得同样适用在下拉刷新中。
+随即，我看到了游戏开发中对状态机使用的一些文章。觉得状态机同样适用在下拉刷新库中。
 
 ### 什么是状态机
 
@@ -81,10 +79,12 @@ private fun tryScrollBackToTopAbortRefresh() {
 - 动作（Action/SideEffect）：表示在给定时刻要进行的活动。
 - 事件（Event）：事件通常会引起状态的变迁，促使状态机从一种状态切换到另一种状态。
 
-### 引入后的效果
-幸运的是，kotlin社区已经有了状态机的[开源实现](https://github.com/Tinder/StateMachine)
+### 引入状态机
+幸运的是，Kotlin社区已经有了状态机的[开源实现](https://github.com/Tinder/StateMachine)
 
-重新梳理的下拉刷新的逻辑，我们发现，下拉刷新的状态可以简化为3个
+[3bdfc4c8](https://github.com/s1rius/android-nest-scroll-ptr/commit/3bdfc4c8e3d64d79d0f995a3f28c577db66f27ac) 提交中引入状态机重新实现了控件下拉刷新中的状态转换逻辑
+
+重新梳理的下拉刷新的逻辑，下拉刷新的状态可以简化为3个
 
 ```kotlin
 sealed class State {
@@ -146,41 +146,23 @@ var stateMachine =
                 transitionTo(State.REFRESHING, SideEffect.OnRefreshing)
             }
         }
-
+        
+        // 刷新状态
         state<State.REFRESHING> {
-            on<Event.RefreshComplete> {
-                transitionTo(State.IDLE, SideEffect.OnComplete)
-            }
-            on<Event.ReleaseToIdle> {
-                transitionTo(State.IDLE, SideEffect.OnComplete)
-            }
+            // 定义刷新状态下事件触发产生的状态转移
+            ...
         }
 
+        // 拖动状态
         state<State.DRAG> {
-            on<Event.ReleaseToIdle> {
-                transitionTo(State.IDLE, SideEffect.OnCancelToIdle)
-            }
-            on<Event.ReleaseToRefreshing> {
-                transitionTo(State.REFRESHING, SideEffect.OnRefreshing)
-            }
-            on<Event.RefreshComplete> {
-                transitionTo(State.IDLE, SideEffect.OnComplete)
-            }
+            // 定义拖动状态下事件触发产生的状态转移
+            ...
         }
 
         onTransition {
             val validTransition = it as? StateMachine.Transition.Valid ?: return@onTransition
             when (validTransition.sideEffect) {
-                SideEffect.OnDragBegin -> { }
-                SideEffect.OnComplete -> { 
-                    // complete
-                }
-                SideEffect.OnRefreshing -> {
-                    // refresh
-                }
-                SideEffect.OnCancelToIdle -> {
-                    // back to init
-                }
+                //执行状态转移时对应的动作
             }
         }
     }
@@ -191,21 +173,21 @@ var stateMachine =
 1. 现在的由于状态转换的触发逻辑，都在`onTransition`的lambda中统一处理，简单易懂
 
     ```
-    when (validTransition.sideEffect) {
+        when (validTransition.sideEffect) {
                 SideEffect.OnDragBegin -> { }
                 SideEffect.OnComplete -> { 
-                    // complete
+                    // 执行刷新完成的总做
                 }
                 SideEffect.OnRefreshing -> {
-                    // refresh
+                    // 执行刷新动作
                 }
                 SideEffect.OnCancelToIdle -> {
-                    // back to init
+                    // 执行回到顶部的动作
                 }
             }
     ```
 
-2. 通过Event触发状态的转换，开发者只需要关心，事件的触发是否合理
+2. 通过Event触发状态的转换，触发事件时不需要对状态进行判断，因为状态转换的判断都已经在状态机的内部完成
 
     ```
     // 触发下拉事件
@@ -229,3 +211,9 @@ var stateMachine =
 ### 结论
 
 引入状态机后，抽象程度提高，代码逻辑变简洁。和原来相比更容易阅读和维护了。
+
+
+##### 参考
+1. [有限状态机](https://zh.wikipedia.org/wiki/%E6%9C%89%E9%99%90%E7%8A%B6%E6%80%81%E6%9C%BA)
+2. [趣说游戏AI开发：对状态机的褒扬和批判](https://zhuanlan.zhihu.com/p/20476688)
+3. [Unity 教程 | 状态机 1](https://www.bilibili.com/video/BV1St4y1Y7U1)
