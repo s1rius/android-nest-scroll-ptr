@@ -7,7 +7,7 @@ import java.util.concurrent.CopyOnWriteArrayList
  */
 internal class NSPtrListenerHolder: NSPtrListener {
 
-    var listeners = CopyOnWriteArrayList<NSPtrListener>()
+    private var listeners = CopyOnWriteArrayList<NSPtrListener>()
 
     fun hasHandler(): Boolean {
         return listeners.size > 0
@@ -23,9 +23,9 @@ internal class NSPtrListenerHolder: NSPtrListener {
         listeners.remove(listener)
     }
 
-    override fun onComplete(frame: NSPtrLayout) {
+    override fun onComplete(ptrLayout: NSPtrLayout) {
         for (listener in listeners) {
-            listener.onComplete(frame)
+            listener.onComplete(ptrLayout)
         }
     }
 

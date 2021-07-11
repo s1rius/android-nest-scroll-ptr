@@ -57,6 +57,6 @@ object ClassPaths {
     const val kotlinPlugin = "org.jetbrains.kotlin:kotlin-gradle-plugin:${Versions.kotlin}"
     const val bytex = "com.bytedance.android.byteX:base-plugin:${Versions.bytex}"
     const val hugoByteX = "wtf.s1.pudge:hugo2-bytex:0.1.4"
-    const val mavenPlugin = "com.vanniktech:gradle-maven-publish-plugin:0.14.0"
-    const val dokaa = "org.jetbrains.dokka:dokka-gradle-plugin:1.4.10.2"
+    const val mavenPlugin = "com.vanniktech:gradle-maven-publish-plugin:0.17.0"
+    const val dokaa = "org.jetbrains.dokka:dokka-gradle-plugin:1.4.32"
 }

@@ -3,7 +3,7 @@ import wtf.s1rius.ptr.buildsrc.*
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: "com.vanniktech.maven.publish"
-
+apply plugin: "org.jetbrains.dokka"
 
 android {
     compileSdkVersion Versions.compileSdkVersion

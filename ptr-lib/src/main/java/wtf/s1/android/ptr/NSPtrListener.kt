@@ -2,7 +2,7 @@ package wtf.s1.android.ptr
 
 interface NSPtrListener {
     /**
-     * prepare for loading
+     * perform dragging the content view
      *
      * @param ptrLayout
      */
@@ -38,7 +38,7 @@ interface NSPtrListener {
     }
 
     /**
-     * drag the content view and move it
+     * drag or animate the content view and move it
      */
-    fun onPositionChange(frame: NSPtrLayout, offset: Int) {}
+    fun onPositionChange(ptrLayout: NSPtrLayout, offset: Int) {}
 }

@@ -1,7 +1,36 @@
+/**
+Copyright (c) 2018, Match Group, LLC
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+ * Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+ * Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.
+ * Neither the name of Match Group, LLC nor the names of its contributors
+may be used to endorse or promote products derived from this software
+without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL MATCH GROUP, LLC BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package wtf.s1.android.ptr
 
 import java.util.concurrent.atomic.AtomicReference
 
+/**
+ * copyed from https://github.com/Tinder/StateMachine
+ */
 class StateMachine<STATE : Any, EVENT : Any, SIDE_EFFECT : Any> private constructor(
     private val graph: Graph<STATE, EVENT, SIDE_EFFECT>
 ) {
@@ -92,7 +121,8 @@ class StateMachine<STATE : Any, EVENT : Any, SIDE_EFFECT : Any> private construc
         class State<STATE : Any, EVENT : Any, SIDE_EFFECT : Any> internal constructor() {
             val onEnterListeners = mutableListOf<(STATE, EVENT) -> Unit>()
             val onExitListeners = mutableListOf<(STATE, EVENT) -> Unit>()
-            val transitions = linkedMapOf<Matcher<EVENT, EVENT>, (STATE, EVENT) -> TransitionTo<STATE, SIDE_EFFECT>>()
+            val transitions =
+                linkedMapOf<Matcher<EVENT, EVENT>, (STATE, EVENT) -> TransitionTo<STATE, SIDE_EFFECT>>()
 
             data class TransitionTo<out STATE : Any, out SIDE_EFFECT : Any> internal constructor(
                 val toState: STATE,
@@ -119,7 +149,8 @@ class StateMachine<STATE : Any, EVENT : Any, SIDE_EFFECT : Any> private construc
 
             inline fun <T : Any, reified R : T> any(): Matcher<T, R> = any(R::class.java)
 
-            inline fun <T : Any, reified R : T> eq(value: R): Matcher<T, R> = any<T, R>().where { this == value }
+            inline fun <T : Any, reified R : T> eq(value: R): Matcher<T, R> =
+                any<T, R>().where { this == value }
         }
     }
 
@@ -145,7 +176,10 @@ class StateMachine<STATE : Any, EVENT : Any, SIDE_EFFECT : Any> private construc
             state(Matcher.any(), init)
         }
 
-        inline fun <reified S : STATE> state(state: S, noinline init: StateDefinitionBuilder<S>.() -> Unit) {
+        inline fun <reified S : STATE> state(
+            state: S,
+            noinline init: StateDefinitionBuilder<S>.() -> Unit
+        ) {
             state(Matcher.eq<STATE, S>(state), init)
         }
 
@@ -154,7 +188,11 @@ class StateMachine<STATE : Any, EVENT : Any, SIDE_EFFECT : Any> private construc
         }
 
         fun build(): Graph<STATE, EVENT, SIDE_EFFECT> {
-            return Graph(requireNotNull(initialState), stateDefinitions.toMap(), onTransitionListeners.toList())
+            return Graph(
+                requireNotNull(initialState),
+                stateDefinitions.toMap(),
+                onTransitionListeners.toList()
+            )
         }
 
         inner class StateDefinitionBuilder<S : STATE> {

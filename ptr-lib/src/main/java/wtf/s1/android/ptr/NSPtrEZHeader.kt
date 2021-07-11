@@ -5,6 +5,9 @@ import android.util.AttributeSet
 import android.view.Gravity
 import android.widget.FrameLayout
 
+/**
+ * implement NSPtrHeader in easy way
+ */
 open class NSPtrEZHeader @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null
 ) : FrameLayout(context, attrs), NSPtrHeader, NSPtrListener {
@@ -41,7 +44,7 @@ open class NSPtrEZHeader @JvmOverloads constructor(
             if (mIsOverToRefresh != frame.isOverToRefreshPosition) {
                 mIsOverToRefresh = frame.isOverToRefreshPosition
             }
-            progressBar.progress = (frame.contentTopPosition * 100f / frame.config.refreshPosition()).toInt()
+            progressBar.progress = (frame.contentTopPosition * 100f / frame.config.contentRefreshPosition()).toInt()
         }
     }
 

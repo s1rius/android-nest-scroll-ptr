@@ -2,20 +2,47 @@ package wtf.s1.android.ptr
 
 interface NSPtrConfig {
 
+    /**
+     * Return the {@link NSPtrLayout} this NSPtrLayout is currently associated with.
+     */
     fun requireLayout(): NSPtrLayout
 
-    fun startPosition(): Int = 0
+    /**
+     * The distance in pixels from the top edge of the NSPtrLayout
+     * to the top edge of NSPtrLayout's content View.
+     */
+    fun contentInitPosition(): Int = 0
 
-    fun atStartPosition(): Boolean = false
+    /**
+     * Is content View's top at the contentInitPosition()
+     */
+    fun isContentAtInitPosition(): Boolean = false
 
-    fun overToRefreshPosition(): Boolean = false
+    /**
+     * At trigger refreshing moment, the distance in pixels from the top edge
+     * of the NSPtrLayout to the top edge of NSPtrLayout's content View.
+     */
+    fun contentRefreshPosition(): Int = Int.MAX_VALUE
 
-    fun refreshPosition(): Int = Int.MAX_VALUE
+    /**
+     * Is content View's top at the contentRefreshPosition()
+     */
+    fun isContentOverRefreshPosition(): Boolean = false
 
+    /**
+     * Sets the friction for the drag offset. The greater the friction is, the sooner the
+     * offset will grow up. When not set, the friction defaults to 0.56f.
+     * @param type @see {@link ViewCompat.NestedScrollType}
+     */
     fun pullFriction(type: Int): Float = 0.56f
 
+    /**
+     * generate the state-machine event to transition state when touch up,
+     * cancel or stop nested-scroll
+     * @return the NSPtrLayout.Event
+     */
     fun generateTouchReleaseEvent(): NSPtrLayout.Event? {
-        return if (overToRefreshPosition()) {
+        return if (isContentOverRefreshPosition()) {
             NSPtrLayout.Event.ReleaseToRefreshing
         } else {
             NSPtrLayout.Event.ReleaseToIdle
