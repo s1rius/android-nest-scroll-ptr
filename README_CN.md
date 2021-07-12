@@ -1,43 +1,42 @@
 # android-nest-scroll-ptr
 
-[中文介绍](https://github.com/s1rius/android-nest-scroll-ptr/blob/master/README_CN.md)
+本库实现了下拉刷新的逻辑，且实现了嵌套滑动接口。在嵌套滑动机制下正常工作。易于扩展和自定义。
 
-This library implements pull-to-refresh logic and work with nested-scroll. It is easy to use and extend.
-
-### Requirements
+### 支持环境
 
 - minsdk 14
 - kotlin
 
-### Features
+### 特性
 
-- work with nested-scroll
-- easy to customize the child widget
+- 支持嵌套滑动
+- 易于扩展
 
 
 ### Demo
 
-- Ins
+- instagram 刷新样式
 
 ![avatar](doc/ins.gif)
 
-- Wechat
+- 微信首页小程序下拉
 
 ![avatar](doc/wechat.gif)
 
-- Wechat Moment
+- 微信朋友圈下拉
 
 ![avatar](doc/moment.gif)
 
-- NestedScroll Sample
+- Android 官方嵌套滑动 demo 适配
 
 ![avatar](doc/tab.gif)
 
 ![avatar](doc/nestedscroll.gif)
 
-### Use NSPtr in your application
 
-- add the dependency
+### 开始使用
+
+- 添加依赖
 
 ```
 dependencies {
@@ -47,14 +46,14 @@ dependencies {
 }
 ```
 
-- add a layout to view hierarchy
+- 用代码实现
 
 ```
 addView(
     NSPtrEZLayout(context).apply {
         addView(
             RecyclerView(context).apply {
-                // add data and adapter
+                // 添加数据和adapter
             },
             NSPtrLayout.LayoutParams(
                 LayoutParams.MATCH_PARENT, 
@@ -65,17 +64,17 @@ addView(
         addPtrListener(object : NSPtrListener {
             override fun onRefreshing(ptrLayout: NSPtrLayout) {
                 super.onRefreshing(ptrLayout)
-                // do refresh logic
+                // 下拉刷新开始，请求网路
             }
         })
-		// auto refresh
+		// 自动刷新
 		isRefreshing = true
     },
     LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
 )
 ```
 
-- or use in XML layouts
+- 用XML实现
 
 ```
 <wtf.s1.android.ptr.NSPtrEZLayout

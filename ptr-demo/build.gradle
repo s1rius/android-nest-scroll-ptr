@@ -27,6 +27,7 @@ android {
 }
 
 dependencies {
+    // implementation Deps.nsptrDev
     implementation(project(":ptr-lib"))
     implementation Deps.AndroidX.appcompat
     implementation Deps.AndroidX.constraintLayout

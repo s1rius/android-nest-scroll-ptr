@@ -14,7 +14,6 @@
             android:layout_height="match_parent"
             android:background="@android:color/white"
             android:gravity="center"
-            android:text="test"
             android:textSize="60sp" />
 
     </wtf.s1.android.ptr.demo.SwipeToRefreshLayout>

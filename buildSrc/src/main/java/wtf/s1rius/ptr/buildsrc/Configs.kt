@@ -11,6 +11,8 @@ object Versions {
     const val versionCode = 1
     const val versionName = "1.0.0"
     const val bytex = "0.2.7"
+    const val nsptr = "0.0.1"
+    const val nsptrDev = "0.0.1"
 }
 
 object Plugins {
@@ -18,6 +20,8 @@ object Plugins {
 }
 
 object Deps {
+    const val nsptr = "wtf.s1.ptr:nsptr:${Versions.nsptr}"
+    const val nsptrDev = "wtf.s1.ptr:nsptr:${Versions.nsptrDev}"
     object Kotlin {
         const val stdLib = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${Versions.kotlin}"
         const val coroutines =

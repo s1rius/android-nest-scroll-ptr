@@ -45,6 +45,8 @@ class InstagramView @JvmOverloads constructor(
                         }, 3000)
                     }
                 })
+
+                isRefreshing = true
             },
             LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
         )
