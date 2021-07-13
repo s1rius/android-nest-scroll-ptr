@@ -39,6 +39,11 @@
 - 添加依赖
 
 ```
+repositories {
+    ...
+    mavenCentral()
+    ...
+}
 dependencies {
     ...
     implementation "wtf.s1.ptr:nsptr:x.x.x"

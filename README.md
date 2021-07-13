@@ -4,6 +4,8 @@
 
 This library implements pull-to-refresh logic and work with nested-scroll. It is easy to use and extend.
 
+It is driven by a [StateMachine](https://github.com/Tinder/StateMachine)
+
 ### Requirements
 
 - minsdk 14
@@ -40,6 +42,12 @@ This library implements pull-to-refresh logic and work with nested-scroll. It is
 - add the dependency
 
 ```
+repositories {
+    ...
+    mavenCentral()
+    ...
+}
+
 dependencies {
     ...
     implementation "wtf.s1.ptr:nsptr:x.x.x"
