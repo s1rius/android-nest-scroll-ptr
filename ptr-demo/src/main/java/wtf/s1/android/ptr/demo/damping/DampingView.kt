@@ -69,6 +69,8 @@ class DampingView @JvmOverloads constructor(
                 LayoutParams.MATCH_PARENT
             )
         )
+
+        addView(MainCompose(context))
     }
 
 

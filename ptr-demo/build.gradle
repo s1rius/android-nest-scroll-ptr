@@ -20,8 +20,19 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
     kotlinOptions {
         jvmTarget = '1.8'
+        useIR = true
+    }
+
+    buildFeatures {
+        compose true
+    }
+
+    composeOptions {
+        kotlinCompilerVersion Versions.kotlin
+        kotlinCompilerExtensionVersion Versions.compose
     }
 
 }
@@ -29,6 +40,7 @@ android {
 dependencies {
     // implementation Deps.nsptrDev
     implementation(project(":ptr-lib"))
+    implementation(project(":ptr-compose"))
     implementation Deps.AndroidX.appcompat
     implementation Deps.AndroidX.constraintLayout
     implementation Deps.AndroidX.cardView
@@ -39,19 +51,29 @@ dependencies {
     implementation Deps.hugo2
     implementation Deps.multitype
     implementation Deps.AndroidX.Core.ktx
+
+    // compose
+    implementation Deps.Compose.activity
+    implementation Deps.Compose.material
+    implementation Deps.Compose.material
+    implementation Deps.Compose.tooling
+    implementation Deps.Compose.util
+    implementation Deps.Compose.ui
+    implementation Deps.Compose.foundation
+    implementation Deps.Compose.foundationLayout
 }
 
 
-apply plugin: 'bytex'
-ByteX {
-    enable true
-    enableInDebug true
-    logLevel "DEBUG"
-}
-
-apply plugin: "s1.hugo2.bytex"
-hugo2ByteX {
-    enable true
-    enableInDebug true
-    logLevel "DEBUG"
-}
+//apply plugin: 'bytex'
+//ByteX {
+//    enable true
+//    enableInDebug true
+//    logLevel "DEBUG"
+//}
+//
+//apply plugin: "s1.hugo2.bytex"
+//hugo2ByteX {
+//    enable true
+//    enableInDebug true
+//    logLevel "DEBUG"
+//}

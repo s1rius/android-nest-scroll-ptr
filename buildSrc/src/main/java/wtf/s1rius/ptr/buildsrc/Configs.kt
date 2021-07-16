@@ -1,16 +1,17 @@
 package wtf.s1rius.ptr.buildsrc
 
 object Versions {
-    const val kotlin = "1.5.0"
-    const val ktx = "1.0.0"
-    const val kotlinCoroutines = "1.0.1"
-    const val gradlePlugin = "4.1.0"
-    const val compileSdkVersion = 28
-    const val minSdkVersion = 14
-    const val targetSdkVersion = 28
+    const val kotlin = "1.5.10"
+    const val ktx = "1.5.0"
+    const val kotlinCoroutines = "1.5.0"
+    const val gradlePlugin = "7.1.0-alpha03"
+    const val compileSdkVersion = 30
+    const val minSdkVersion = 21
+    const val targetSdkVersion = 30
     const val versionCode = 1
     const val versionName = "1.0.0"
     const val bytex = "0.2.7"
+    const val compose = "1.0.0-rc02"
     const val nsptr = "0.0.1"
     const val nsptrDev = "0.0.1"
 }
@@ -44,9 +45,20 @@ object Deps {
         const val viewpager2 = "androidx.viewpager2:viewpager2:1.0.0"
     }
 
+    object Compose {
+        const val ui = "androidx.compose.ui:ui:${Versions.compose}"
+        const val util = "androidx.compose.ui:ui-util:${Versions.compose}"
+        const val tooling = "androidx.compose.ui:ui-tooling:${Versions.compose}"
+        const val material = "androidx.compose.material:material:${Versions.compose}"
+        const val foundation = "androidx.compose.foundation:foundation:${Versions.compose}"
+        const val foundationLayout = "androidx.compose.foundation:foundation-layout:${Versions.compose}"
+
+        const val activity = "androidx.activity:activity-compose:1.3.0-rc02"
+    }
+
     object Google {
         const val material = "com.google.android.material:material:1.0.0"
-        const val glide = "com.github.bumptech.glide:glide:3.7.0"
+        const val glide = "com.github.bumptech.glide:glide:4.12.0"
     }
 
     const val circleimageview = "de.hdodenhof:circleimageview:1.3.0"
