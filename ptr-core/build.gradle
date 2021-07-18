@@ -1,0 +1,75 @@
+import wtf.s1rius.ptr.buildsrc.*
+
+plugins {
+    id 'com.android.library'
+    id 'kotlin-android'
+    id 'org.jetbrains.dokka'
+    id 'com.vanniktech.maven.publish'
+}
+
+kotlin {
+    explicitApi()
+}
+
+android {
+    compileSdkVersion Versions.compileSdkVersion
+
+    defaultConfig {
+        minSdkVersion Versions.coreMinSkdVersion
+        targetSdkVersion Versions.targetSdkVersion
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    buildFeatures {
+        buildConfig false
+        compose true
+    }
+
+    composeOptions {
+        kotlinCompilerVersion Versions.kotlin
+        kotlinCompilerExtensionVersion Versions.compose
+    }
+
+    lintOptions {
+        textReport true
+        textOutput 'stdout'
+        // We run a full lint analysis as build part in CI, so skip vital checks for assemble tasks
+        checkReleaseBuilds false
+    }
+
+    packagingOptions {
+        // Some of the META-INF files conflict with coroutines-test. Exclude them to enable
+        // our test APK to build (has no effect on our AARs)
+        excludes += "/META-INF/AL2.0"
+        excludes += "/META-INF/LGPL2.1"
+    }
+
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
+        animationsDisabled true
+    }
+
+    sourceSets {
+        test {
+            java.srcDirs += 'src/sharedTest/kotlin'
+            res.srcDirs += 'src/sharedTest/res'
+        }
+        androidTest {
+            java.srcDirs += 'src/sharedTest/kotlin'
+            res.srcDirs += 'src/sharedTest/res'
+        }
+    }
+}
+
+dependencies {
+    api Deps.Compose.runtime
+}
+
+version = Versions.nsptrDev
+group = Versions.group

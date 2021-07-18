@@ -19,6 +19,7 @@ plugins {
     id 'com.android.library'
     id 'kotlin-android'
     id 'org.jetbrains.dokka'
+    id 'com.vanniktech.maven.publish'
 }
 
 kotlin {
@@ -26,13 +27,12 @@ kotlin {
 }
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion Versions.compileSdkVersion
 
     defaultConfig {
-        minSdkVersion 21
-        // targetSdkVersion has no effect for libraries. This is only used for the test APK
-        targetSdkVersion 30
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        minSdkVersion Versions.minSdkVersion
+        targetSdkVersion Versions.targetSdkVersion
+        //testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     compileOptions {
@@ -84,12 +84,13 @@ android {
 }
 
 dependencies {
-    implementation Deps.Compose.material
-    implementation Deps.Compose.tooling
-    implementation Deps.Compose.util
-    implementation Deps.Compose.ui
-    implementation Deps.Compose.foundation
-    implementation Deps.Compose.foundationLayout
+    api(project(":ptr-core"))
+    api Deps.Compose.material
+    api Deps.Compose.tooling
+    api Deps.Compose.util
+    api Deps.Compose.ui
+    api Deps.Compose.foundation
+    api Deps.Compose.foundationLayout
 
     // ======================
     // Test dependencies
@@ -115,3 +116,6 @@ dependencies {
 //
 //    testImplementation libs.robolectric
 }
+
+version = Versions.nsptrDev
+group = Versions.group

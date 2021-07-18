@@ -11,7 +11,7 @@ import androidx.core.widget.NestedScrollView
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.tabs.TabLayout
-import wtf.s1.android.ptr.demo.SimpleTextListView
+import wtf.s1.android.ptr.demo.SimpleListView
 import wtf.s1.android.ptr.demo.SwipeToRefreshLayout
 import wtf.s1.android.ptr_support_design.R
 
@@ -54,7 +54,7 @@ class ViewPagerNestView @JvmOverloads constructor(
                 parent: ViewGroup,
                 viewType: Int
             ): RecyclerView.ViewHolder {
-                return object : RecyclerView.ViewHolder(SimpleTextListView(context).apply {
+                return object : RecyclerView.ViewHolder(SimpleListView(context).apply {
                     layoutParams =
                         LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
                 }) {}

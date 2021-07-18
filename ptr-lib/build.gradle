@@ -9,9 +9,8 @@ android {
     compileSdkVersion Versions.compileSdkVersion
 
     defaultConfig {
-        minSdkVersion Versions.minSdkVersion
+        minSdkVersion Versions.coreMinSkdVersion
         targetSdkVersion Versions.targetSdkVersion
-        vectorDrawables.useSupportLibrary = true
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -23,10 +22,16 @@ android {
 }
 
 dependencies {
-    implementation Deps.AndroidX.Core.utils
-    implementation Deps.AndroidX.Core.ktx
-    implementation Deps.AndroidX.appcompat
+    if (ConfigsKt.dev) {
+        api(project(":ptr-core"))
+    } else {
+        api Deps.nsptrCore
+    }
+
+    api Deps.AndroidX.Core.utils
+    api Deps.AndroidX.Core.ktx
+    api Deps.AndroidX.appcompat
 }
 
-version = VERSION_NAME
-group = GROUP
+version = Versions.nsptrDev
+group = Versions.group

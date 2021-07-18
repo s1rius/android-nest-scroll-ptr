@@ -1,5 +1,7 @@
 package wtf.s1rius.ptr.buildsrc
 
+const val dev = true
+
 object Versions {
     const val kotlin = "1.5.10"
     const val ktx = "1.5.0"
@@ -7,13 +9,15 @@ object Versions {
     const val gradlePlugin = "7.1.0-alpha03"
     const val compileSdkVersion = 30
     const val minSdkVersion = 21
+    const val coreMinSkdVersion = 14
     const val targetSdkVersion = 30
     const val versionCode = 1
     const val versionName = "1.0.0"
     const val bytex = "0.2.7"
     const val compose = "1.0.0-rc02"
-    const val nsptr = "0.0.1"
-    const val nsptrDev = "0.0.1"
+    const val nsptr = "0.1.0"
+    const val nsptrDev = "0.1.0"
+    const val group = "wtf.s1.ptr"
 }
 
 object Plugins {
@@ -21,8 +25,12 @@ object Plugins {
 }
 
 object Deps {
+
     const val nsptr = "wtf.s1.ptr:nsptr:${Versions.nsptr}"
-    const val nsptrDev = "wtf.s1.ptr:nsptr:${Versions.nsptrDev}"
+    const val nsptrCore = "wtf.s1.ptr:nsptr-core:${Versions.nsptr}"
+    const val nsptrCompose = "wtf.s1.ptr:nsptr-compose:${Versions.nsptr}"
+
+
     object Kotlin {
         const val stdLib = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${Versions.kotlin}"
         const val coroutines =
@@ -46,6 +54,7 @@ object Deps {
     }
 
     object Compose {
+        const val runtime = "androidx.compose.runtime:runtime:${Versions.compose}"
         const val ui = "androidx.compose.ui:ui:${Versions.compose}"
         const val util = "androidx.compose.ui:ui-util:${Versions.compose}"
         const val tooling = "androidx.compose.ui:ui-tooling:${Versions.compose}"

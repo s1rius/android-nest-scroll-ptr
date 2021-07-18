@@ -27,13 +27,15 @@ class DampingView @JvmOverloads constructor(
         val WECHAT = "Wechat"
         val WECHAT_M = "Wechat Moment"
         val NESTEDSCRLL = "NestedScroll Sample"
+        val COMPOSE = "Jetpack Compose"
 
 
         val samples = arrayListOf(
             INS,
             WECHAT,
             WECHAT_M,
-            NESTEDSCRLL
+            NESTEDSCRLL,
+            COMPOSE,
         )
     }
 
@@ -69,8 +71,6 @@ class DampingView @JvmOverloads constructor(
                 LayoutParams.MATCH_PARENT
             )
         )
-
-        addView(MainCompose(context))
     }
 
 
@@ -106,6 +106,9 @@ class DampingView @JvmOverloads constructor(
                             }
                             NESTEDSCRLL -> {
                                 MDPtrView(context)
+                            }
+                            COMPOSE -> {
+                                InsCompose(context)
                             }
                             else -> null
                         }

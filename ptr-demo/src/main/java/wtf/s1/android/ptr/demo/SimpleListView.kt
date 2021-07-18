@@ -9,7 +9,7 @@ import com.drakeet.multitype.MultiTypeAdapter
 import wtf.s1.pudge.hugo2.DebugLog
 
 @DebugLog
-class SimpleTextListView @JvmOverloads constructor(
+class SimpleListView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ):
     RecyclerView(context, attrs, defStyleAttr),

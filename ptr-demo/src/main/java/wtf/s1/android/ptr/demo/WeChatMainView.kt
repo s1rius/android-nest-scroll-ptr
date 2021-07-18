@@ -9,8 +9,10 @@ import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.view.updatePadding
+import wtf.s1.nsptr.Event
 import wtf.s1.android.ptr.NSPtrConfig
 import wtf.s1.android.ptr.NSPtrLayout
+import wtf.s1.nsptr.State
 import wtf.s1.android.ptr.demo.util.dp
 import wtf.s1.android.ptr_support_design.R
 
@@ -39,7 +41,7 @@ class WeChatMainView @JvmOverloads constructor(
                             )
                         )
                         addView(
-                            SimpleTextListView(context),
+                            SimpleListView(context),
                             LinearLayout.LayoutParams(
                                 LayoutParams.MATCH_PARENT,
                                 LayoutParams.MATCH_PARENT
@@ -63,9 +65,9 @@ class WeChatMainView @JvmOverloads constructor(
                         return requireLayout().contentTopPosition > 20.dp
                     }
 
-                    override fun generateTouchReleaseEvent(): NSPtrLayout.Event? {
-                        if (requireLayout().stateMachine.state == NSPtrLayout.State.REFRESHING) {
-                            return NSPtrLayout.Event.ReleaseToIdle
+                    override fun generateTouchReleaseEvent(): Event? {
+                        if (requireLayout().stateMachine.state == State.REFRESHING) {
+                            return Event.ReleaseToIdle
                         }
                         return super.generateTouchReleaseEvent()
                     }

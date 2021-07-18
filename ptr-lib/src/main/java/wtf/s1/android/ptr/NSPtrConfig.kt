@@ -1,5 +1,7 @@
 package wtf.s1.android.ptr
 
+import wtf.s1.nsptr.Event
+
 interface NSPtrConfig {
 
     /**
@@ -41,11 +43,11 @@ interface NSPtrConfig {
      * cancel or stop nested-scroll
      * @return the NSPtrLayout.Event
      */
-    fun generateTouchReleaseEvent(): NSPtrLayout.Event? {
+    fun generateTouchReleaseEvent(): Event? {
         return if (isContentOverRefreshPosition()) {
-            NSPtrLayout.Event.ReleaseToRefreshing
+            Event.ReleaseToRefreshing
         } else {
-            NSPtrLayout.Event.ReleaseToIdle
+            Event.ReleaseToIdle
         }
     }
 

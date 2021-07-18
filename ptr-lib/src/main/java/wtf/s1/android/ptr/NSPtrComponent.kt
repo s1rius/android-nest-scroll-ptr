@@ -22,7 +22,7 @@ interface NSPtrComponent {
 
 /**
  * Header View need implement this interface,
- * There is one-to-one correspondence between NSPtrLayout and NSPtrHeader
+ * There is one-to-many correspondence between NSPtrLayout and NSPtrHeader
  * or implement NSPtrListener
  * @see {@link NSPtrListener}
  */

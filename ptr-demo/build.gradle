@@ -8,8 +8,8 @@ android {
 
     defaultConfig {
         applicationId = "wtf.s1.android.ptr"
-        minSdkVersion(Versions.minSdkVersion)
-        targetSdkVersion(Versions.targetSdkVersion)
+        minSdkVersion Versions.minSdkVersion
+        targetSdkVersion Versions.targetSdkVersion
         versionCode = Versions.versionCode
         versionName = Versions.versionName
 
@@ -38,9 +38,14 @@ android {
 }
 
 dependencies {
-    // implementation Deps.nsptrDev
-    implementation(project(":ptr-lib"))
-    implementation(project(":ptr-compose"))
+    if (ConfigsKt.dev) {
+        implementation(project(":ptr-lib"))
+        implementation(project(":ptr-compose"))
+    } else {
+        implementation Deps.nsptr
+        implementation Deps.nsptrCompose
+    }
+
     implementation Deps.AndroidX.appcompat
     implementation Deps.AndroidX.constraintLayout
     implementation Deps.AndroidX.cardView

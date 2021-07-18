@@ -16,6 +16,7 @@ import android.widget.FrameLayout
 import android.widget.ListView
 import androidx.core.view.*
 import androidx.core.widget.ListViewCompat
+import wtf.s1.nsptr.*
 import kotlin.math.abs
 
 /**
@@ -36,104 +37,24 @@ open class NSPtrLayout @JvmOverloads constructor(
         private var ID = 1
     }
 
-    sealed class State {
-        // init state
-        // 初始化状态
-        object IDLE : State()
-        // refreshing state
-        // 刷新状态
-        object REFRESHING : State()
-        // drag state
-        // 拖动状态
-        object DRAG : State()
-    }
-
-    sealed class Event {
-        // pull/drag the content
-        // 下拉事件
-        object Pull : Event()
-        // touch release make content view to IDLE
-        // 放手回到空闲
-        object ReleaseToIdle : Event()
-        // touch release make content view to REFRESHING
-        // 放手开始刷新
-        object ReleaseToRefreshing : Event()
-        // refresh complete
-        // 刷新完成
-        object RefreshComplete : Event()
-        // auto refresh
-        // 自动刷新
-        object AutoRefresh : Event()
-    }
-
-    sealed class SideEffect {
-        // detect touch release or other trigger transition to IDLE
-        // 手势取消回到顶部
-        object OnToIdle : SideEffect()
-        // detect refreshing action
-        // 刷新动作
-        object OnRefreshing : SideEffect()
-        // detect drag action
-        // 开始拖动控件
-        object OnDragBegin : SideEffect()
-        // detect refresh complete
-        // 刷新完成的动作
-        object OnComplete : SideEffect()
-    }
-
-    var stateMachine =
-        StateMachine.create<State, Event, SideEffect> {
-            initialState(State.IDLE)
-
-            state<State.IDLE> {
-                on<Event.Pull> {
-                    transitionTo(State.DRAG, SideEffect.OnDragBegin)
+    open var stateMachine = createNSPtrFSM {
+        if (it is StateMachine.Transition.Valid) {
+            when (it.sideEffect) {
+                SideEffect.OnDragBegin -> {
                 }
-                on<Event.AutoRefresh> {
-                    transitionTo(State.REFRESHING, SideEffect.OnRefreshing)
+                SideEffect.OnComplete -> {
+                    tryScrollBackToTop()
+                }
+                SideEffect.OnRefreshing -> {
+                    performRefresh()
+                }
+                SideEffect.OnToIdle -> {
+                    tryScrollBackToTop()
                 }
             }
-
-            state<State.REFRESHING> {
-                on<Event.RefreshComplete> {
-                    transitionTo(State.IDLE, SideEffect.OnComplete)
-                }
-                on<Event.ReleaseToIdle> {
-                    transitionTo(State.IDLE, SideEffect.OnComplete)
-                }
-            }
-
-            state<State.DRAG> {
-                on<Event.ReleaseToIdle> {
-                    transitionTo(State.IDLE, SideEffect.OnToIdle)
-                }
-                on<Event.ReleaseToRefreshing> {
-                    transitionTo(State.REFRESHING, SideEffect.OnRefreshing)
-                }
-                on<Event.RefreshComplete> {
-                    transitionTo(State.IDLE, SideEffect.OnComplete)
-                }
-            }
-
-            onTransition {
-                val validTransition = it as? StateMachine.Transition.Valid ?: return@onTransition
-                when (validTransition.sideEffect) {
-                    SideEffect.OnDragBegin -> {
-                    }
-                    SideEffect.OnComplete -> {
-                        tryScrollBackToTop()
-                        notifyUIRefreshComplete()
-                    }
-                    SideEffect.OnRefreshing -> {
-                        performRefresh()
-                    }
-                    SideEffect.OnToIdle -> {
-                        tryScrollBackToTop()
-                    }
-                }
-                mPtrListenerHolder.onTransition(this@NSPtrLayout, it)
-            }
+            mPtrListenerHolder.onTransition(this@NSPtrLayout, it)
         }
+    }
 
     private val ptrId = "ptr-frame-" + ++ID
     private var contentView: View? = null
@@ -592,16 +513,6 @@ open class NSPtrLayout @JvmOverloads constructor(
      */
     private fun performRefreshComplete() {
         stateMachine.transition(Event.RefreshComplete)
-    }
-
-    /**
-     * Do real refresh work. If there is a hook, execute the hook first.
-     */
-    private fun notifyUIRefreshComplete() {
-        if (mPtrListenerHolder.hasHandler()) {
-            mPtrListenerHolder.onComplete(this)
-        }
-        tryScrollBackToTop()
     }
 
     private fun autoRefresh() {

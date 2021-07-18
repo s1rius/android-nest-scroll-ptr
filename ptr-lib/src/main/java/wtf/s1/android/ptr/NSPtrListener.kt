@@ -1,5 +1,10 @@
 package wtf.s1.android.ptr
 
+import wtf.s1.nsptr.Event
+import wtf.s1.nsptr.SideEffect
+import wtf.s1.nsptr.State
+import wtf.s1.nsptr.StateMachine
+
 interface NSPtrListener {
     /**
      * perform dragging the content view
@@ -21,17 +26,17 @@ interface NSPtrListener {
     /**
      * when state transition happen
      */
-    fun onTransition(ptrLayout: NSPtrLayout, transition: StateMachine.Transition.Valid<NSPtrLayout.State, NSPtrLayout.Event, NSPtrLayout.SideEffect>) {
+    fun onTransition(ptrLayout: NSPtrLayout, transition: StateMachine.Transition.Valid<State, Event, SideEffect>) {
         when (transition.toState) {
-            is NSPtrLayout.State.IDLE -> {
-                if (transition.event == NSPtrLayout.Event.RefreshComplete) {
+            is State.IDLE -> {
+                if (transition.event == Event.RefreshComplete) {
                     onComplete(ptrLayout)
                 }
             }
-            is NSPtrLayout.State.REFRESHING -> {
+            is State.REFRESHING -> {
                 onRefreshing(ptrLayout)
             }
-            is NSPtrLayout.State.DRAG -> {
+            is State.DRAG -> {
                 onDrag(ptrLayout)
             }
         }

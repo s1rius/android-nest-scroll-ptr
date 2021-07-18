@@ -4,6 +4,10 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.Gravity
 import android.widget.FrameLayout
+import wtf.s1.nsptr.Event
+import wtf.s1.nsptr.SideEffect
+import wtf.s1.nsptr.State
+import wtf.s1.nsptr.StateMachine
 
 /**
  * implement NSPtrHeader in easy way
@@ -21,26 +25,26 @@ open class NSPtrEZHeader @JvmOverloads constructor(
     }
 
     override fun onTransition(ptrLayout: NSPtrLayout,
-                              transition: StateMachine.Transition.Valid<NSPtrLayout.State, NSPtrLayout.Event, NSPtrLayout.SideEffect>) {
+                              transition: StateMachine.Transition.Valid<State, Event, SideEffect>) {
         super.onTransition(ptrLayout, transition)
         when (transition.toState) {
-            is NSPtrLayout.State.IDLE -> {
-                if (transition.fromState == NSPtrLayout.State.REFRESHING) {
+            is State.IDLE -> {
+                if (transition.fromState == State.REFRESHING) {
                     progressBar.inProgress = false
                 }
                 progressBar.stop()
             }
-            is NSPtrLayout.State.REFRESHING -> {
+            is State.REFRESHING -> {
                 progressBar.animateProgress()
             }
-            is NSPtrLayout.State.DRAG -> {
+            is State.DRAG -> {
                 progressBar.inProgress = true
             }
         }
     }
 
     override fun onPositionChange(frame: NSPtrLayout, offset: Int) {
-        if (frame.currentState != NSPtrLayout.State.REFRESHING) {
+        if (frame.currentState != State.REFRESHING) {
             if (mIsOverToRefresh != frame.isOverToRefreshPosition) {
                 mIsOverToRefresh = frame.isOverToRefreshPosition
             }

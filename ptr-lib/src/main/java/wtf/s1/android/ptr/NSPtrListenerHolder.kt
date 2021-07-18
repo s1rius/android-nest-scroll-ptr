@@ -1,5 +1,9 @@
 package wtf.s1.android.ptr
 
+import wtf.s1.nsptr.Event
+import wtf.s1.nsptr.SideEffect
+import wtf.s1.nsptr.State
+import wtf.s1.nsptr.StateMachine
 import java.util.concurrent.CopyOnWriteArrayList
 
 /**
@@ -47,7 +51,7 @@ internal class NSPtrListenerHolder: NSPtrListener {
         }
     }
 
-    override fun onTransition(ptrLayout: NSPtrLayout, transition: StateMachine.Transition.Valid<NSPtrLayout.State, NSPtrLayout.Event, NSPtrLayout.SideEffect>) {
+    override fun onTransition(ptrLayout: NSPtrLayout, transition: StateMachine.Transition.Valid<State, Event, SideEffect>) {
         for (listener in listeners) {
             listener.onTransition(ptrLayout, transition)
         }
