@@ -39,7 +39,7 @@ class WeChatMainView @JvmOverloads constructor(
                             )
                         )
                         addView(
-                            SimpleTextListView(context),
+                            SimpleListView(context),
                             LinearLayout.LayoutParams(
                                 LayoutParams.MATCH_PARENT,
                                 LayoutParams.MATCH_PARENT

@@ -13,7 +13,7 @@ class App: Application() {
             override fun logI(clazz: String, method: String, params: String) {
                 super.logI(clazz, method, params)
                 var simpleClazz = ""
-                if (clazz.endsWith(SimpleTextListView::class.java.simpleName)) {
+                if (clazz.endsWith(SimpleListView::class.java.simpleName)) {
                     simpleClazz = "child"
                     Log.i("hugo", "----> $simpleClazz $method $params")
                 } else if (clazz.endsWith(SwipeToRefreshLayout::class.java.simpleName)) {
