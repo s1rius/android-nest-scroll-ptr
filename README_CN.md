@@ -4,34 +4,33 @@
 
 ### 支持环境
 
-- minsdk 14
-- kotlin
+- minsdk 14/21(compose)
+- kotlin | compose
 
 ### 特性
 
+- 使用状态机实现
 - 支持嵌套滑动
+- 支持Jetpack compose
 - 易于扩展
 
 
 ### Demo
 
 - instagram 刷新样式
-
-![avatar](doc/ins.gif)
-
 - 微信首页小程序下拉
-
-![avatar](doc/wechat.gif)
-
 - 微信朋友圈下拉
-
-![avatar](doc/moment.gif)
-
 - Android 官方嵌套滑动 demo 适配
 
-![avatar](doc/tab.gif)
+<div>
 
-![avatar](doc/nestedscroll.gif)
+<img src="https://github.com/s1rius/android-nest-scroll-ptr/blob/master/doc/ins.gif" width="160" height="346" />
+<img src="https://github.com/s1rius/android-nest-scroll-ptr/blob/master/doc/wechat.gif" width="160" height="346" />
+<img src="https://github.com/s1rius/android-nest-scroll-ptr/blob/master/doc/moment.gif" width="160" height="346" />
+<img src="https://github.com/s1rius/android-nest-scroll-ptr/blob/master/doc/tab.gif" width="160" height="346" />
+<img src="https://github.com/s1rius/android-nest-scroll-ptr/blob/master/doc/nestedscroll.gif" width="160" height="346" />
+
+</div>	
 
 
 ### 开始使用
@@ -46,14 +45,46 @@ repositories {
 }
 dependencies {
     ...
-    implementation "wtf.s1.ptr:nsptr:x.x.x"
+    // android view system 的依赖
+    implementation "wtf.s1.ptr:nsptr-view:x.x.x"
+    // jetpack compose 的依赖
+    implementation "wtf.s1.ptr:nsptr-compose:x.x.x"
     ...
+}
+```
+
+- 在Compose中使用
+
+```kotlin
+val coroutine = rememberCoroutineScope()
+val nsPtrState = remember {
+    NSPtrState(
+        coroutineScope = coroutine
+    ) {
+        // todo 刷新逻辑
+        it.dispatchPtrEvent(Event.RefreshComplete)
+    }
+}
+NSPtrLayout(
+    nsPtrState = nsPtrState,
+    modifier = Modifier.fillMaxSize(),
+) {
+    NSPtrEZHeader(
+        modifier = Modifier
+            .offset(0.dp, 12.dp),
+        nsPtrState = nsPtrState
+    )
+    LazyColumn(Modifier.ptrContent()) {
+        items(10) { index ->
+            // todo
+        }
+    }
 }
 ```
 
 - 用代码实现
 
-```
+```kotlin
 addView(
     NSPtrEZLayout(context).apply {
         addView(
@@ -81,7 +112,7 @@ addView(
 
 - 用XML实现
 
-```
+```xml
 <wtf.s1.ptr.nsptr.view.NSPtrEZLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent">

@@ -8,34 +8,33 @@ It is driven by a [StateMachine](https://github.com/Tinder/StateMachine)
 
 ### Requirements
 
-- minsdk 14
-- kotlin
+- minsdk 14/21(compose)
+- kotlin | compose
 
 ### Features
 
+- driven by a FSM
 - work with nested-scroll
-- easy to customize the child widget
+- Jetpack Compose implementation
+- easy to customize the layout
 
 
 ### Demo
 
 - Ins
-
-![avatar](doc/ins.gif)
-
 - Wechat
-
-![avatar](doc/wechat.gif)
-
 - Wechat Moment
-
-![avatar](doc/moment.gif)
-
 - NestedScroll Sample
 
-![avatar](doc/tab.gif)
+<div>
 
-![avatar](doc/nestedscroll.gif)
+<img src="https://github.com/s1rius/android-nest-scroll-ptr/blob/master/doc/ins.gif" width="160" height="346" />
+<img src="https://github.com/s1rius/android-nest-scroll-ptr/blob/master/doc/wechat.gif" width="160" height="346" />
+<img src="https://github.com/s1rius/android-nest-scroll-ptr/blob/master/doc/moment.gif" width="160" height="346" />
+<img src="https://github.com/s1rius/android-nest-scroll-ptr/blob/master/doc/tab.gif" width="160" height="346" />
+<img src="https://github.com/s1rius/android-nest-scroll-ptr/blob/master/doc/nestedscroll.gif" width="160" height="346" />
+	
+</div>	
 
 ### Use NSPtr in your application
 
@@ -58,9 +57,38 @@ dependencies {
 }
 ```
 
+- use in Compose
+
+```kotlin
+val coroutine = rememberCoroutineScope()
+val nsPtrState = remember {
+    NSPtrState(
+        coroutineScope = coroutine
+    ) {
+        // todo refresh block
+        it.dispatchPtrEvent(Event.RefreshComplete)
+    }
+}
+NSPtrLayout(
+    nsPtrState = nsPtrState,
+    modifier = Modifier.fillMaxSize(),
+) {
+    NSPtrEZHeader(
+        modifier = Modifier
+            .offset(0.dp, 12.dp),
+        nsPtrState = nsPtrState
+    )
+    LazyColumn(Modifier.ptrContent()) {
+        items(10) { index ->
+            // todo
+        }
+    }
+}
+```
+
 - add a layout to view hierarchy
 
-```
+```kotlin
 addView(
     NSPtrEZLayout(context).apply {
         addView(
@@ -88,7 +116,7 @@ addView(
 
 - or use in XML layouts
 
-```
+```xml
 <wtf.s1.ptr.nsptr.view.NSPtrEZLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent">
