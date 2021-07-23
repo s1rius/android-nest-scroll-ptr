@@ -1,6 +1,6 @@
-package wtf.s1.android.ptr
+package wtf.s1.ptr.nsptr.view
 
-import wtf.s1.nsptr.Event
+import wtf.s1.ptr.nsptr.Event
 
 interface NSPtrConfig {
 

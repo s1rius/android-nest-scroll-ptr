@@ -1,6 +1,6 @@
 rootProject.name = "android-nest-scroll-ptr"
 
 include ':ptr-core'
-include(":ptr-lib")
+include(':ptr-view')
 include(":ptr-compose")
 include(":ptr-demo")

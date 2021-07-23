@@ -50,7 +50,10 @@ repositories {
 
 dependencies {
     ...
-    implementation "wtf.s1.ptr:nsptr:x.x.x"
+    // android view system implementation
+    implementation "wtf.s1.ptr:nsptr-view:x.x.x"
+    // jetpack compose implementation
+    implementation "wtf.s1.ptr:nsptr-compose:x.x.x"
     ...
 }
 ```
@@ -86,7 +89,7 @@ addView(
 - or use in XML layouts
 
 ```
-<wtf.s1.android.ptr.NSPtrEZLayout
+<wtf.s1.ptr.nsptr.view.NSPtrEZLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -94,5 +97,5 @@ addView(
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
-</wtf.s1.android.ptr.NSPtrEZLayout>
+</wtf.s1.ptr.nsptr.view.NSPtrEZLayout>
 ```

@@ -44,8 +44,9 @@ class MainActivity : AppCompatActivity() {
 
     private val backCallBack = object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() {
-            pop()
-            if (components.isEmpty()) {
+            if (components.size > 1) {
+                pop()
+            } else {
                 finish()
             }
         }

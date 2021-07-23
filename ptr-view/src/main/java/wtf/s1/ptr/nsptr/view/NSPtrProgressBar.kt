@@ -1,4 +1,4 @@
-package wtf.s1.android.ptr
+package wtf.s1.ptr.nsptr.view
 
 import android.animation.ValueAnimator
 import android.content.Context

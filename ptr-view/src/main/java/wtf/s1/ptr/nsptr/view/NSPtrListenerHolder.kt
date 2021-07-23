@@ -1,9 +1,9 @@
-package wtf.s1.android.ptr
+package wtf.s1.ptr.nsptr.view
 
-import wtf.s1.nsptr.Event
-import wtf.s1.nsptr.SideEffect
-import wtf.s1.nsptr.State
-import wtf.s1.nsptr.StateMachine
+import wtf.s1.ptr.nsptr.Event
+import wtf.s1.ptr.nsptr.SideEffect
+import wtf.s1.ptr.nsptr.State
+import wtf.s1.ptr.nsptr.StateMachine
 import java.util.concurrent.CopyOnWriteArrayList
 
 /**

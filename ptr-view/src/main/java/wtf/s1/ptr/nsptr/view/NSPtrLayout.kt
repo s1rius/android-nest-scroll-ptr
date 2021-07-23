@@ -1,4 +1,4 @@
-package wtf.s1.android.ptr
+package wtf.s1.ptr.nsptr.view
 
 import android.animation.ValueAnimator
 import android.animation.ValueAnimator.AnimatorUpdateListener
@@ -16,7 +16,7 @@ import android.widget.FrameLayout
 import android.widget.ListView
 import androidx.core.view.*
 import androidx.core.widget.ListViewCompat
-import wtf.s1.nsptr.*
+import wtf.s1.ptr.nsptr.*
 import kotlin.math.abs
 
 /**
@@ -59,7 +59,7 @@ open class NSPtrLayout @JvmOverloads constructor(
     private val ptrId = "ptr-frame-" + ++ID
     private var contentView: View? = null
 
-    var config = object :NSPtrConfig {
+    var config = object : NSPtrConfig {
 
         override fun requireLayout(): NSPtrLayout {
             return this@NSPtrLayout

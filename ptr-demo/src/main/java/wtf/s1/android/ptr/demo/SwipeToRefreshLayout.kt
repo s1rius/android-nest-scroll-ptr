@@ -17,11 +17,10 @@ package wtf.s1.android.ptr.demo
 
 import android.content.Context
 import android.util.AttributeSet
-import android.util.Log
 import android.view.View
-import wtf.s1.android.ptr.NSPtrEZLayout
-import wtf.s1.android.ptr.NSPtrLayout
-import wtf.s1.android.ptr.NSPtrListener
+import wtf.s1.ptr.nsptr.view.NSPtrEZLayout
+import wtf.s1.ptr.nsptr.view.NSPtrLayout
+import wtf.s1.ptr.nsptr.view.NSPtrListener
 import wtf.s1.pudge.hugo2.DebugLog
 
 /**

@@ -9,10 +9,10 @@ import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.view.updatePadding
-import wtf.s1.nsptr.Event
-import wtf.s1.android.ptr.NSPtrConfig
-import wtf.s1.android.ptr.NSPtrLayout
-import wtf.s1.nsptr.State
+import wtf.s1.ptr.nsptr.Event
+import wtf.s1.ptr.nsptr.view.NSPtrConfig
+import wtf.s1.ptr.nsptr.view.NSPtrLayout
+import wtf.s1.ptr.nsptr.State
 import wtf.s1.android.ptr.demo.util.dp
 import wtf.s1.android.ptr_support_design.R
 

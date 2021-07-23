@@ -1,4 +1,4 @@
-package wtf.s1.nsptr
+package wtf.s1.ptr.nsptr
 
 import androidx.compose.runtime.Stable
 

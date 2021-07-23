@@ -26,8 +26,9 @@ object Plugins {
 
 object Deps {
 
-    const val nsptr = "wtf.s1.ptr:nsptr:${Versions.nsptr}"
+
     const val nsptrCore = "wtf.s1.ptr:nsptr-core:${Versions.nsptr}"
+    const val nsptrView = "wtf.s1.ptr:nsptr-view:${Versions.nsptr}"
     const val nsptrCompose = "wtf.s1.ptr:nsptr-compose:${Versions.nsptr}"
 
 

@@ -7,10 +7,10 @@ import android.view.Gravity
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.view.updatePadding
-import wtf.s1.android.ptr.NSPtrEZLayout
-import wtf.s1.android.ptr.NSPtrLayout
-import wtf.s1.android.ptr.NSPtrListener
 import wtf.s1.android.ptr.demo.util.dp
+import wtf.s1.ptr.nsptr.view.NSPtrEZLayout
+import wtf.s1.ptr.nsptr.view.NSPtrLayout
+import wtf.s1.ptr.nsptr.view.NSPtrListener
 
 class InstagramView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null

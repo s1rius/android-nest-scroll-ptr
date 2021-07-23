@@ -82,7 +82,7 @@ addView(
 - 用XML实现
 
 ```
-<wtf.s1.android.ptr.NSPtrEZLayout
+<wtf.s1.ptr.nsptr.view.NSPtrEZLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -90,5 +90,5 @@ addView(
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
-</wtf.s1.android.ptr.NSPtrEZLayout>
+</wtf.s1.ptr.nsptr.view.NSPtrEZLayout>
 ```

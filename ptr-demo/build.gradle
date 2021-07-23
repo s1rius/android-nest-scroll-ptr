@@ -39,10 +39,10 @@ android {
 
 dependencies {
     if (ConfigsKt.dev) {
-        implementation(project(":ptr-lib"))
+        implementation(project(":ptr-view"))
         implementation(project(":ptr-compose"))
     } else {
-        implementation Deps.nsptr
+        implementation Deps.nsptrView
         implementation Deps.nsptrCompose
     }
 

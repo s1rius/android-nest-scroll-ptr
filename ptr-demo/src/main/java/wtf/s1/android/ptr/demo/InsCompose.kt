@@ -4,20 +4,17 @@ import android.content.Context
 import android.graphics.Color
 import android.util.AttributeSet
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.AbstractComposeView
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
-import wtf.s1.nsptr.Event
-import wtf.s1.nsptr.State
-import wtf.s1.nsptr.compose.NSPtrEZHeader
-import wtf.s1.nsptr.compose.NSPtrLayout
-import wtf.s1.nsptr.compose.NSPtrState
+import wtf.s1.ptr.nsptr.Event
+import wtf.s1.ptr.nsptr.compose.NSPtrEZHeader
+import wtf.s1.ptr.nsptr.compose.NSPtrLayout
+import wtf.s1.ptr.nsptr.compose.NSPtrState
 
 class InsCompose @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null

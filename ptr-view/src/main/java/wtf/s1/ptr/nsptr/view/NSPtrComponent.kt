@@ -1,4 +1,4 @@
-package wtf.s1.android.ptr
+package wtf.s1.ptr.nsptr.view
 
 /**
  * if NSPtrLayout child want hold the measure and layout, will implement this interface

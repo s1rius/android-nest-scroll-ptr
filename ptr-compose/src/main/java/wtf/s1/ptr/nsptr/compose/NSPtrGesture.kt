@@ -1,4 +1,4 @@
-package wtf.s1.nsptr.compose
+package wtf.s1.ptr.nsptr.compose
 
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.forEachGesture
