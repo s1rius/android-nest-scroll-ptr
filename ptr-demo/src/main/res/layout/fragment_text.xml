@@ -12,19 +12,20 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:fillViewport="true">
+
             <TextView
                 android:id="@+id/wiki"
-                android:padding="8dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@android:color/white"
                 android:gravity="center"
-                android:scrollbars = "vertical"
+                android:padding="8dp"
+                android:scrollbars="vertical"
                 android:text="@string/dotawiki"
+                android:textColor="@android:color/black"
                 android:textSize="16sp" />
 
         </androidx.core.widget.NestedScrollView>
-
 
 
     </wtf.s1.android.ptr.demo.SwipeToRefreshLayout>

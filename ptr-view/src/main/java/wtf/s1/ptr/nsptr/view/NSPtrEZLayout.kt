@@ -4,7 +4,7 @@ import android.content.Context
 import android.util.AttributeSet
 
 /**
- * implement NSPtrEZLayout in easy way
+ * implement NSPtrEZLayout in an easy way
  */
 open class NSPtrEZLayout @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null

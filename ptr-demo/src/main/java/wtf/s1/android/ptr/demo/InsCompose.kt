@@ -39,7 +39,7 @@ fun Ins() {
         NSPtrState(
             coroutineScope = coroutine,
             contentInitPosition = 0.dp,
-            contentRefreshPosition = 54.dp
+            contentRefreshPosition = 60.dp
         ) {
             delay(3000)
             it.dispatchPtrEvent(Event.RefreshComplete)
@@ -51,7 +51,7 @@ fun Ins() {
     ) {
         NSPtrEZHeader(
             modifier = Modifier
-                .offset(0.dp, 12.dp),
+                .offset(0.dp, 16.dp),
             nsPtrState = nsPtrState
         )
         SimpleListCompose(Modifier.ptrContent())

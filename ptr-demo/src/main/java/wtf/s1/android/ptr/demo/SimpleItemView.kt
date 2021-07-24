@@ -2,6 +2,7 @@ package wtf.s1.android.ptr.demo
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.util.AttributeSet
 import android.view.ViewGroup
 import android.widget.FrameLayout
@@ -28,6 +29,7 @@ class SimpleItemView @JvmOverloads constructor(
 
             context.startActivity(intent)
         }
+        mTextView.setTextColor(Color.BLACK)
     }
 
     fun bind(post: Post) {

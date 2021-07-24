@@ -10,7 +10,7 @@ import wtf.s1.ptr.nsptr.State
 import wtf.s1.ptr.nsptr.StateMachine
 
 /**
- * implement NSPtrHeader in easy way
+ * implement NSPtrHeader in an easy way
  */
 open class NSPtrEZHeader @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null
@@ -43,12 +43,12 @@ open class NSPtrEZHeader @JvmOverloads constructor(
         }
     }
 
-    override fun onPositionChange(frame: NSPtrLayout, offset: Int) {
-        if (frame.currentState != State.REFRESHING) {
-            if (mIsOverToRefresh != frame.isOverToRefreshPosition) {
-                mIsOverToRefresh = frame.isOverToRefreshPosition
+    override fun onPositionChange(ptrLayout: NSPtrLayout, offset: Int) {
+        if (ptrLayout.currentState != State.REFRESHING) {
+            if (mIsOverToRefresh != ptrLayout.isOverToRefreshPosition) {
+                mIsOverToRefresh = ptrLayout.isOverToRefreshPosition
             }
-            progressBar.progress = (frame.contentTopPosition * 100f / frame.config.contentRefreshPosition()).toInt()
+            progressBar.progress = (ptrLayout.contentTopPosition * 100f / ptrLayout.config.contentRefreshPosition()).toInt()
         }
     }
 

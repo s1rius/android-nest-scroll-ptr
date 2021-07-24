@@ -11,7 +11,7 @@
 
 - 使用状态机实现
 - 支持嵌套滑动
-- 支持Jetpack compose
+- 支持Jetpack Compose
 - 易于扩展
 
 
