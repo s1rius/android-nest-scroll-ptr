@@ -37,10 +37,10 @@ open class NSPtrLayout @JvmOverloads constructor(
         private var ID = 1
     }
 
-    open var stateMachine = createNSPtrFSM {
+    var stateMachine = createNSPtrFSM {
         if (it is StateMachine.Transition.Valid) {
             when (it.sideEffect) {
-                SideEffect.OnDragBegin -> {
+                SideEffect.OnPull -> {
                 }
                 SideEffect.OnComplete -> {
                     tryScrollBackToTop()
@@ -48,7 +48,7 @@ open class NSPtrLayout @JvmOverloads constructor(
                 SideEffect.OnRefreshing -> {
                     performRefresh()
                 }
-                SideEffect.OnToIdle -> {
+                SideEffect.OnReleaseToIdle -> {
                     tryScrollBackToTop()
                 }
             }
@@ -124,9 +124,10 @@ open class NSPtrLayout @JvmOverloads constructor(
 
     init {
         val arr = context.obtainStyledAttributes(attrs, R.styleable.NSPtrLayout, 0, 0)
-        if (arr != null) {
+        try {
             mHeaderId = arr.getResourceId(R.styleable.NSPtrLayout_ptr_header, mHeaderId)
             mContainerId = arr.getResourceId(R.styleable.NSPtrLayout_ptr_content, mContainerId)
+        } finally {
             arr.recycle()
         }
         val conf = ViewConfiguration.get(getContext())

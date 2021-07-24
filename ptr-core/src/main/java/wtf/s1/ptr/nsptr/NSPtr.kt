@@ -40,7 +40,7 @@ sealed class Event {
 sealed class SideEffect {
     // detect touch release or other trigger transition to IDLE
     // 手势取消回到顶部
-    object OnToIdle : SideEffect()
+    object OnReleaseToIdle : SideEffect()
 
     // detect refreshing action
     // 刷新动作
@@ -48,7 +48,7 @@ sealed class SideEffect {
 
     // detect drag action
     // 开始拖动控件
-    object OnDragBegin : SideEffect()
+    object OnPull : SideEffect()
 
     // detect refresh complete
     // 刷新完成的动作
@@ -61,7 +61,7 @@ fun createNSPtrFSM(block: (StateMachine.Transition<State, Event, SideEffect>) ->
 
         state<State.IDLE> {
             on<Event.Pull> {
-                transitionTo(State.DRAG, SideEffect.OnDragBegin)
+                transitionTo(State.DRAG, SideEffect.OnPull)
             }
             on<Event.AutoRefresh> {
                 transitionTo(State.REFRESHING, SideEffect.OnRefreshing)
@@ -73,13 +73,13 @@ fun createNSPtrFSM(block: (StateMachine.Transition<State, Event, SideEffect>) ->
                 transitionTo(State.IDLE, SideEffect.OnComplete)
             }
             on<Event.ReleaseToIdle> {
-                transitionTo(State.IDLE, SideEffect.OnComplete)
+                transitionTo(State.IDLE, SideEffect.OnReleaseToIdle)
             }
         }
 
         state<State.DRAG> {
             on<Event.ReleaseToIdle> {
-                transitionTo(State.IDLE, SideEffect.OnToIdle)
+                transitionTo(State.IDLE, SideEffect.OnReleaseToIdle)
             }
             on<Event.ReleaseToRefreshing> {
                 transitionTo(State.REFRESHING, SideEffect.OnRefreshing)

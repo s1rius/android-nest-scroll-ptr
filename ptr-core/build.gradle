@@ -24,16 +24,6 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
-    buildFeatures {
-        buildConfig false
-        compose true
-    }
-
-    composeOptions {
-        kotlinCompilerVersion Versions.kotlin
-        kotlinCompilerExtensionVersion Versions.compose
-    }
-
     lintOptions {
         textReport true
         textOutput 'stdout'
