@@ -45,17 +45,20 @@ class NSPtrState(
 
     var contentInitPositionPx: Float = 0f
 
+    var lastTransition: StateMachine.Transition<State, Event, SideEffect>? = null
+
     fun isContentAtInitPosition(): Boolean {
         return contentPositionPx == contentInitPositionPx
     }
 
     private val _stateMachine = createNSPtrFSM {
         coroutineScope.launch {
+            lastTransition = it
             if (it is StateMachine.Transition.Valid) {
                 state = it.toState
 
                 when (it.sideEffect) {
-                    is SideEffect.OnToIdle,
+                    is SideEffect.OnReleaseToIdle,
                     is SideEffect.OnComplete -> {
                         animateContentTo(contentInitPositionPx)
                     }

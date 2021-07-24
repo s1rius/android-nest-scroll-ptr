@@ -11,7 +11,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import wtf.s1.ptr.nsptr.SideEffect
 import wtf.s1.ptr.nsptr.State
+import wtf.s1.ptr.nsptr.StateMachine
 
 @Composable
 fun NSPtrEZHeader(
@@ -47,20 +49,25 @@ fun NSPtrEZHeader(
                     topLeft = Offset(size.width / 2 - radius.toPx(), 0f)
                 )
             }
-            State.DRAG -> {
-                drawArc(
-                    Color.Gray,
-                    startAngle = -90f,
-                    360f * nsPtrState.pullProgress(),
-                    false,
-                    size = Size(radius.toPx() * 2, radius.toPx() * 2),
-                    style = Stroke(strokeWidth.toPx()),
-                    topLeft = Offset(size.width / 2 - radius.toPx(), 0f)
-                )
-            }
-            else -> {
+            State.DRAG,
+            State.IDLE -> {
+                nsPtrState.lastTransition?.let {
+                    if (nsPtrState.state == State.DRAG
+                        || (it is StateMachine.Transition.Valid
+                                && it.sideEffect == SideEffect.OnReleaseToIdle)
+                    ) {
+                        drawArc(
+                            Color.Gray,
+                            startAngle = -90f,
+                            360f * nsPtrState.pullProgress(),
+                            false,
+                            size = Size(radius.toPx() * 2, radius.toPx() * 2),
+                            style = Stroke(strokeWidth.toPx()),
+                            topLeft = Offset(size.width / 2 - radius.toPx(), 0f)
+                        )
+                    }
+                }
             }
         }
-
     }
 }
