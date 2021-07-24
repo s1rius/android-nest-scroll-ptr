@@ -67,9 +67,5 @@ android {
     }
 }
 
-dependencies {
-    api Deps.Compose.runtime
-}
-
 version = Versions.nsptrDev
 group = Versions.group

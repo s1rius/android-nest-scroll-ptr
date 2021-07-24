@@ -1,8 +1,6 @@
 package wtf.s1.ptr.nsptr
 
-import androidx.compose.runtime.Stable
 
-@Stable
 sealed class State {
     // init state
     // 初始化状态
@@ -17,7 +15,6 @@ sealed class State {
     object DRAG : State()
 }
 
-@Stable
 sealed class Event {
     // pull/drag the content
     // 下拉事件
@@ -40,7 +37,6 @@ sealed class Event {
     object AutoRefresh : Event()
 }
 
-@Stable
 sealed class SideEffect {
     // detect touch release or other trigger transition to IDLE
     // 手势取消回到顶部
