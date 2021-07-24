@@ -3,7 +3,8 @@ package wtf.s1.android.ptr.demo
 import android.content.Context
 import android.graphics.Color
 import android.util.AttributeSet
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -33,29 +34,26 @@ class InsCompose @JvmOverloads constructor(
 
 @Composable
 fun Ins() {
-    Box(modifier = Modifier.fillMaxSize()) {
-        val coroutine = rememberCoroutineScope()
-        val s = remember {
-            NSPtrState(
-                coroutineScope = coroutine,
-                contentInitPosition = 0.dp,
-                contentRefreshPosition = 54.dp
-            ) {
-                delay(3000)
-                it.dispatchPtrEvent(Event.RefreshComplete)
-            }
-        }
-        NSPtrLayout(
-            nsPtrState = s,
-            modifier = Modifier.fillMaxSize(),
+    val coroutine = rememberCoroutineScope()
+    val nsPtrState = remember {
+        NSPtrState(
+            coroutineScope = coroutine,
+            contentInitPosition = 0.dp,
+            contentRefreshPosition = 54.dp
         ) {
-            NSPtrEZHeader(
-                modifier = Modifier
-                    .size(100.dp)
-                    .offset(0.dp, 12.dp),
-                nsPtrState = s
-            )
-            SimpleListCompose(Modifier.ptrContent())
+            delay(3000)
+            it.dispatchPtrEvent(Event.RefreshComplete)
         }
+    }
+    NSPtrLayout(
+        nsPtrState = nsPtrState,
+        modifier = Modifier.fillMaxSize(),
+    ) {
+        NSPtrEZHeader(
+            modifier = Modifier
+                .offset(0.dp, 12.dp),
+            nsPtrState = nsPtrState
+        )
+        SimpleListCompose(Modifier.ptrContent())
     }
 }

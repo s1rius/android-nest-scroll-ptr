@@ -40,6 +40,11 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
+    kotlinOptions {
+        jvmTarget = '1.8'
+        useIR = true
+    }
+
     buildFeatures {
         buildConfig false
         compose true
@@ -84,13 +89,14 @@ android {
 }
 
 dependencies {
-    api(project(":ptr-core"))
-    api Deps.Compose.material
-    api Deps.Compose.tooling
+    if (ConfigsKt.dev) {
+        api(project(":ptr-core"))
+    } else {
+        api Deps.nsptrCore
+    }
     api Deps.Compose.util
     api Deps.Compose.ui
     api Deps.Compose.foundation
-    api Deps.Compose.foundationLayout
 
     // ======================
     // Test dependencies

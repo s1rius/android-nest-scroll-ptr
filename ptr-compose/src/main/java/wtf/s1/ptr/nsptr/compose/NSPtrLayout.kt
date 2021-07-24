@@ -42,6 +42,7 @@ class NSPtrState(
     var contentPositionPx: Float by mutableStateOf(0f)
 
     var contentRefreshPositionPx: Float = 0f
+
     var contentInitPositionPx: Float = 0f
 
     fun isContentAtInitPosition(): Boolean {
@@ -190,6 +191,9 @@ internal fun rememberPtrMeasurePolicy(nsPtrState: NSPtrState) = remember {
     ptrMeasurePolicy(nsPtrState)
 }
 
+/**
+ * like custom onLayout
+ */
 internal fun ptrMeasurePolicy(nsPtrState: NSPtrState) = MeasurePolicy { measurables, constraints ->
     if (measurables.isEmpty()) {
         return@MeasurePolicy layout(constraints.minWidth, constraints.minHeight) {}
@@ -229,7 +233,7 @@ private fun Placeable.PlacementScope.placeInPtr(
 }
 
 /**
- * 自定义Scope，让子控件可以通过这个来自定义约束
+ * custom measurable, like custom LayoutParams
  */
 interface NSPtrScope {
 
@@ -240,9 +244,6 @@ interface NSPtrScope {
     fun Modifier.ptrHeader(): Modifier
 }
 
-/**
- * 自定义Scope的实现
- */
 internal object NSPtrScopeInstance : NSPtrScope {
 
     override fun Modifier.ptrContent() = this.then(
@@ -264,4 +265,18 @@ class NSPtrChildData(
 
     override fun Density.modifyParentData(parentData: Any?): Any = this@NSPtrChildData
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as NSPtrChildData
+
+        if (ptrComponent != other.ptrComponent) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return ptrComponent.hashCode()
+    }
 }

@@ -36,9 +36,7 @@ fun NSPtrEZHeader(
     Canvas(modifier = modifier) {
         when (nsPtrState.state) {
             State.REFRESHING -> {
-
                 val current = currentRotation % 360
-
                 drawArc(
                     Color.Gray,
                     current * 1f,
@@ -47,7 +45,6 @@ fun NSPtrEZHeader(
                     size = Size(radius.toPx() * 2, radius.toPx() * 2),
                     style = Stroke(strokeWidth.toPx()),
                     topLeft = Offset(size.width / 2 - radius.toPx(), 0f)
-
                 )
             }
             State.DRAG -> {
@@ -61,7 +58,8 @@ fun NSPtrEZHeader(
                     topLeft = Offset(size.width / 2 - radius.toPx(), 0f)
                 )
             }
-            else -> {}
+            else -> {
+            }
         }
 
     }
