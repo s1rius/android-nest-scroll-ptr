@@ -1,4 +1,4 @@
-import wtf.s1rius.ptr.buildsrc.*
+import wtf.s1.ui.buildsrc.*
 
 buildscript {
     repositories {
@@ -6,6 +6,7 @@ buildscript {
         google()
         mavenCentral()
         jcenter()
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots"}
     }
 
     dependencies {
@@ -24,5 +25,6 @@ allprojects {
         google()
         mavenCentral()
         jcenter()
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots"}
     }
 }

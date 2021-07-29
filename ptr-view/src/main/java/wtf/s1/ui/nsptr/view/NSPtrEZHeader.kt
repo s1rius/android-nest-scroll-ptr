@@ -1,13 +1,13 @@
-package wtf.s1.ptr.nsptr.view
+package wtf.s1.ui.nsptr.view
 
 import android.content.Context
 import android.util.AttributeSet
 import android.view.Gravity
 import android.widget.FrameLayout
-import wtf.s1.ptr.nsptr.Event
-import wtf.s1.ptr.nsptr.SideEffect
-import wtf.s1.ptr.nsptr.State
-import wtf.s1.ptr.nsptr.StateMachine
+import wtf.s1.ui.nsptr.Event
+import wtf.s1.ui.nsptr.SideEffect
+import wtf.s1.ui.nsptr.State
+import wtf.s1.ui.nsptr.StateMachine
 
 /**
  * implement NSPtrHeader in an easy way

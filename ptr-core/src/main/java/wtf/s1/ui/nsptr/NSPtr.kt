@@ -1,4 +1,4 @@
-package wtf.s1.ptr.nsptr
+package wtf.s1.ui.nsptr
 
 
 sealed class State {

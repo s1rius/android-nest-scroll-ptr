@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import wtf.s1rius.ptr.buildsrc.*
+import wtf.s1.ui.buildsrc.*
 
 plugins {
     id 'com.android.library'

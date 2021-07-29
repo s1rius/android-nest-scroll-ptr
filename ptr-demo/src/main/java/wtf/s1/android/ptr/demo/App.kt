@@ -12,7 +12,7 @@ class App: Application() {
 
             override fun logI(clazz: String, method: String, params: String) {
                 super.logI(clazz, method, params)
-                var simpleClazz = ""
+                var simpleClazz: String
                 if (clazz.endsWith(SimpleListView::class.java.simpleName)) {
                     simpleClazz = "child"
                     Log.i("hugo", "----> $simpleClazz $method $params")

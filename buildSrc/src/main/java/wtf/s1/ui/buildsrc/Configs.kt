@@ -1,4 +1,4 @@
-package wtf.s1rius.ptr.buildsrc
+package wtf.s1.ui.buildsrc
 
 const val dev = true
 
@@ -15,9 +15,9 @@ object Versions {
     const val versionName = "1.0.0"
     const val bytex = "0.2.7"
     const val compose = "1.0.0"
-    const val nsptr = "0.1.0"
+    const val nsptr = "0.1.0-SNAPSHOT"
     const val nsptrDev = "0.1.0-SNAPSHOT"
-    const val group = "wtf.s1.ptr"
+    const val group = "wtf.s1.ui"
 }
 
 object Plugins {
@@ -27,9 +27,9 @@ object Plugins {
 object Deps {
 
 
-    const val nsptrCore = "wtf.s1.ptr:nsptr-core:${Versions.nsptr}"
-    const val nsptrView = "wtf.s1.ptr:nsptr-view:${Versions.nsptr}"
-    const val nsptrCompose = "wtf.s1.ptr:nsptr-compose:${Versions.nsptr}"
+    const val nsptrCore = "wtf.s1.ui:nsptr-core:${Versions.nsptr}"
+    const val nsptrView = "wtf.s1.ui:nsptr-view:${Versions.nsptr}"
+    const val nsptrCompose = "wtf.s1.ui:nsptr-compose:${Versions.nsptr}"
 
 
     object Kotlin {

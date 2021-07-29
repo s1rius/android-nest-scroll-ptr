@@ -12,10 +12,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.AbstractComposeView
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
-import wtf.s1.ptr.nsptr.Event
-import wtf.s1.ptr.nsptr.compose.NSPtrEZHeader
-import wtf.s1.ptr.nsptr.compose.NSPtrLayout
-import wtf.s1.ptr.nsptr.compose.NSPtrState
+import wtf.s1.ui.nsptr.Event
+import wtf.s1.ui.nsptr.compose.NSPtrEZHeader
+import wtf.s1.ui.nsptr.compose.NSPtrLayout
+import wtf.s1.ui.nsptr.compose.NSPtrState
 
 class InsCompose @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null

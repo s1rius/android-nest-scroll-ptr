@@ -46,9 +46,9 @@ repositories {
 dependencies {
     ...
     // android view system 的依赖
-    implementation "wtf.s1.ptr:nsptr-view:x.x.x"
+    implementation "wtf.s1.ui:nsptr-view:x.x.x"
     // jetpack compose 的依赖
-    implementation "wtf.s1.ptr:nsptr-compose:x.x.x"
+    implementation "wtf.s1.ui:nsptr-compose:x.x.x"
     ...
 }
 ```
@@ -113,7 +113,7 @@ addView(
 - 用XML实现
 
 ```xml
-<wtf.s1.ptr.nsptr.view.NSPtrEZLayout
+<wtf.s1.ui.nsptr.view.NSPtrEZLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -121,5 +121,5 @@ addView(
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
-</wtf.s1.ptr.nsptr.view.NSPtrEZLayout>
+</wtf.s1.ui.nsptr.view.NSPtrEZLayout>
 ```

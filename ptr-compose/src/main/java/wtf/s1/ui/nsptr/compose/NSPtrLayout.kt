@@ -1,4 +1,4 @@
-package wtf.s1.ptr.nsptr.compose
+package wtf.s1.ui.nsptr.compose
 
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.SpringSpec
@@ -20,8 +20,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import wtf.s1.ptr.nsptr.*
-import wtf.s1.ptr.nsptr.State
+import wtf.s1.ui.nsptr.*
+import wtf.s1.ui.nsptr.State
 import kotlin.math.max
 import kotlin.math.roundToInt
 

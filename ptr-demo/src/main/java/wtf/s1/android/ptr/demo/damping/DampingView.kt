@@ -11,8 +11,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.drakeet.multitype.MultiTypeAdapter
 import com.drakeet.multitype.ViewDelegate
-import wtf.s1.ptr.nsptr.view.NSPtrConfig
-import wtf.s1.ptr.nsptr.view.NSPtrLayout
+import wtf.s1.ui.nsptr.view.NSPtrConfig
+import wtf.s1.ui.nsptr.view.NSPtrLayout
 import wtf.s1.android.ptr.demo.*
 import wtf.s1.android.ptr.demo.md.MDPtrView
 import wtf.s1.android.ptr.demo.util.dp

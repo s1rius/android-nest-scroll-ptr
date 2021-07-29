@@ -1,9 +1,9 @@
-package wtf.s1.ptr.nsptr.view
+package wtf.s1.ui.nsptr.view
 
-import wtf.s1.ptr.nsptr.Event
-import wtf.s1.ptr.nsptr.SideEffect
-import wtf.s1.ptr.nsptr.State
-import wtf.s1.ptr.nsptr.StateMachine
+import wtf.s1.ui.nsptr.Event
+import wtf.s1.ui.nsptr.SideEffect
+import wtf.s1.ui.nsptr.State
+import wtf.s1.ui.nsptr.StateMachine
 import java.util.concurrent.CopyOnWriteArrayList
 
 /**

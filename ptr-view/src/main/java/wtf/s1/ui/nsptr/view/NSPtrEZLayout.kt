@@ -1,4 +1,4 @@
-package wtf.s1.ptr.nsptr.view
+package wtf.s1.ui.nsptr.view
 
 import android.content.Context
 import android.util.AttributeSet

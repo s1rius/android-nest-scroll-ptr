@@ -1,6 +1,6 @@
-package wtf.s1.ptr.nsptr.view
+package wtf.s1.ui.nsptr.view
 
-import wtf.s1.ptr.nsptr.Event
+import wtf.s1.ui.nsptr.Event
 
 interface NSPtrConfig {
 

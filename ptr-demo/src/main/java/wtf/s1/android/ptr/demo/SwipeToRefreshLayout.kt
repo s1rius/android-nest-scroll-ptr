@@ -18,9 +18,9 @@ package wtf.s1.android.ptr.demo
 import android.content.Context
 import android.util.AttributeSet
 import android.view.View
-import wtf.s1.ptr.nsptr.view.NSPtrEZLayout
-import wtf.s1.ptr.nsptr.view.NSPtrLayout
-import wtf.s1.ptr.nsptr.view.NSPtrListener
+import wtf.s1.ui.nsptr.view.NSPtrEZLayout
+import wtf.s1.ui.nsptr.view.NSPtrLayout
+import wtf.s1.ui.nsptr.view.NSPtrListener
 import wtf.s1.pudge.hugo2.DebugLog
 
 /**
@@ -41,15 +41,15 @@ class SwipeToRefreshLayout : NSPtrEZLayout {
     init {
         this.addPtrListener(object: NSPtrListener {
 
-            override fun onDrag(frame: NSPtrLayout) {}
+            override fun onDrag(ptrLayout: NSPtrLayout) {}
 
-            override fun onRefreshing(frame: NSPtrLayout) {
+            override fun onRefreshing(ptrLayout: NSPtrLayout) {
                 listener?.onRefresh()
             }
 
-            override fun onComplete(frame: NSPtrLayout) {}
+            override fun onComplete(ptrLayout: NSPtrLayout) {}
 
-            override fun onPositionChange(frame: NSPtrLayout, offset: Int) {}
+            override fun onPositionChange(ptrLayout: NSPtrLayout, offset: Int) {}
         })
     }
 

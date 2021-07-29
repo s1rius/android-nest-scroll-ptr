@@ -1,4 +1,4 @@
-package wtf.s1.ptr.nsptr.view
+package wtf.s1.ui.nsptr.view
 
 import android.animation.ValueAnimator
 import android.animation.ValueAnimator.AnimatorUpdateListener
@@ -16,7 +16,7 @@ import android.widget.FrameLayout
 import android.widget.ListView
 import androidx.core.view.*
 import androidx.core.widget.ListViewCompat
-import wtf.s1.ptr.nsptr.*
+import wtf.s1.ui.nsptr.*
 import kotlin.math.abs
 
 /**
