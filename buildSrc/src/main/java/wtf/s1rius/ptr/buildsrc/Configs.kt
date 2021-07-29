@@ -6,7 +6,7 @@ object Versions {
     const val kotlin = "1.5.10"
     const val ktx = "1.5.0"
     const val kotlinCoroutines = "1.5.0"
-    const val gradlePlugin = "7.1.0-alpha03"
+    const val gradlePlugin = "7.0.0"
     const val compileSdkVersion = 30
     const val minSdkVersion = 21
     const val coreMinSkdVersion = 14
@@ -14,9 +14,9 @@ object Versions {
     const val versionCode = 1
     const val versionName = "1.0.0"
     const val bytex = "0.2.7"
-    const val compose = "1.0.0-rc02"
+    const val compose = "1.0.0"
     const val nsptr = "0.1.0"
-    const val nsptrDev = "0.1.0"
+    const val nsptrDev = "0.1.0-SNAPSHOT"
     const val group = "wtf.s1.ptr"
 }
 
