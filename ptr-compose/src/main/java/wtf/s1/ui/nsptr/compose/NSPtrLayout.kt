@@ -34,7 +34,7 @@ sealed class PtrComponent {
 class NSPtrState(
     val contentInitPosition: Dp = 0.dp,
     val contentRefreshPosition: Dp = 54.dp,
-    @Stable val pullFriction: Float = 0.56f,
+    val pullFriction: Float = 0.56f,
     coroutineScope: CoroutineScope,
     onRefresh: (suspend (NSPtrState) -> Unit)? = null,
 ) {
@@ -63,8 +63,8 @@ class NSPtrState(
                         animateContentTo(contentInitPositionPx)
                     }
                     is SideEffect.OnRefreshing -> {
-                        animateContentTo(contentRefreshPositionPx)
                         onRefresh?.invoke(this@NSPtrState)
+                        animateContentTo(contentRefreshPositionPx)
                     }
                     else -> {
 
