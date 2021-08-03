@@ -28,11 +28,11 @@ It is driven by a [StateMachine](https://github.com/Tinder/StateMachine)
 
 <div>
 
-<img src="https://github.com/s1rius/android-nest-scroll-ptr/blob/master/doc/ins.gif" width="160" height="346" />
-<img src="https://github.com/s1rius/android-nest-scroll-ptr/blob/master/doc/wechat.gif" width="160" height="346" />
-<img src="https://github.com/s1rius/android-nest-scroll-ptr/blob/master/doc/moment.gif" width="160" height="346" />
-<img src="https://github.com/s1rius/android-nest-scroll-ptr/blob/master/doc/tab.gif" width="160" height="346" />
-<img src="https://github.com/s1rius/android-nest-scroll-ptr/blob/master/doc/nestedscroll.gif" width="160" height="346" />
+<img src="https://github.com/s1rius/android-nest-scroll-ptr/blob/master/images/ins.gif" width="160" height="346" />
+<img src="https://github.com/s1rius/android-nest-scroll-ptr/blob/master/images/wechat.gif" width="160" height="346" />
+<img src="https://github.com/s1rius/android-nest-scroll-ptr/blob/master/images/moment.gif" width="160" height="346" />
+<img src="https://github.com/s1rius/android-nest-scroll-ptr/blob/master/images/tab.gif" width="160" height="346" />
+<img src="https://github.com/s1rius/android-nest-scroll-ptr/blob/master/images/nestedscroll.gif" width="160" height="346" />
 	
 </div>	
 
