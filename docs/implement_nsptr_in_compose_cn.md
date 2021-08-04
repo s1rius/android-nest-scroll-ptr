@@ -1,4 +1,19 @@
-# 使用 Compose 实现下拉刷新控件
+# 在 Compose 中实现下拉刷新控件
+
+[android-nest-scroll-ptr](https://github.com/s1rius/android-nest-scroll-ptr)
+
+### 准备工作
+
+在 android.com 了解 Compose 的基本概念
+
+- [状态](https://developer.android.com/jetpack/compose/state)
+- [布局](https://developer.android.com/jetpack/compose/layouts)
+- [动画](https://developer.android.com/jetpack/compose/animation)
+- [手势事件](https://developer.android.com/jetpack/compose/gestures)
+
+参考开源的下拉刷新实现
+
+- [默认下拉刷新实现](https://github.com/google/accompanist/blob/main/swiperefresh/src/main/java/com/google/accompanist/swiperefresh/SwipeRefresh.kt)
 
 ### 定义下拉刷新状态
 在 Compose 中，状态是基础，所有的 UI 都是对当前状态的一种展示，状态改变驱动 UI 改变。根据之前使用 View 实现下拉刷新的经验，给出状态的定义
@@ -9,7 +24,7 @@ class NSPtrState(
     val contentInitPosition: Dp = 0.dp,// 初始位置
     val contentRefreshPosition: Dp = 54.dp,// 刷新位置
     val pullFriction: Float = 0.56f,// 拖动的摩擦力参数
-    coroutineScope: CoroutineScope, 
+    coroutineScope: CoroutineScope,
     onRefresh: (suspend (NSPtrState) -> Unit)? = null, // 触发刷新的回调
 ) {
     ...
@@ -18,7 +33,7 @@ class NSPtrState(
 
     // 最近一次状态转变的对象
     var lastTransition: StateMachine.Transition<State, Event, SideEffect>? = null
-    
+
     // 内部用来处理状态转变逻辑的状态机
     private val _stateMachine = createNSPtrFSM {}
 
@@ -43,7 +58,7 @@ class NSPtrState(
 ```
 
 
-### 了解 Compose 中实现自定义控件的流程
+### 实现控件的测量和布局
 一般自定义 ViewGroup 控件在 View 中的实现步骤分为以下的几个步骤
 
 1. 继承 ViewGroup
@@ -58,15 +73,15 @@ class NSPtrState(
 ```kotlin
 @Composable
 fun NSPtrLayout(
-	modifier: Modifier,
-	content: @Composable () -> Unit
+    modifier: Modifier,
+    content: @Composable () -> Unit
 ) {
     ...
-	Layout(
-		modifier: Modifier = Modifier,
-		measurePolicy: MeasurePolicy,
-    	content: @Composable () -> Unit,
-	)
+    Layout(
+        modifier: Modifier = Modifier,
+        measurePolicy: MeasurePolicy,
+        content: @Composable () -> Unit,
+    )
     ...
 }
 ```
@@ -97,7 +112,7 @@ fun NSPtrLayout(
 忽略掉底层的实现细节，实现控件的测量和布局的模版方法。
 
 2. 实现测量和布局
-   
+
 在 View 的系统中，我们需要重写两个方法，onMeasure 和 onLayout 来实现这个过程。在 Compose 中，我们需要自定义 MeasurePolicy 。
 
 ```kotlin
@@ -110,14 +125,14 @@ internal fun ptrMeasurePolicy() = MeasurePolicy { measurables, constraints ->
         val placeables = arrayOfNulls<Placeable>(measurables.size)
 
         measurables.forEachIndexed { index, measurable ->
+            // 测量逻辑
             placeables[index] = measurable.measure(constraints)
-			   // 测量逻辑
         }
 
         layout(layoutWidth, layoutHeight) {
             placeables.forEachIndexed { index, placeable ->
-                	// layout 逻辑
-					placeable.place(x, y)
+                // 布局逻辑
+                placeable.place(x, y)
             }
         }
     }
@@ -153,12 +168,48 @@ fun layout(
 ```kotlin
 layout(layoutWidth, layoutHeight) {
     placeables.forEachIndexed { index, placeable ->
+        // 设置将当前的节点的 x, y
         placeable.place(x, y)
     }
 }
 ```
+基本的 Compose 中的自定义控件的实现流程就结束了。
 
-到这里，基本的 Compose 中的自定义 Layout 的流程就结束了。
+在这里我们还需要一些自定的参数，比如确定下拉滑动的具体子节点。那我们就需要自己定一个布局的 Scope，模仿 Box 的实现方式。
+
+```kotlin
+// 定义接口
+interface NSPtrScope {
+
+    // 这样我们就可以在子节点上使用这个 modify 来标记它是主要的节点
+    @Stable
+    fun Modifier.ptrContent(): Modifier
+}
+
+// 具体实现
+internal object NSPtrScopeInstance : NSPtrScope {
+
+    override fun Modifier.ptrContent() = this.then(
+        NSPtrChildData(PtrComponent.PtrContent)
+    )
+
+    override fun Modifier.ptrHeader() = this.then(
+        NSPtrChildData(PtrComponent.PtrHeader)
+    )
+}
+
+// 更新 Composable 方法参数, 定义为 NSPtrScope 的扩展函数，这样我们就可以在写子节点时调用了
+@Composable
+fun NSPtrLayout(
+    ...
+    content: @Composable NSPtrScope.() -> Unit
+) {
+    Layout(
+        content = { NSPtrScopeInstance.content() },
+        ...
+    )
+}
+```
 
 ### 手势事件的分发和处理
 
@@ -186,10 +237,9 @@ suspend fun PointerInputScope.detectDownAndUp(
 }
 ```
 
-这样，我们下拉刷新所需要处理的手势事件就结束了
 
 ### 位移动画的实现
-Compose 中的 SuspendAnimation.kt 提供了类似 ValueAnimtor 的实现，下面实现了 NSPtrState 中对 content view 位置属性的动画
+Compose 中的 SuspendAnimation.kt 提供了类似 ValueAnimtor 的实现，下面实现了 NSPtrState 中对 content view 位置属性的动画。
 
 ```kotlin
 private suspend fun animateContentTo(
@@ -209,4 +259,10 @@ private suspend fun animateContentTo(
 }
 ```
 
-本文简单的叙述了下拉刷新控件的实现步骤，后续还需要将这些步骤进行组合，在布局中响应状态中的字段。具体的实现细节可以移步[源码](https://github.com/s1rius/android-nest-scroll-ptr)。
+### 嵌套滑动
+
+Compose 中嵌套滑动的 API 相比 View 中的简化了很多，原理都差不多，这里我们把 View 里实现的逻辑拷贝过来。
+
+
+### 最后
+本文简单的分段叙述了下拉刷新控件的实现步骤，后续还需要将这些步骤进行组合。具体的实现细节可以移步[源码](https://github.com/s1rius/android-nest-scroll-ptr) 。

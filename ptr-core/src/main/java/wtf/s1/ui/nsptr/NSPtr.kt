@@ -29,11 +29,11 @@ sealed class Event {
     object ReleaseToRefreshing : Event()
 
     // refresh complete
-    // 刷新完成
+    // 刷新完成事件
     object RefreshComplete : Event()
 
     // auto refresh
-    // 自动刷新
+    // 自动刷新事件
     object AutoRefresh : Event()
 }
 
@@ -55,7 +55,8 @@ sealed class SideEffect {
     object OnComplete : SideEffect()
 }
 
-fun createNSPtrFSM(block: (StateMachine.Transition<State, Event, SideEffect>) -> Unit): StateMachine<State, Event, SideEffect> {
+fun createNSPtrFSM(block: (StateMachine.Transition<State, Event, SideEffect>) -> Unit)
+:StateMachine<State, Event, SideEffect> {
     return StateMachine.create<State, Event, SideEffect> {
         initialState(State.IDLE)
 

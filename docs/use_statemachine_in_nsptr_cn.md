@@ -1,5 +1,7 @@
 # 状态机(StateMachine)在下拉刷新控件中的使用
 
+[android-nest-scroll-ptr](https://github.com/s1rius/android-nest-scroll-ptr)
+
 ### 背景
 
 在维护下拉刷新控件的过程中，虽然改动的次数很少，但是每一次bug修复和新增功能都很困难，总结问题如下：
@@ -57,12 +59,10 @@ private fun tryScrollBackToTopAbortRefresh() {
 }
 ```
 
-有没有一套机制，能够
- `在触发这些事件的同时，更新到对应的状态，触发相应的动作`
-并且让代码简洁，可维护性高？
+有没有一套机制，能够可以避免阅读长段的 if else 逻辑检查，正确的进行状态变化，并且让代码简洁，可维护性高？
 
-在思考这个问题的时候，我就想到游戏开发，他们如何在多个玩家进行大量的位移，技能释放等多种事件输入的场景下来保证逻辑正常运转的。如果只是靠简单的if，else判断，那对维护者来说，绝对是个灾难。
-随即，我看到了游戏开发中对状态机使用的一些文章。觉得状态机同样适用在下拉刷新控件中。
+随即想到游戏开发，游戏中的各种状态变化的复杂度会高出几个等级，如何在多个玩家进行位移，技能释放等多种事件输入的场景下来保证逻辑正常运转的？如果只是靠简单的if，else判断，那对维护者来说，绝对是个灾难。
+搜索一番，我看到了游戏开发中对状态机使用的一些介绍文章。觉得状态机同样适用在下拉刷新控件中。
 
 ### 什么是状态机
 
@@ -82,9 +82,7 @@ private fun tryScrollBackToTopAbortRefresh() {
 ### 引入状态机
 幸运的是，Kotlin社区已经有了状态机的[开源实现](https://github.com/Tinder/StateMachine)
 
-[3bdfc4c8](https://github.com/s1rius/android-nest-scroll-ptr/commit/3bdfc4c8e3d64d79d0f995a3f28c577db66f27ac) 提交中引入状态机重新实现了控件下拉刷新中的状态转换逻辑
-
-重新梳理的下拉刷新的逻辑，下拉刷新的状态可以简化为3个
+接下去的任务就是重新梳理下拉刷新中所包含的状态，事件，动作。创建一个状态机。
 
 ```kotlin
 sealed class State {
@@ -107,9 +105,9 @@ sealed class Event {
     object ReleaseToIdle : Event()
     // 放手开始刷新
     object ReleaseToRefreshing : Event()
-    // 刷新完成
+    // 刷新完成事件
     object RefreshComplete : Event()
-    // 自动刷新
+    // 自动刷新事件
     object AutoRefresh : Event()
 }
 ```
@@ -123,7 +121,7 @@ sealed class SideEffect {
         object OnRefreshing : SideEffect()
         // 开始拖动控件
         object OnPull : SideEffect()
-        // 刷新完成的动作
+        // 响应刷新完成
         object OnComplete : SideEffect()
     }
 ```
@@ -167,6 +165,7 @@ var stateMachine =
         }
     }
 ```
+[3bdfc4c8](https://github.com/s1rius/android-nest-scroll-ptr/commit/3bdfc4c8e3d64d79d0f995a3f28c577db66f27ac) 提交中引入状态机重新实现了控件下拉刷新中的状态转换逻辑
 
 修改后
 

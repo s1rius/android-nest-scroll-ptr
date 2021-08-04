@@ -24,11 +24,11 @@
 
 <div>
 
-<img src="https://github.com/s1rius/android-nest-scroll-ptr/blob/master/images/ins.gif" width="160" height="346" />
-<img src="https://github.com/s1rius/android-nest-scroll-ptr/blob/master/images/wechat.gif" width="160" height="346" />
-<img src="https://github.com/s1rius/android-nest-scroll-ptr/blob/master/images/moment.gif" width="160" height="346" />
-<img src="https://github.com/s1rius/android-nest-scroll-ptr/blob/master/images/tab.gif" width="160" height="346" />
-<img src="https://github.com/s1rius/android-nest-scroll-ptr/blob/master/images/nestedscroll.gif" width="160" height="346" />
+<img src="images/ins.gif" width="160" height="346" />
+<img src="images/wechat.gif" width="160" height="346" />
+<img src="images/moment.gif" width="160" height="346" />
+<img src="images/tab.gif" width="160" height="346" />
+<img src="images/nestedscroll.gif" width="160" height="346" />
 
 </div>	
 
