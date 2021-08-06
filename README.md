@@ -6,6 +6,8 @@ This library implements pull-to-refresh logic and work with nested-scroll. It is
 
 It is driven by a [StateMachine](https://github.com/Tinder/StateMachine)
 
+<img src="images/transition.png" width="480" height="300" />
+
 ### Requirements
 
 - minsdk 14/21(compose)

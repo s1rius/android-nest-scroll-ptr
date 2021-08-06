@@ -167,6 +167,8 @@ var stateMachine =
 ```
 [3bdfc4c8](https://github.com/s1rius/android-nest-scroll-ptr/commit/3bdfc4c8e3d64d79d0f995a3f28c577db66f27ac) 提交中引入状态机重新实现了控件下拉刷新中的状态转换逻辑
 
+<img src="../images/transition.png" width="480" height="300" />
+
 修改后
 
 1. 现在的由于状态转换的触发逻辑，都在`onTransition`的lambda中统一处理，简单易懂

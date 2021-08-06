@@ -2,6 +2,10 @@
 
 本库实现了下拉刷新的逻辑，且实现了嵌套滑动接口。在嵌套滑动机制下正常工作。易于扩展和自定义。
 
+由 [状态机](https://github.com/Tinder/StateMachine) 驱动
+
+<img src="images/transition.png" width="480" height="300" />
+
 ### 支持环境
 
 - minsdk 14/21(compose)
