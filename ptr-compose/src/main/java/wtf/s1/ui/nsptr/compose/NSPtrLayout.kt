@@ -63,8 +63,8 @@ class NSPtrState(
                         animateContentTo(contentInitPositionPx)
                     }
                     is SideEffect.OnRefreshing -> {
-                        onRefresh?.invoke(this@NSPtrState)
                         animateContentTo(contentRefreshPositionPx)
+                        onRefresh?.invoke(this@NSPtrState)
                     }
                     else -> {
 
