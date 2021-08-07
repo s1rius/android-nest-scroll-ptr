@@ -15,8 +15,8 @@ object Versions {
     const val versionName = "1.0.0"
     const val bytex = "0.2.7"
     const val compose = "1.0.0"
-    const val nsptr = "0.1.0-RC1"
-    const val nsptrDev = "0.1.0-RC1"
+    const val nsptr = "0.1.0-RC2"
+    const val nsptrDev = "0.1.0-RC2"
     const val group = "wtf.s1.ui"
 }
 
