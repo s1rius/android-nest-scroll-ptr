@@ -71,6 +71,13 @@ object Deps {
         const val glide = "com.github.bumptech.glide:glide:4.12.0"
     }
 
+    object Test {
+        const val junit = "junit:junit:4.12"
+        const val mokitoKt = "com.nhaarman.mockitokotlin2:mockito-kotlin:2.1.0"
+        const val ktReflect = "org.jetbrains.kotlin:kotlin-reflect:1.5.10"
+        const val assertj = "org.assertj:assertj-core:3.11.1"
+    }
+
     const val circleimageview = "de.hdodenhof:circleimageview:1.3.0"
 
     const val hugo2 = "wtf.s1.pudge:hugo2-core:0.1.4"

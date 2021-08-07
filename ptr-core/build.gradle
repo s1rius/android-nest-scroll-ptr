@@ -57,5 +57,15 @@ android {
     }
 }
 
+dependencies {
+    api Deps.Kotlin.stdLib
+
+    testImplementation Deps.Test.junit
+    testImplementation Deps.Test.mokitoKt
+    testImplementation Deps.Test.ktReflect
+    testImplementation Deps.Test.assertj
+
+}
+
 version = Versions.nsptrDev
 group = Versions.group
