@@ -36,7 +36,7 @@ class NSPtrState(
     val contentRefreshPosition: Dp = 54.dp,
     val pullFriction: Float = 0.56f,
     coroutineScope: CoroutineScope,
-    onRefresh: (suspend (NSPtrState) -> Unit)? = null,
+    onRefresh: (NSPtrState) -> Unit,
 ) {
 
     var contentPositionPx: Float by mutableStateOf(0f)
@@ -64,7 +64,7 @@ class NSPtrState(
                     }
                     is SideEffect.OnRefreshing -> {
                         animateContentTo(contentRefreshPositionPx)
-                        onRefresh?.invoke(this@NSPtrState)
+                        onRefresh.invoke(this@NSPtrState)
                     }
                     else -> {
 
@@ -147,7 +147,7 @@ private class NSPtrNestedScrollConnection(val ptrState: NSPtrState) : NestedScro
 
 @Composable
 fun NSPtrLayout(
-    nsPtrState: NSPtrState = NSPtrState(coroutineScope = rememberCoroutineScope()),
+    nsPtrState: NSPtrState,
     modifier: Modifier,
     content: @Composable NSPtrScope.() -> Unit
 ) {

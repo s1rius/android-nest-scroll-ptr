@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.AbstractComposeView
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import wtf.s1.ui.nsptr.Event
 import wtf.s1.ui.nsptr.compose.NSPtrEZHeader
 import wtf.s1.ui.nsptr.compose.NSPtrLayout
@@ -41,8 +42,10 @@ fun Ins() {
             contentInitPosition = 0.dp,
             contentRefreshPosition = 60.dp
         ) {
-            delay(3000)
-            it.dispatchPtrEvent(Event.RefreshComplete)
+            coroutine.launch {
+                delay(3000)
+                it.dispatchPtrEvent(Event.RefreshComplete)
+            }
         }
     }
     NSPtrLayout(
