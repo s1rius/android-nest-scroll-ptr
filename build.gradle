@@ -5,8 +5,8 @@ buildscript {
         mavenLocal()
         google()
         mavenCentral()
-        jcenter()
-        maven { url "https://oss.sonatype.org/content/repositories/snapshots"}
+        maven{ url "https://artifact.bytedance.com/repository/byteX/"}
+        maven{ url "https://oss.sonatype.org/content/repositories/snapshots"}
     }
 
     dependencies {
@@ -24,7 +24,7 @@ allprojects {
         mavenLocal()
         google()
         mavenCentral()
-        jcenter()
-        maven { url "https://oss.sonatype.org/content/repositories/snapshots"}
+        maven{ url "https://artifact.bytedance.com/repository/byteX/"}
+        maven{ url "https://oss.sonatype.org/content/repositories/snapshots"}
     }
 }

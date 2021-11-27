@@ -10,8 +10,8 @@ android {
         applicationId = "wtf.s1.android.ptr"
         minSdkVersion Versions.minSdkVersion
         targetSdkVersion Versions.targetSdkVersion
-        versionCode = Versions.versionCode
-        versionName = Versions.versionName
+        versionCode = Versions.demoVersionCode
+        versionName = Versions.demoVersionName
 
         testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"
     }

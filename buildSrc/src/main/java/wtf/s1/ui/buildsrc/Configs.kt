@@ -3,18 +3,18 @@ package wtf.s1.ui.buildsrc
 const val dev = true
 
 object Versions {
-    const val kotlin = "1.5.10"
+    const val kotlin = "1.5.31"
     const val ktx = "1.5.0"
-    const val kotlinCoroutines = "1.5.0"
+    const val kotlinCoroutines = "1.5.2"
     const val gradlePlugin = "7.0.0"
-    const val compileSdkVersion = 30
+    const val compileSdkVersion = 31
     const val minSdkVersion = 21
     const val coreMinSkdVersion = 14
-    const val targetSdkVersion = 30
-    const val versionCode = 1
-    const val versionName = "1.0.0"
-    const val bytex = "0.2.7"
-    const val compose = "1.0.0"
+    const val targetSdkVersion = 31
+    const val demoVersionCode = 1
+    const val demoVersionName = "1.0.0"
+    const val bytex = "0.3.0"
+    const val compose = "1.0.4"
     const val nsptr = "0.1.0"
     const val nsptrDev = "0.1.0"
     const val group = "wtf.s1.ui"
@@ -63,7 +63,7 @@ object Deps {
         const val foundation = "androidx.compose.foundation:foundation:${Versions.compose}"
         const val foundationLayout = "androidx.compose.foundation:foundation-layout:${Versions.compose}"
 
-        const val activity = "androidx.activity:activity-compose:1.3.0-rc02"
+        const val activity = "androidx.activity:activity-compose:1.4.0"
     }
 
     object Google {
@@ -82,7 +82,7 @@ object ClassPaths {
     const val gradlePlugin = "com.android.tools.build:gradle:${Versions.gradlePlugin}"
     const val kotlinPlugin = "org.jetbrains.kotlin:kotlin-gradle-plugin:${Versions.kotlin}"
     const val bytex = "com.bytedance.android.byteX:base-plugin:${Versions.bytex}"
-    const val hugoByteX = "wtf.s1.pudge:hugo2-bytex:0.1.4"
+    const val hugoByteX = "wtf.s1.pudge:hugo2-bytex:0.3.0"
     const val mavenPlugin = "com.vanniktech:gradle-maven-publish-plugin:0.17.0"
     const val dokaa = "org.jetbrains.dokka:dokka-gradle-plugin:1.4.32"
 }

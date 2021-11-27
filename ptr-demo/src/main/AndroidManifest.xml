@@ -12,7 +12,8 @@
         android:supportsRtl="true"
         android:name="wtf.s1.android.ptr.demo.App"
         android:theme="@style/Base.Theme.DesignDemo">
-        <activity android:name="wtf.s1.android.ptr.demo.MainActivity">
+        <activity android:name="wtf.s1.android.ptr.demo.MainActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
