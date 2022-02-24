@@ -47,6 +47,7 @@ dependencies {
     }
 
     implementation Deps.AndroidX.appcompat
+    implementation Deps.AndroidX.lifecycleRuntime
     implementation Deps.AndroidX.constraintLayout
     implementation Deps.AndroidX.cardView
     implementation Deps.Google.material
@@ -60,12 +61,12 @@ dependencies {
     // compose
     implementation Deps.Compose.activity
     implementation Deps.Compose.material
-    implementation Deps.Compose.material
     implementation Deps.Compose.tooling
     implementation Deps.Compose.util
     implementation Deps.Compose.ui
     implementation Deps.Compose.foundation
     implementation Deps.Compose.foundationLayout
+    implementation Deps.Compose.runtimeLivedata
 }
 
 

@@ -3,7 +3,7 @@ package wtf.s1.ui.buildsrc
 const val dev = true
 
 object Versions {
-    const val kotlin = "1.5.31"
+    const val kotlin = "1.6.10"
     const val ktx = "1.5.0"
     const val kotlinCoroutines = "1.5.2"
     const val gradlePlugin = "7.0.0"
@@ -14,10 +14,11 @@ object Versions {
     const val demoVersionCode = 1
     const val demoVersionName = "1.0.0"
     const val bytex = "0.3.0"
-    const val compose = "1.0.4"
+    const val compose = "1.1.0"
     const val nsptr = "0.1.0"
     const val nsptrDev = "0.1.0"
     const val group = "wtf.s1.ui"
+    const val lifecycleVersion = "2.4.1"
 }
 
 object Plugins {
@@ -42,9 +43,10 @@ object Deps {
     }
 
     object AndroidX {
-        const val appcompat = "androidx.appcompat:appcompat:1.3.0"
+        const val appcompat = "androidx.appcompat:appcompat:1.4.1"
         const val constraintLayout = "androidx.constraintlayout:constraintlayout:1.1.3"
         const val cardView = "androidx.cardview:cardview:1.0.0"
+        const val lifecycleRuntime =  "androidx.lifecycle:lifecycle-runtime-ktx:${Versions.lifecycleVersion}"
 
         object Core {
             const val utils = "androidx.legacy:legacy-support-core-utils:1.0.0"
@@ -56,6 +58,7 @@ object Deps {
 
     object Compose {
         const val runtime = "androidx.compose.runtime:runtime:${Versions.compose}"
+        const val runtimeLivedata = "androidx.compose.runtime:runtime-livedata:${Versions.compose}"
         const val ui = "androidx.compose.ui:ui:${Versions.compose}"
         const val util = "androidx.compose.ui:ui-util:${Versions.compose}"
         const val tooling = "androidx.compose.ui:ui-tooling:${Versions.compose}"
